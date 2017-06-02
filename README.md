@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/balmbees/corgi.svg?branch=master)](https://travis-ci.org/balmbees/corgi)
+
 # Corgi
 Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration
 
