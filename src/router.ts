@@ -44,6 +44,16 @@ export class Router {
     this.flattenRoutes = flattenRoutes(routes);
   }
 
+  handler() {
+    return (event: LambdaProxy.Event, context: LambdaProxy.Context) => {
+      this.resolve(event).then((response) => {
+        context.succeed(response);
+      }, (error) => {
+        context.fail(error);
+      });
+    };
+  }
+
   async resolve(event: LambdaProxy.Event): Promise<LambdaProxy.Response> {
     for (const flattenRoute of this.flattenRoutes) {
       const endRoute = (flattenRoute[flattenRoute.length - 1] as Route);

@@ -1,8 +1,9 @@
 {
-  "name": "corgi",
-  "version": "1.0.0",
+  "name": "vingle-corgi",
+  "version": "1.0.10",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
-  "main": "index.js",
+  "main": "./dst/index.js",
+  "typings": "./dst/index.d.ts",
   "scripts": {
     "clean": "rm -Rf dst",
     "prebuild": "npm run clean",
