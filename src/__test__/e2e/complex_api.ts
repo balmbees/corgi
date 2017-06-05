@@ -11,9 +11,6 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
-import * as Joi from 'joi';
-
-
 export const routes: Routes = [
   new Namespace('/api/:userId', {
     children: [
