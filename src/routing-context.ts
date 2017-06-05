@@ -1,8 +1,8 @@
 import * as LambdaProxy from './lambda-proxy';
-
 import * as Joi from 'joi';
+import * as _ from 'lodash';
 
-export type Parameters = { [key:string]: any };
+import { ParameterDefinitionMap } from './parameter';
 
 //
 const DefaultJoiValidateOptions = {
@@ -13,22 +13,46 @@ const DefaultJoiValidateOptions = {
 
 // ---- RoutingContext
 export class RoutingContext {
-  private rawParams: Parameters;
-  private validatedParams: Parameters;
+  private validatedParams: { [key:string]: any };
 
   constructor(
     private request: LambdaProxy.Event,
-    pathParams: { [key:string]: string }
+    private pathParams: { [key:string]: string }
   ) {
-    this.rawParams = Object.assign({}, pathParams || {}, request.queryStringParameters || {});
     this.validatedParams = {};
   }
 
-  validateAndUpdateParams(schemaMap?: Joi.SchemaMap) {
-    if (schemaMap) {
+  validateAndUpdateParams(parameterDefinitionMap: ParameterDefinitionMap) {
+    const groupByIn: {
+      [key: string]: { [key: string]: Joi.Schema }
+    } = {};
+
+    _.forEach(parameterDefinitionMap, (schema, name) => {
+      if (!groupByIn[schema.in])
+        groupByIn[schema.in] = {};
+
+      groupByIn[schema.in][name] = schema.def;
+    });
+
+    // Path Params
+    if (groupByIn['path']) {
       const res = Joi.validate(
-        this.rawParams,
-        Joi.object().keys(schemaMap),
+        this.pathParams,
+        Joi.object().keys(groupByIn['path']),
+        DefaultJoiValidateOptions,
+      );
+      if (res.error) {
+        throw res.error;
+      } else {
+        Object.assign(this.validatedParams, res.value);
+      }
+    }
+
+    // Query Params
+    if (groupByIn['query']) {
+      const res = Joi.validate(
+        this.request.queryStringParameters,
+        Joi.object().keys(groupByIn['query']),
         DefaultJoiValidateOptions,
       );
       if (res.error) {
@@ -53,7 +77,7 @@ export class RoutingContext {
     return {
       statusCode: statusCode || 200,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json; charset=utf-8'
       },
       body: JSON.stringify(json),
     };

@@ -29,7 +29,10 @@ export type ExceptionHandler = (this: RoutingContext, error: any) => Promise<Res
 export interface NamespaceOptions {
   before?: (this: RoutingContext) => Promise<void>;
   exceptionHandler?: ExceptionHandler;
-  params?: Joi.SchemaMap;
+  /**
+   * All the params are from 'PATH'. namespace currently won't support query param validation or access
+   */
+  params?: { [name: string]: Joi.Schema };
   children: Routes;
 }
 

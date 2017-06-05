@@ -1,6 +1,6 @@
 import * as LambdaProxy from './lambda-proxy';
 import { RoutingContext } from './routing-context';
-import * as Joi from 'joi';
+import { ParameterDefinitionMap } from './parameter';
 
 export type HttpMethod = 'GET' | 'PUT' | 'POST' | 'DELETE' | 'OPTIONS' | 'HEAD';
 export type RouteHandler = (this: RoutingContext) => Promise<LambdaProxy.Response>;
@@ -16,46 +16,36 @@ export class Route {
   get params() { return this.options.params; }
 
   // Simplified Constructors
-  static GET(path: string, desc: string, params: Joi.SchemaMap, handler: RouteHandler) {
+  static GET(path: string, desc: string, params: ParameterDefinitionMap, handler: RouteHandler) {
     return this._factory(path, 'GET', desc, params, handler);
   }
-  static PUT(path: string, desc: string, params: Joi.SchemaMap, handler: RouteHandler) {
+  static PUT(path: string, desc: string, params: ParameterDefinitionMap, handler: RouteHandler) {
     return this._factory(path, 'PUT', desc, params, handler);
   }
-  static POST(path: string, desc: string, params: Joi.SchemaMap, handler: RouteHandler) {
+  static POST(path: string, desc: string, params: ParameterDefinitionMap, handler: RouteHandler) {
     return this._factory(path, 'POST', desc, params, handler);
   }
-  static DELETE(path: string, desc: string, params: Joi.SchemaMap, handler: RouteHandler) {
+  static DELETE(path: string, desc: string, params: ParameterDefinitionMap, handler: RouteHandler) {
     return this._factory(path, 'DELETE', desc, params, handler);
   }
-  static OPTIONS(path: string, desc: string, params: Joi.SchemaMap, handler: RouteHandler) {
+  static OPTIONS(path: string, desc: string, params: ParameterDefinitionMap, handler: RouteHandler) {
     return this._factory(path, 'OPTIONS', desc, params, handler);
   }
-  static HEAD(path: string, desc: string, params: Joi.SchemaMap, handler: RouteHandler) {
+  static HEAD(path: string, desc: string, params: ParameterDefinitionMap, handler: RouteHandler) {
     return this._factory(path, 'HEAD', desc, params, handler);
   }
 
-  private static _factory(path: string, method: HttpMethod, desc: string, params: Joi.SchemaMap, handler: RouteHandler) {
+  private static _factory(path: string, method: HttpMethod, desc: string, params: ParameterDefinitionMap, handler: RouteHandler) {
     return new this({ path, method, desc, params, handler });
   }
-
-  validateParams(params: { [key: string]: string }) {
-    return Joi.validate(
-      params,
-      Joi.object().keys(this.params),
-      {
-        stripUnknown: true,
-        presence: 'required',
-        abortEarly: false,
-      },
-    );
-  }
 }
+
+
 
 export interface RouteOptions {
   path: string;
   method: HttpMethod;
   desc: string;
-  params?: Joi.SchemaMap;
+  params?: ParameterDefinitionMap;
   handler: RouteHandler;
 }
