@@ -1,18 +1,46 @@
 import * as LambdaProxy from './lambda-proxy';
 
+import * as Joi from 'joi';
+
+export type Parameters = { [key:string]: any };
+
+//
+const DefaultJoiValidateOptions = {
+  stripUnknown: true,
+  presence: 'required',
+  abortEarly: false,
+};
+
 // ---- RoutingContext
 export class RoutingContext {
-  private _params: { [key:string]: string };
+  private rawParams: Parameters;
+  private validatedParams: Parameters;
+
   constructor(
     private request: LambdaProxy.Event,
     pathParams: { [key:string]: string }
   ) {
-    this._params = Object.assign({}, pathParams || {}, request.queryStringParameters || {});
+    this.rawParams = Object.assign({}, pathParams || {}, request.queryStringParameters || {});
+    this.validatedParams = {};
   }
 
-  // Parameters
-  get params(): { [key:string]: string } {
-    return this._params;
+  validateAndUpdateParams(schemaMap?: Joi.SchemaMap) {
+    if (schemaMap) {
+      const res = Joi.validate(
+        this.rawParams,
+        Joi.object().keys(schemaMap),
+        DefaultJoiValidateOptions,
+      );
+      if (res.error) {
+        throw res.error;
+      } else {
+        Object.assign(this.validatedParams, res.value);
+      }
+    }
+  }
+
+  get params() {
+    return this.validatedParams;
   }
 
   // Body Parser

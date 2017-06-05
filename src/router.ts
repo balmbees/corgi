@@ -75,16 +75,44 @@ export class Router {
 
           const routingContext = new RoutingContext(event, pathParams);
 
-          for (const route of flattenRoute) {
-            if (route instanceof Namespace) {
-              const namespace = route;
-              if (namespace.before) {
-                await namespace.before.call(routingContext);
+          const stepRoute = async function(currentRoute: Route | Namespace, nextRoutes: Routes) : Promise<LambdaProxy.Response> {
+            if (currentRoute instanceof Namespace) {
+              const namespace = currentRoute;
+
+              // Middleware, Or Just Next
+              try {
+                // Parameter Validation
+                routingContext.validateAndUpdateParams(namespace.params);
+
+                // Before Hook
+                if (namespace.before) {
+                  await namespace.before.call(routingContext);
+                }
+                return await stepRoute(nextRoutes[0], nextRoutes.slice(1));
+              } catch(e) {
+                if (namespace.exceptionHandler) {
+                  const res = await namespace.exceptionHandler.call(routingContext, e);
+                  if (!res) {
+                    // Failed to handle error
+                    throw e; // Just rethrow to parent handler
+                  } else {
+                    return res;
+                  }
+                } else {
+                  throw e; // Just rethrow to parent handler
+                }
               }
-            } else if (route instanceof Route) {
-              return await route.handler.call(routingContext);
+            } else if (currentRoute instanceof Route) {
+              // Parameter Validation
+              routingContext.validateAndUpdateParams(currentRoute.params);
+
+              // Actual Handler
+              return await currentRoute.handler.call(routingContext);
             }
           }
+
+          const res = await stepRoute(flattenRoute[0], flattenRoute.slice(1));
+          return res;
         }
       }
     }
