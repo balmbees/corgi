@@ -50,7 +50,6 @@ describe("SwaggerRoute", () => {
       path: "/api/doc",
       httpMethod: 'GET'
     } as any);
-    console.log(JSON.stringify(JSON.parse(res.body), null, 2));
 
     chai.expect(res).to.deep.eq({
       statusCode: 200,
