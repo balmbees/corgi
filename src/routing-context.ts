@@ -4,10 +4,17 @@ import * as Joi from 'joi';
 
 export type Parameters = { [key:string]: any };
 
+//
+const DefaultJoiValidateOptions = {
+  stripUnknown: true,
+  presence: 'required',
+  abortEarly: false,
+};
+
 // ---- RoutingContext
 export class RoutingContext {
-  public rawParams: Parameters;
-  public validatedParams: Parameters;
+  private rawParams: Parameters;
+  private validatedParams: Parameters;
 
   constructor(
     private request: LambdaProxy.Event,
@@ -15,6 +22,21 @@ export class RoutingContext {
   ) {
     this.rawParams = Object.assign({}, pathParams || {}, request.queryStringParameters || {});
     this.validatedParams = {};
+  }
+
+  validateAndUpdateParams(schemaMap?: Joi.SchemaMap) {
+    if (schemaMap) {
+      const res = Joi.validate(
+        this.rawParams,
+        Joi.object().keys(schemaMap),
+        DefaultJoiValidateOptions,
+      );
+      if (res.error) {
+        throw res.error;
+      } else {
+        Object.assign(this.validatedParams, res.value);
+      }
+    }
   }
 
   get params() {

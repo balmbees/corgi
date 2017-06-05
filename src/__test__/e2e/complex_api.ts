@@ -12,54 +12,54 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
-export const routes: Routes = [
-  new Namespace('/api/:userId', {
-    params: {
-      userId: Joi.number()
-    },
-    children: [
-      new Route({
-        path: '/followers',
-        method: 'GET',
-        desc: 'List of users that following me',
-        handler: async function(this: RoutingContext) {
-          return this.json({
-            data: {}
-          })
-        }}
-      ),
-      new Namespace('/followings', {
-        before: async function(this: RoutingContext) {
-        },
-        children: [
-          Route.POST('/', '', {
-            test_id: Joi.number()
-          }, async function(this: RoutingContext) {
-            const userId = this.params.userId as number;
-            const testId = this.params.test_id as number;
-            return this.json({
-              testId,
-              userId,
-            });
-          }),
-          Route.DELETE('/', '', {}, async function(this: RoutingContext) {
-            const userId = this.params.userId as number;
-            return this.json({ userId: userId });
-          }),
-        ]
-      })
-    ]
-  })
-];
-
 describe("Calling complex API", () => {
   it("should exist", async () => {
+    const routes: Routes = [
+      new Namespace('/api/:userId', {
+        params: {
+          userId: Joi.number()
+        },
+        children: [
+          new Route({
+            path: '/followers',
+            method: 'GET',
+            desc: 'List of users that following me',
+            handler: async function() {
+              return this.json({
+                data: {}
+              })
+            }}
+          ),
+          new Namespace('/followings', {
+            before: async function() {
+            },
+            children: [
+              Route.POST('/', '', {
+                testId: Joi.number()
+              }, async function() {
+                const userId = this.params.userId as number;
+                const testId = this.params.testId as number;
+                return this.json({
+                  testId,
+                  userId,
+                });
+              }),
+              Route.DELETE('/', '', {}, async function() {
+                const userId = this.params.userId as number;
+                return this.json({ userId: userId });
+              }),
+            ]
+          })
+        ]
+      })
+    ];
+
     const router = new Router(routes);
     const res = await router.resolve({
       path: "/api/33/followings",
       httpMethod: 'POST',
       queryStringParameters: {
-        test_id: "12345",
+        testId: "12345",
         not_allowed_param: "xxx",
       }
     } as any);
@@ -68,10 +68,60 @@ describe("Calling complex API", () => {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        testId: 12345,
         userId: 33,
-        test_id: 12345,
       })
     });
   });
 });
 
+describe("Global Error Handling", () => {
+  it("should fail, and handled by parent namespace error handler", async () => {
+    const routes: Routes = [
+      new Namespace('/api', {
+        exceptionHandler: async function(error: any) {
+          if (error.name == 'ValidationError') {
+            const validationError = error as Joi.ValidationError;
+            return this.json(
+              {
+                errors: validationError.details.map(e => e.message),
+              },
+              422
+            );
+          }
+        },
+        children: [
+          new Namespace('/users/:userId', {
+            children: [
+              Route.GET('/', '', {
+                testId: Joi.number(),
+                otherError: Joi.number(),
+              }, async function() {
+                const userId = this.params.userId as number;
+                const testId = this.params.testId as number;
+                return this.json({
+                  testId,
+                  userId,
+                });
+              })
+            ]
+          })
+        ]
+      })
+    ];
+
+    const router = new Router(routes);
+    const res = await router.resolve({
+      path: "/api/users/12345",
+      httpMethod: 'GET',
+      queryStringParameters: {
+      }
+    } as any);
+
+    chai.expect(res).to.deep.eq({
+      statusCode: 422,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ errors: [ '"testId" is required', '"otherError" is required' ] }),
+    });
+  });
+})

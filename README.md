@@ -104,7 +104,3 @@ export const routes: Routes = [
 const router = new Router(routes);
 exports.myHandler = router.handler();
 ```
-
-## TODO
-1. Exception Handling
-2. Parameter Validation

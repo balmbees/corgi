@@ -43,7 +43,11 @@ export class Route {
     return Joi.validate(
       params,
       Joi.object().keys(this.params),
-      { stripUnknown: true },
+      {
+        stripUnknown: true,
+        presence: 'required',
+        abortEarly: false,
+      },
     );
   }
 }

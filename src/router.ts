@@ -75,39 +75,44 @@ export class Router {
 
           const routingContext = new RoutingContext(event, pathParams);
 
-          for (const route of flattenRoute) {
-            if (route instanceof Namespace) {
-              const namespace = route;
+          const stepRoute = async function(currentRoute: Route | Namespace, nextRoutes: Routes) : Promise<LambdaProxy.Response> {
+            if (currentRoute instanceof Namespace) {
+              const namespace = currentRoute;
 
-              // Parameter Validation
-              if (namespace.params) {
-                const res = namespace.validateParams(routingContext.rawParams);
-                if (res.error) {
-                  throw res.error;
+              // Middleware, Or Just Next
+              try {
+                // Parameter Validation
+                routingContext.validateAndUpdateParams(namespace.params);
+
+                // Before Hook
+                if (namespace.before) {
+                  await namespace.before.call(routingContext);
+                }
+                return await stepRoute(nextRoutes[0], nextRoutes.slice(1));
+              } catch(e) {
+                if (namespace.exceptionHandler) {
+                  const res = await namespace.exceptionHandler.call(routingContext, e);
+                  if (!res) {
+                    // Failed to handle error
+                    throw e; // Just rethrow to parent handler
+                  } else {
+                    return res;
+                  }
                 } else {
-                  Object.assign(routingContext.validatedParams, res.value);
+                  throw e; // Just rethrow to parent handler
                 }
               }
-
-              // Before Hook
-              if (namespace.before) {
-                await namespace.before.call(routingContext);
-              }
-            } else if (route instanceof Route) {
+            } else if (currentRoute instanceof Route) {
               // Parameter Validation
-              if (route.params) {
-                const res = route.validateParams(routingContext.rawParams);
-                if (res.error) {
-                  throw res.error;
-                } else {
-                  Object.assign(routingContext.validatedParams, res.value);
-                }
-              }
+              routingContext.validateAndUpdateParams(currentRoute.params);
 
               // Actual Handler
-              return await route.handler.call(routingContext);
+              return await currentRoute.handler.call(routingContext);
             }
           }
+
+          const res = await stepRoute(flattenRoute[0], flattenRoute.slice(1));
+          return res;
         }
       }
     }

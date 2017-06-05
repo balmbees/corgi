@@ -1,5 +1,6 @@
 import { RoutingContext } from './routing-context';
 import { Route } from './route';
+import { Response } from './lambda-proxy';
 import * as Joi from 'joi';
 
 // ---- Namespace
@@ -19,18 +20,15 @@ export class Namespace {
   get children() { return this.options.children; }
   get path() { return this._path; }
   get params() { return this.options.params; }
-
-  validateParams(params: { [key: string]: string }) {
-    return Joi.validate(
-      params,
-      Joi.object().keys(this.params),
-      { stripUnknown: true },
-    );
-  }
+  get exceptionHandler() { return this.options.exceptionHandler; }
 }
+
+// if it's void, it's failed to handler error
+export type ExceptionHandler = (this: RoutingContext, error: any) => Promise<Response | void>;
 
 export interface NamespaceOptions {
   before?: (this: RoutingContext) => Promise<void>;
+  exceptionHandler?: ExceptionHandler;
   params?: Joi.SchemaMap;
   children: Routes;
 }
