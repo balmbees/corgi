@@ -2,14 +2,17 @@ import * as LambdaProxy from './lambda-proxy';
 
 // ---- RoutingContext
 export class RoutingContext {
+  private _params: { [key:string]: string };
   constructor(
     private request: LambdaProxy.Event,
-    private pathParams: { [key:string]: string }
-  ) {}
+    pathParams: { [key:string]: string }
+  ) {
+    this._params = Object.assign({}, pathParams || {}, request.queryStringParameters || {});
+  }
 
   // Parameters
   get params(): { [key:string]: string } {
-    return this.pathParams;
+    return this._params;
   }
 
   // Body Parser
