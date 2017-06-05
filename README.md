@@ -9,6 +9,15 @@ Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration
 1. Cascade Routing
 2. Route parameter
 
+    such as "users/:userId/followings"
+3. Parameter Validation
+
+    it uses [Joi](https://github.com/hapijs/joi)
+4. Exception Handling
+
+    refer example, **exceptionHandler**
+
+
 Whole thing supports async/await for sure, written in typescript also
 
 ## Reasoning
@@ -72,28 +81,42 @@ https://claudiajs.com/tutorials/serverless-express.html
 we did considered about using any kind of those express wrapping seriously, but we just felt like it would be nicer to just write one for Lambda.
 inspired by [Grape](https://github.com/ruby-grape/grape) a lot, since we really liked it
 
-## Example
+## Corgi Example
 
 ```
 export const routes: Routes = [
   new Namespace('/api/:userId', {
+    params: {
+      userId: Joi.number(),
+    },
+    before: async function() {
+      this.params.user = await User.findByUserId(this.params.userId)
+    },
+    exceptionHandler: async function(error) {
+      if (error.name == 'ValidationError') {
+        const validationError = error as Joi.ValidationError;
+        return this.json(
+          {
+            errors: validationError.details.map(e => e.message),
+          },
+          422
+        );
+      }
+    },
     children: [
-      new Route('/followers', 'GET', 'List of users that following me', async function(this: RoutingContext) {
+      Route.GET('/followers', {}, 'List of users that following me', async function() {
         return this.json({
           data: {}
         })
       }),
       new Namespace('/followings', {
-        before: async function(this: RoutingContext) {
-        },
         children: [
-          new Route('/', 'POST', '', async function(this: RoutingContext) {
-            const userId = Number(this.params.userId);
-            return this.json({ userId: userId });
+          Route.POST('/', '', {}, async function() {
+            return this.json({ userId: this.params.user.id });
           }),
-          new Route('/', 'DELETE', '', async function(this: RoutingContext) {
+          Route.DELETE('/', '', {}, async function() {
             const userId = Number(this.params.userId);
-            return this.json({ userId: userId });
+            return this.json({ userId: this.params.user.id });
           }),
         ]
       })
@@ -104,3 +127,7 @@ export const routes: Routes = [
 const router = new Router(routes);
 exports.myHandler = router.handler();
 ```
+
+Or refer src/__test__/e2e/complex_api.ts
+
+
