@@ -16,7 +16,13 @@ Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration
     it uses [Joi](https://github.com/hapijs/joi)
 4. Exception Handling
 
-    refer example, **exceptionHandler**
+    refer [example](src/__test__/e2e/complex_api.ts)
+
+5. Swagger Document Generation
+
+    [Swagger](http://swagger.io/) is API Documentation spec. Corgi support automatic swagger document generation.
+
+    refer [example](src/__test__/swagger_spec.ts)
 
 
 Whole thing supports async/await for sure, written in typescript also

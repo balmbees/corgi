@@ -3,6 +3,9 @@ import * as LambdaProxy from './lambda-proxy';
 import { Route } from './route';
 import { Routes, Namespace } from './namespace';
 import { RoutingContext } from './routing-context';
+import { ParameterInputType } from './parameter';
+
+import * as _ from 'lodash';
 
 // ---- Router
 
@@ -82,7 +85,13 @@ export class Router {
               // Middleware, Or Just Next
               try {
                 // Parameter Validation
-                routingContext.validateAndUpdateParams(namespace.params);
+                const params = _.mapValues(namespace.params, (schema, name) => {
+                  return {
+                    in: 'path' as ParameterInputType,
+                    def: schema,
+                  }
+                });
+                routingContext.validateAndUpdateParams(params);
 
                 // Before Hook
                 if (namespace.before) {

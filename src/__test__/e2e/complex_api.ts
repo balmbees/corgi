@@ -4,6 +4,7 @@ import {
   Namespace,
   Routes,
   Router,
+  Parameter,
 } from '../../index';
 import * as Joi from 'joi';
 
@@ -35,7 +36,7 @@ describe("Calling complex API", () => {
             },
             children: [
               Route.POST('/', '', {
-                testId: Joi.number()
+                testId: Parameter.Query(Joi.number())
               }, async function() {
                 const userId = this.params.userId as number;
                 const testId = this.params.testId as number;
@@ -66,7 +67,7 @@ describe("Calling complex API", () => {
 
     chai.expect(res).to.deep.eq({
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({
         testId: 12345,
         userId: 33,
@@ -94,8 +95,8 @@ describe("Global Error Handling", () => {
           new Namespace('/users/:userId', {
             children: [
               Route.GET('/', '', {
-                testId: Joi.number(),
-                otherError: Joi.number(),
+                testId: Parameter.Query(Joi.number()),
+                otherError: Parameter.Query(Joi.number()),
               }, async function() {
                 const userId = this.params.userId as number;
                 const testId = this.params.testId as number;
@@ -120,7 +121,7 @@ describe("Global Error Handling", () => {
 
     chai.expect(res).to.deep.eq({
       statusCode: 422,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({ errors: [ '"testId" is required', '"otherError" is required' ] }),
     });
   });
