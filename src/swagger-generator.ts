@@ -30,7 +30,7 @@ export class SwaggerGenerator {
         paths[path] = {}
       }
       paths[path][endRoute.method.toLowerCase()] = {
-        description: endRoute.description,
+        description: endRoute.desc,
         produces: [
           "application/json"
         ],

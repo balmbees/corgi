@@ -78,10 +78,33 @@ export class Router {
           for (const route of flattenRoute) {
             if (route instanceof Namespace) {
               const namespace = route;
+
+              // Parameter Validation
+              if (namespace.params) {
+                const res = namespace.validateParams(routingContext.rawParams);
+                if (res.error) {
+                  throw res.error;
+                } else {
+                  Object.assign(routingContext.validatedParams, res.value);
+                }
+              }
+
+              // Before Hook
               if (namespace.before) {
                 await namespace.before.call(routingContext);
               }
             } else if (route instanceof Route) {
+              // Parameter Validation
+              if (route.params) {
+                const res = route.validateParams(routingContext.rawParams);
+                if (res.error) {
+                  throw res.error;
+                } else {
+                  Object.assign(routingContext.validatedParams, res.value);
+                }
+              }
+
+              // Actual Handler
               return await route.handler.call(routingContext);
             }
           }

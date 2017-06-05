@@ -1,18 +1,24 @@
 import * as LambdaProxy from './lambda-proxy';
 
+import * as Joi from 'joi';
+
+export type Parameters = { [key:string]: any };
+
 // ---- RoutingContext
 export class RoutingContext {
-  private _params: { [key:string]: string };
+  public rawParams: Parameters;
+  public validatedParams: Parameters;
+
   constructor(
     private request: LambdaProxy.Event,
     pathParams: { [key:string]: string }
   ) {
-    this._params = Object.assign({}, pathParams || {}, request.queryStringParameters || {});
+    this.rawParams = Object.assign({}, pathParams || {}, request.queryStringParameters || {});
+    this.validatedParams = {};
   }
 
-  // Parameters
-  get params(): { [key:string]: string } {
-    return this._params;
+  get params() {
+    return this.validatedParams;
   }
 
   // Body Parser

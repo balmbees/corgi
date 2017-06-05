@@ -24,6 +24,8 @@
   },
   "homepage": "https://github.com/balmbees/corgi#readme",
   "dependencies": {
+    "@types/joi": "^10.4.0",
+    "joi": "^10.5.2",
     "path-to-regexp": "^1.7.0",
     "typescript": "2.3.4"
   },
