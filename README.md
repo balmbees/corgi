@@ -9,25 +9,26 @@ Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration
 ## Features
 1. Cascade Routing
 2. Route parameter
-
     such as "users/:userId/followings"
 3. Parameter Validation
-
     it uses [Joi](https://github.com/hapijs/joi)
 4. Exception Handling
-
     refer [example](src/__test__/e2e/complex_api.ts)
-
 5. Swagger Document Generation
-
     [Swagger](http://swagger.io/) is API Documentation spec. Corgi support automatic swagger document generation.
-
     refer [example](src/__test__/swagger_spec.ts)
-
 
 Whole thing supports async/await for sure, written in typescript also
 
-## Reasoning
+## TODO
+1. HTTP Body Parser
+    1. Base64Encoding support (HTTP Body Parser)
+2. View Framework
+    should support Swagger Response schema
+3. HTTP Header Parser (getter)
+    should support HTTP Header Set / Get, ignoring cases
+
+## Why do i need a extra Framework for Lambda?
 
 So simple lambda handler looks like this
 
@@ -39,8 +40,8 @@ exports.myHandler = function(event, context, callback) {
 }
 ```
 
-let's say you connected API Gateway, (using serverless maybe), as Lambda Proxy.
-and wanna build some Restful API with that.
+let's say you connected API Gateway, (using serverless maybe),
+as Lambda Proxy. and wanna build some Restful API with that.
 
 ```
 exports.myHandler = function(event, context, callback) {
@@ -79,14 +80,17 @@ exports.myHandler = function(event, context, callback) {
 
 Ok, fairly good, since it's on lambda and api gateway so everything is managed and scaled....etc.
 but surely, it will be really messy soon.
+
 there are several frameworks that built for this,
 (even the one that running express itself on lambda even though it's completely unnecessary to run HTTP Server on lambda, which is what exactly AWS APIGateway is for)
-https://www.npmjs.com/package/lambda-req
-https://github.com/awslabs/aws-serverless-express
-https://claudiajs.com/tutorials/serverless-express.html
+[lambda-req](https://www.npmjs.com/package/lambda-req)
+[aws-serverless-express](https://github.com/awslabs/aws-serverless-express)
+[serverless-express](https://claudiajs.com/tutorials/serverless-express.html)
 
-we did considered about using any kind of those express wrapping seriously, but we just felt like it would be nicer to just write one for Lambda.
-inspired by [Grape](https://github.com/ruby-grape/grape) a lot, since we really liked it
+we did considered about using any kind of those express wrapping seriously,
+but we just felt like it would be nicer to just write one for Lambda.
+
+inspired by [Grape](https://github.com/ruby-grape/grape) a lot,since we really liked it
 
 ## Corgi Example
 
