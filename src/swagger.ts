@@ -1,10 +1,12 @@
-import { Route } from './route';
+import { Route, HttpMethod} from './route';
 import { Routes, Namespace } from './namespace';
 import { RoutingContext } from './routing-context';
 import { flattenRoutes } from './router';
 
 import * as _ from 'lodash';
 import * as Joi from 'joi';
+import * as _string from 'underscore.string';
+
 const JoiToSwagger = require('joi-to-swagger');
 
 export class SwaggerRoute extends Route {
@@ -55,12 +57,13 @@ export class SwaggerGenerator {
 
     flattenedRoutes.forEach((routes) => {
       const endRoute = (routes[routes.length - 1] as Route);
-      const path = this.toSwaggerPath(routes.map(r => r.path).join(''));
+      const corgiPath = routes.map(r => r.path).join('');
+      const swaggerPath = this.toSwaggerPath(corgiPath);
 
-      if (!paths[path]) {
-        paths[path] = {}
+      if (!paths[swaggerPath]) {
+        paths[swaggerPath] = {}
       }
-      paths[path][endRoute.method.toLowerCase()] = {
+      paths[swaggerPath][endRoute.method.toLowerCase()] = {
         description: endRoute.desc,
         produces: [
           "application/json; charset=utf-8"
@@ -96,8 +99,7 @@ export class SwaggerGenerator {
             "description": "Success"
           }
         },
-        tags: [],
-        operationId: `${endRoute.method} - ${path}`,
+        operationId: this.routesToOperationId(corgiPath, endRoute.method),
       };
     });
 
@@ -120,6 +122,19 @@ export class SwaggerGenerator {
 
   toSwaggerPath(path: string) {
     return path.replace(/\:(\w+)/g, '{$1}');
+  }
+
+  routesToOperationId(path: string, method: HttpMethod) {
+    const operation =
+      path.split('/').map((c) => {
+        if (c.startsWith(':')) {
+          return '';
+        } else {
+          return _string.capitalize(c);
+        }
+      }).join('');
+
+    return `${_string.capitalize(method.toLowerCase())}${operation}`;
   }
 }
 

@@ -61,82 +61,68 @@ describe("SwaggerRoute", () => {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({
-        "info": {
-          "title": "TEST API",
-          "version": "1.0.0"
-        },
-        "swagger": "2.0",
-        "produces": [
-          "application/json; charset=utf-8"
-        ],
-        "host": "www.vingle.net",
-        "basePath": "/",
-        "tags": [],
-        "paths": {
-          "/api/{userId}": {
-            "get": {
-              "description": "a",
-              "produces": [
-                "application/json; charset=utf-8"
-              ],
-              "parameters": [
-                {
-                  "in": "path",
-                  "name": "userId",
-                  "description": "",
-                  "type": "number",
-                  "required": true
-                },
-                {
-                  "in": "query",
-                  "name": "testerId",
-                  "description": "",
-                  "type": "number",
-                  "required": true
-                }
-              ],
-              "responses": {
-                "200": {
-                  "description": "Success"
-                }
-              },
-              "tags": [],
-              "operationId": "GET - /api/{userId}"
-            }
+          "info": {
+              "title": "TEST API",
+              "version": "1.0.0"
           },
-          "/api/a": {
-            "post": {
-              "description": "a",
-              "produces": [
-                "application/json; charset=utf-8"
-              ],
-              "parameters": [],
-              "responses": {
-                "200": {
-                  "description": "Success"
-                }
+          "swagger": "2.0",
+          "produces": ["application/json; charset=utf-8"],
+          "host": "www.vingle.net",
+          "basePath": "/",
+          "tags": [],
+          "paths": {
+              "/api/{userId}": {
+                  "get": {
+                      "description": "a",
+                      "produces": ["application/json; charset=utf-8"],
+                      "parameters": [{
+                          "in": "path",
+                          "name": "userId",
+                          "description": "",
+                          "type": "number",
+                          "required": true
+                      }, {
+                          "in": "query",
+                          "name": "testerId",
+                          "description": "",
+                          "type": "number",
+                          "required": true
+                      }],
+                      "responses": {
+                          "200": {
+                              "description": "Success"
+                          }
+                      },
+                      "operationId": "GetApi"
+                  }
               },
-              "tags": [],
-              "operationId": "POST - /api/a"
-            }
-          },
-          "/api/c": {
-            "get": {
-              "description": "a",
-              "produces": [
-                "application/json; charset=utf-8"
-              ],
-              "parameters": [],
-              "responses": {
-                "200": {
-                  "description": "Success"
-                }
+              "/api/a": {
+                  "post": {
+                      "description": "a",
+                      "produces": ["application/json; charset=utf-8"],
+                      "parameters": [],
+                      "responses": {
+                          "200": {
+                              "description": "Success"
+                          }
+                      },
+                      "operationId": "PostApiA"
+                  }
               },
-              "tags": [],
-              "operationId": "GET - /api/c"
-            }
+              "/api/c": {
+                  "get": {
+                      "description": "a",
+                      "produces": ["application/json; charset=utf-8"],
+                      "parameters": [],
+                      "responses": {
+                          "200": {
+                              "description": "Success"
+                          }
+                      },
+                      "operationId": "GetApiC"
+                  }
+              }
           }
-        }
       })
     });
   });
@@ -149,6 +135,18 @@ describe(SwaggerGenerator.name, () => {
       expect(
         generator.toSwaggerPath('/users/:userId/interests/:interest')
       ).to.eq('/users/{userId}/interests/{interest}');
+    });
+  });
+
+  describe("#routesToOperationId", () => {
+    it("should build natural operationId from given path and method", () => {
+      const generator = new SwaggerGenerator();
+      expect(
+        generator.routesToOperationId(
+          '/users/:userId/interests/:interest',
+          'GET',
+        )
+      ).to.eq('GetUsersInterests');
     });
   });
 });
