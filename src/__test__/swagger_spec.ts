@@ -4,14 +4,20 @@ import {
   Namespace,
   Routes,
   Router,
-  SwaggerRoute,
   Parameter,
 } from '../index';
+
+import {
+  SwaggerGenerator,
+  SwaggerRoute,
+} from '../swagger';
+
 import * as Joi from 'joi';
 
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
+const expect = chai.expect;
 
 describe("SwaggerRoute", () => {
   const _routes: Routes = [
@@ -136,3 +142,13 @@ describe("SwaggerRoute", () => {
   });
 });
 
+describe(SwaggerGenerator.name, () => {
+  describe("#toSwaggerPath", () => {
+    it("should convert regexPath to swaggerPath", () => {
+      const generator = new SwaggerGenerator();
+      expect(
+        generator.toSwaggerPath('/users/:userId/interests/:interest')
+      ).to.eq('/users/{userId}/interests/{interest}');
+    });
+  });
+});

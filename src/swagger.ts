@@ -118,8 +118,8 @@ export class SwaggerGenerator {
     return swagger;
   }
 
-  private toSwaggerPath(path: string) {
-    return path.replace(/\:(\w+)/, '{$1}');
+  toSwaggerPath(path: string) {
+    return path.replace(/\:(\w+)/g, '{$1}');
   }
 }
 
