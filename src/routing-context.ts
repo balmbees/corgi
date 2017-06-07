@@ -82,7 +82,7 @@ export class RoutingContext {
   get headers(): LambdaProxy.EventHeaders {
     // normalize works lazily and should be cached for further use
     return this.normalizedHeaders
-      || this.normalizeHeaders(this.request.headers);
+      || (this.normalizedHeaders = this.normalizeHeaders(this.request.headers));
   }
 
   get params() {
