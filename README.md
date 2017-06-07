@@ -32,7 +32,7 @@ Whole thing supports async/await for sure, written in typescript also
 
 So simple lambda handler looks like this
 
-```
+```js
 exports.myHandler = function(event, context, callback) {
    console.log("value1 = " + event.key1);
    console.log("value2 = " + event.key2);
@@ -43,7 +43,7 @@ exports.myHandler = function(event, context, callback) {
 let's say you connected API Gateway, (using serverless maybe),
 as Lambda Proxy. and wanna build some Restful API with that.
 
-```
+```js
 exports.myHandler = function(event, context, callback) {
   if (
     event.path === '/api/someapi'
@@ -94,7 +94,7 @@ inspired by [Grape](https://github.com/ruby-grape/grape) a lot,since we really l
 
 ## Corgi Example
 
-```
+```typescript
 export const routes: Routes = [
   new Namespace('/api/:userId', {
     params: {
