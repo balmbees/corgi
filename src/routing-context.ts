@@ -51,7 +51,7 @@ export class RoutingContext {
     // Query Params
     if (groupByIn['query']) {
       const res = Joi.validate(
-        this.request.queryStringParameters,
+        this.request.queryStringParameters || {},
         Joi.object().keys(groupByIn['query']),
         DefaultJoiValidateOptions,
       );

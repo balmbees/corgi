@@ -3,7 +3,7 @@ export interface Event {
   path: string;
   httpMethod: string;
   headers: EventHeaders;
-  queryStringParameters: EventQueryStringParameters;
+  queryStringParameters?: EventQueryStringParameters;
   pathParameters?: EventPathParameters;
   stageVariables?: EventStageVariables;
   requestContext?: {
