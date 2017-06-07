@@ -96,11 +96,16 @@ export class RoutingContext {
   }
 
   // Response Helpers
-  json(json: any, statusCode?: number): LambdaProxy.Response {
+  json(
+    json: any,
+    statusCode: number = 200,
+    headers: LambdaProxy.EventHeaders = {}
+  ): LambdaProxy.Response {
     return {
-      statusCode: statusCode || 200,
+      statusCode: statusCode,
       headers: {
-        'Content-Type': 'application/json; charset=utf-8'
+        'Content-Type': 'application/json; charset=utf-8',
+        ...headers,
       },
       body: JSON.stringify(json),
     };
