@@ -53,5 +53,25 @@ describe("RoutingContext", () => {
       })
     });
   });
+
+  describe("#normalizeHeaders", () => {
+    it("should normalize headers", () => {
+      const context = new RoutingContext({
+        path: "/api/33/followings",
+        httpMethod: 'POST',
+        body: JSON.stringify({ foo: 'bar' }),
+        headers: {
+          'origin': 'https://bar.baz',
+          'User-Agent': 'Googlebot/1.0',
+        },
+        queryStringParameters: null,
+      } as any, {});
+
+      expect(context.headers).to.be.deep.eq({
+        'origin': 'https://bar.baz',
+        'user-agent': 'Googlebot/1.0',
+      });
+    })
+  })
 });
 
