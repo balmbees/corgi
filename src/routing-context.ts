@@ -14,12 +14,14 @@ const DefaultJoiValidateOptions = {
 // ---- RoutingContext
 export class RoutingContext {
   private validatedParams: { [key:string]: any };
+  private normalizedHeaders: { [key: string]: string };
 
   constructor(
     private request: LambdaProxy.Event,
     private pathParams: { [key:string]: string }
   ) {
     this.validatedParams = {};
+    this.normalizedHeaders = null;
   }
 
   validateAndUpdateParams(parameterDefinitionMap: ParameterDefinitionMap) {
@@ -77,6 +79,12 @@ export class RoutingContext {
     };
   }
 
+  get headers(): LambdaProxy.EventHeaders {
+    // normalize works lazily and should be cached for further use
+    return this.normalizedHeaders
+      || (this.normalizedHeaders = this.normalizeHeaders(this.request.headers));
+  }
+
   get params() {
     return this.validatedParams;
   }
@@ -88,13 +96,27 @@ export class RoutingContext {
   }
 
   // Response Helpers
-  json(json: any, statusCode?: number): LambdaProxy.Response {
+  json(
+    json: any,
+    statusCode: number = 200,
+    headers: LambdaProxy.EventHeaders = {}
+  ): LambdaProxy.Response {
     return {
-      statusCode: statusCode || 200,
+      statusCode: statusCode,
       headers: {
-        'Content-Type': 'application/json; charset=utf-8'
+        'Content-Type': 'application/json; charset=utf-8',
+        ...headers,
       },
       body: JSON.stringify(json),
     };
+  }
+
+  // Helper for normalizing request headers
+  private normalizeHeaders(headers: LambdaProxy.EventHeaders = {}) {
+    return Object.keys(headers).reduce((hash, key) => {
+      hash[key.toLowerCase()] = headers[key];
+
+      return hash;
+    }, Object.create(null));
   }
 }

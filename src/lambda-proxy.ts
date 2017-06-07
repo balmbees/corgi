@@ -33,24 +33,7 @@ export interface Event {
 }
 
 export interface EventHeaders {
-  "Accept"?: string;
-  "Accept-Encoding"?: string;
-  "Accept-Language"?: string;
-  "CloudFront-Forwarded-Proto"?: string;
-  "CloudFront-Is-Desktop-Viewer"?: string;
-  "CloudFront-Is-Mobile-Viewer"?: string;
-  "CloudFront-Is-SmartTV-Viewer"?: string;
-  "CloudFront-Is-Tablet-Viewer"?: string;
-  "CloudFront-Viewer-Country"?: string;
-  "Host"?: string;
-  "Upgrade-Insecure-Requests"?: string;
-  "User-Agent"?: string;
-  "Via"?: string;
-  "X-Amz-Cf-Id"?: string;
-  "X-Forwarded-For"?: string;
-  "X-Forwarded-Port"?: string;
-  "X-Forwarded-Proto"?: string;
-  "original-uri"?: string;
+  [key: string]: string;
 }
 
 export interface EventQueryStringParameters {
