@@ -9,7 +9,7 @@ import * as _string from 'underscore.string';
 
 const JoiToSwagger = require('joi-to-swagger');
 
-export class SwaggerRoute extends Route {
+export class SwaggerRoute extends Namespace {
   constructor(
     path: string,
     info: {
@@ -22,15 +22,33 @@ export class SwaggerRoute extends Route {
     },
     routes: Routes
   ) {
-    super({
-      path: path,
-      method: 'GET',
-      desc: 'Swagger Documentation API',
-      handler: async function() {
-        const docGenerator = new SwaggerGenerator();
-        const json = docGenerator.generateJSON(info, routes);
-        return this.json(json);
-      }
+    super(path, {
+      children: [
+        Route.OPTIONS('/', 'CORS Preflight Endpoint for Swagger Documentation API', {}, async function() {
+          return this.json('', 204, {
+            'Content-Type': 'application',
+            'Access-Control-Allow-Origin': this.headers.origin || '',
+            'Access-Control-Allow-Headers': [
+              'Content-Type',
+            ].join(', '),
+            'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
+            'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
+          });
+        }),
+
+        Route.GET('/', 'Swagger Documentation API', {}, async function() {
+          const docGenerator = new SwaggerGenerator();
+          const json = docGenerator.generateJSON(info, routes);
+          return this.json(json, 200, {
+            'Access-Control-Allow-Origin': this.headers.origin || '',
+            'Access-Control-Allow-Headers': [
+              'Content-Type',
+            ].join(', '),
+            'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
+            'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
+          });
+        }),
+      ],
     });
   }
 }

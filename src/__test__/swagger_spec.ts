@@ -57,9 +57,8 @@ describe("SwaggerRoute", () => {
       httpMethod: 'GET'
     } as any);
 
-    chai.expect(res).to.deep.eq({
+    chai.expect(res).to.include({
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({
           "info": {
               "title": "TEST API",
@@ -124,6 +123,43 @@ describe("SwaggerRoute", () => {
               }
           }
       })
+    });
+  });
+
+  it("should accept OPTIONS method for CORS Pre-flight request", async () => {
+    const router = new Router(routes);
+    const res = await router.resolve({
+      path: "/api/doc",
+      httpMethod: 'OPTIONS',
+      headers: {
+        'Origin': 'https://www.vingle.net'
+      }
+    } as any);
+
+    chai.expect(res.statusCode).to.be.eq(204);
+    chai.expect(res.headers).to.include({
+      'Access-Control-Allow-Origin': 'https://www.vingle.net',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
+      'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
+    });
+  });
+
+  it("should have CORS headers on GET method response", async () => {
+    const router = new Router(routes);
+    const res = await router.resolve({
+      path: "/api/doc",
+      httpMethod: 'GET',
+      headers: {
+        'Origin': 'https://foo.bar'
+      }
+    } as any);
+
+    chai.expect(res.headers).to.include({
+      'Access-Control-Allow-Origin': 'https://foo.bar',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
+      'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
     });
   });
 });
