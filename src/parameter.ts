@@ -17,4 +17,8 @@ export class Parameter {
   static Path(schema: Joi.Schema): ParameterDefinition {
     return { in: 'path', def: schema }
   }
+
+  static Body(schema: Joi.Schema): ParameterDefinition {
+    return { in: 'body', def: schema }
+  }
 }

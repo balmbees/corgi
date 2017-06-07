@@ -38,7 +38,7 @@ export class RoutingContext {
     if (groupByIn['path']) {
       const res = Joi.validate(
         this.pathParams,
-        Joi.object().keys(groupByIn['path']),
+        Joi.object(groupByIn['path']),
         DefaultJoiValidateOptions,
       );
       if (res.error) {
@@ -52,7 +52,7 @@ export class RoutingContext {
     if (groupByIn['query']) {
       const res = Joi.validate(
         this.request.queryStringParameters || {},
-        Joi.object().keys(groupByIn['query']),
+        Joi.object(groupByIn['query']),
         DefaultJoiValidateOptions,
       );
       if (res.error) {
@@ -61,6 +61,20 @@ export class RoutingContext {
         Object.assign(this.validatedParams, res.value);
       }
     }
+
+    // Body Params
+    if (groupByIn['body']) {
+      const res = Joi.validate(
+        this.bodyJSON,
+        Joi.object(groupByIn['body']),
+        DefaultJoiValidateOptions
+      );
+      if (res.error) {
+        throw res.error;
+      } else {
+        Object.assign(this.validatedParams, res.value);
+      }
+    };
   }
 
   get params() {
@@ -69,7 +83,8 @@ export class RoutingContext {
 
   // Body Parser
   get bodyJSON(): any {
-    return JSON.parse(this.request.body!);
+    // TODO Check Header Content-Type
+    return JSON.parse(this.request.body);
   }
 
   // Response Helpers

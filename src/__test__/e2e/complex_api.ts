@@ -36,13 +36,20 @@ describe("Calling complex API", () => {
             },
             children: [
               Route.POST('/', '', {
-                testId: Parameter.Query(Joi.number())
+                testId: Parameter.Query(Joi.number()),
+                update: Parameter.Body(
+                  Joi.object({
+                    fieldA: Joi.number()
+                  })
+                )
               }, async function() {
                 const userId = this.params.userId as number;
                 const testId = this.params.testId as number;
+
                 return this.json({
                   testId,
                   userId,
+                  update: this.params.update,
                 });
               }),
               Route.DELETE('/', '', {}, async function() {
@@ -59,6 +66,12 @@ describe("Calling complex API", () => {
     const res = await router.resolve({
       path: "/api/33/followings",
       httpMethod: 'POST',
+      body: JSON.stringify({
+        update: {
+          fieldA: 12345,
+          fieldB: 54321,
+        }
+      }),
       queryStringParameters: {
         testId: "12345",
         not_allowed_param: "xxx",
@@ -71,6 +84,9 @@ describe("Calling complex API", () => {
       body: JSON.stringify({
         testId: 12345,
         userId: 33,
+        update: {
+          fieldA: 12345,
+        }
       })
     });
   });
