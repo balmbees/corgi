@@ -39,7 +39,7 @@ export class RoutingContext {
     // Path Params
     if (groupByIn['path']) {
       const res = Joi.validate(
-        this.pathParams,
+        this.pathParams || {},
         Joi.object(groupByIn['path']),
         DefaultJoiValidateOptions,
       );
@@ -67,7 +67,7 @@ export class RoutingContext {
     // Body Params
     if (groupByIn['body']) {
       const res = Joi.validate(
-        this.bodyJSON,
+        this.bodyJSON || {},
         Joi.object(groupByIn['body']),
         DefaultJoiValidateOptions
       );
