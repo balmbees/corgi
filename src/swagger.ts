@@ -146,7 +146,7 @@ export class SwaggerGenerator {
     const operation =
       path.split('/').map((c) => {
         if (c.startsWith(':')) {
-          return '';
+          return _string.capitalize(c.slice(1));
         } else {
           return _string.capitalize(c);
         }
