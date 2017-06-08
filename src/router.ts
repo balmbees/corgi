@@ -2,6 +2,7 @@ import * as pathToRegexp from 'path-to-regexp';
 import * as LambdaProxy from './lambda-proxy';
 import { Route } from './route';
 import { Routes, Namespace } from './namespace';
+import { RootNamespace } from './root-namespace';
 import { RoutingContext } from './routing-context';
 import { ParameterInputType } from './parameter';
 
@@ -44,7 +45,9 @@ export class Router {
   private flattenRoutes: Array<Routes>;
 
   constructor(routes: Routes) {
-    this.flattenRoutes = flattenRoutes(routes);
+    this.flattenRoutes = flattenRoutes([
+      new RootNamespace(routes)
+    ]);
   }
 
   handler() {

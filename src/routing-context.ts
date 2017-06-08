@@ -24,6 +24,10 @@ export class RoutingContext {
     this.normalizedHeaders = null;
   }
 
+  get requestId() {
+    return this.request.requestContext.requestId;
+  }
+
   validateAndUpdateParams(parameterDefinitionMap: ParameterDefinitionMap) {
     const groupByIn: {
       [key: string]: { [key: string]: Joi.Schema }

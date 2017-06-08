@@ -24,7 +24,7 @@ export class Namespace {
 }
 
 // if it's void, it's failed to handler error
-export type ExceptionHandler = (this: RoutingContext, error: any) => Promise<Response | void>;
+export type ExceptionHandler = (this: RoutingContext, error: Error) => Promise<Response | void>;
 
 export interface NamespaceOptions {
   before?: (this: RoutingContext) => Promise<void>;
