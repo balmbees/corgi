@@ -43,6 +43,7 @@ describe("SwaggerRoute", () => {
           version: "1.0.0",
         },
         host: "www.vingle.net",
+        schemas: ['https'],
         basePath: "/",
       },
       _routes
@@ -57,9 +58,8 @@ describe("SwaggerRoute", () => {
       httpMethod: 'GET'
     } as any);
 
-    chai.expect(res).to.include({
-      statusCode: 200,
-      body: JSON.stringify({
+    chai.expect(res.statusCode).to.eq(200)
+    chai.expect(JSON.parse(res.body)).to.deep.eq({
           "info": {
               "title": "TEST API",
               "version": "1.0.0"
@@ -68,6 +68,9 @@ describe("SwaggerRoute", () => {
           "produces": ["application/json; charset=utf-8"],
           "host": "www.vingle.net",
           "basePath": "/",
+          "schemas": [
+            "https"
+          ],
           "tags": [],
           "paths": {
               "/api/{userId}": {
@@ -92,7 +95,7 @@ describe("SwaggerRoute", () => {
                               "description": "Success"
                           }
                       },
-                      "operationId": "GetApi"
+                      "operationId": "GetApiUserId"
                   }
               },
               "/api/a": {
@@ -122,7 +125,6 @@ describe("SwaggerRoute", () => {
                   }
               }
           }
-      })
     });
   });
 
@@ -182,7 +184,7 @@ describe(SwaggerGenerator.name, () => {
           '/users/:userId/interests/:interest',
           'GET',
         )
-      ).to.eq('GetUsersInterests');
+      ).to.eq('GetUsersUserIdInterestsInterest');
     });
   });
 });
