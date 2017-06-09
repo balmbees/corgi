@@ -43,6 +43,7 @@ describe("SwaggerRoute", () => {
           version: "1.0.0",
         },
         host: "www.vingle.net",
+        schemas: ['https'],
         basePath: "/",
       },
       _routes
@@ -67,6 +68,9 @@ describe("SwaggerRoute", () => {
           "produces": ["application/json; charset=utf-8"],
           "host": "www.vingle.net",
           "basePath": "/",
+          "schemas": [
+            "https"
+          ],
           "tags": [],
           "paths": {
               "/api/{userId}": {

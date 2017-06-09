@@ -19,6 +19,7 @@ export class SwaggerRoute extends Namespace {
       },
       host: string;
       basePath: string;
+      schemas: Array<'http' | 'https'>;
     },
     routes: Routes
   ) {
@@ -64,6 +65,7 @@ export class SwaggerGenerator {
       },
       host: string;
       basePath: string;
+      schemas: Array<'http' | 'https'>;
     }, routes: Routes
   ): any {
     const flattenedRoutes = flattenRoutes(routes);
@@ -131,6 +133,7 @@ export class SwaggerGenerator {
       ],
       host: info.host,
       basePath: info.basePath,
+      schemas: info.schemas,
       tags: tags,
       paths: paths,
     };
