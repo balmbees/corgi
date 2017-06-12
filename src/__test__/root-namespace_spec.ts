@@ -29,19 +29,14 @@ describe("RootNamespace", () => {
         }
       } as any);
       console.log(JSON.stringify(res, null, 2));
-      expect(res).to.deep.eq({
-        "statusCode": 500,
-        "headers": {
-          "Content-Type": "application/json; charset=utf-8"
-        },
-        "body": JSON.stringify(
-          {
-            errors: [
-              { id: 'request-id', message: 'TEST ERROR' }
-            ]
-          }
-        )
+      expect(JSON.parse(res["body"])).to.deep.eq({
+        'error':{
+          'id':'request-id',
+          'summary':'Ooops something went wrong',
+          'message':'TEST ERROR'
+        }
       });
+      expect(res.statusCode).to.be.eq(500);
     });
   });
 });
