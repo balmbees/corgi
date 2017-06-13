@@ -11,7 +11,7 @@ describe("RoutingContext", () => {
   describe("#validateAndUpdateParams", () => {
     it("should parse and validate JsonBody params", () => {
       const context = new RoutingContext({
-        path: "/api/33/followings",
+        path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
         httpMethod: 'POST',
         body: JSON.stringify({
           update: {
@@ -25,24 +25,29 @@ describe("RoutingContext", () => {
         queryStringParameters: {
           testId: "12345",
           not_allowed_param: "xxx",
+          encodedParam: "%ED%94%BD%EC%8B%9C",
         }
       } as any, {
-        userId: "33"
+        userId: "33",
+        interest: "%ED%94%BD%EC%8B%9C",
       });
 
       context.validateAndUpdateParams({
         testId: Parameter.Query(Joi.number()),
+        encodedParam: Parameter.Query(Joi.string()),
         update: Parameter.Body(Joi.object({
           fieldA: Joi.number(),
           fieldC: Joi.object({
             c: Joi.number()
           })
         })),
-        userId: Parameter.Path(Joi.number())
+        userId: Parameter.Path(Joi.number()),
+        interest: Parameter.Path(Joi.strict()),
       });
 
       expect(context.params).to.deep.eq({
         testId: 12345,
+        encodedParam: "픽시",
         update: {
           fieldA: 12345,
           fieldC: {
@@ -50,6 +55,7 @@ describe("RoutingContext", () => {
           }
         },
         userId: 33,
+        interest: "픽시",
       })
     });
   });

@@ -28,6 +28,16 @@ export class RoutingContext {
     return this.request.requestContext.requestId;
   }
 
+  private decodeURI(object: { [key: string]: any }) {
+    return _.mapValues(object, (value, key) => {
+      if (typeof value === 'string') {
+        return decodeURIComponent(value);
+      } else {
+        return value;
+      }
+    });
+  }
+
   validateAndUpdateParams(parameterDefinitionMap: ParameterDefinitionMap) {
     const groupByIn: {
       [key: string]: { [key: string]: Joi.Schema }
@@ -40,46 +50,28 @@ export class RoutingContext {
       groupByIn[schema.in][name] = schema.def;
     });
 
-    // Path Params
+    const _validate = (rawParams: any, schemaMap: { [key: string]: Joi.Schema }) => {
+      const res = Joi.validate(
+        rawParams || {},
+        Joi.object(schemaMap),
+        DefaultJoiValidateOptions,
+      );
+
+      if (res.error) {
+        throw res.error;
+      } else {
+        Object.assign(this.validatedParams, res.value);
+      }
+    }
+
     if (groupByIn['path']) {
-      const res = Joi.validate(
-        this.pathParams || {},
-        Joi.object(groupByIn['path']),
-        DefaultJoiValidateOptions,
-      );
-      if (res.error) {
-        throw res.error;
-      } else {
-        Object.assign(this.validatedParams, res.value);
-      }
+      _validate(this.decodeURI(this.pathParams), groupByIn['path']);
     }
-
-    // Query Params
     if (groupByIn['query']) {
-      const res = Joi.validate(
-        this.request.queryStringParameters || {},
-        Joi.object(groupByIn['query']),
-        DefaultJoiValidateOptions,
-      );
-      if (res.error) {
-        throw res.error;
-      } else {
-        Object.assign(this.validatedParams, res.value);
-      }
+      _validate(this.decodeURI(this.request.queryStringParameters), groupByIn['query']);
     }
-
-    // Body Params
     if (groupByIn['body']) {
-      const res = Joi.validate(
-        this.bodyJSON || {},
-        Joi.object(groupByIn['body']),
-        DefaultJoiValidateOptions
-      );
-      if (res.error) {
-        throw res.error;
-      } else {
-        Object.assign(this.validatedParams, res.value);
-      }
+      _validate(this.bodyJSON, groupByIn['body']);
     };
   }
 
