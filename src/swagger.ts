@@ -27,7 +27,7 @@ export class SwaggerRoute extends Namespace {
       children: [
         Route.OPTIONS('/', 'CORS Preflight Endpoint for Swagger Documentation API', {}, async function() {
           return this.json('', 204, {
-            'Content-Type': 'application',
+            'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': this.headers.origin || '',
             'Access-Control-Allow-Headers': [
               'Content-Type',
