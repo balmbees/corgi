@@ -15,9 +15,8 @@ const DefaultJoiValidateOptions = {
 export class RoutingContext {
   private validatedParams: { [key:string]: any };
   private normalizedHeaders: { [key: string]: string };
-
   constructor(
-    private request: LambdaProxy.Event,
+    public readonly request: LambdaProxy.Event,
     private pathParams: { [key:string]: string }
   ) {
     this.validatedParams = {};

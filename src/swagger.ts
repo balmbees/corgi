@@ -1,6 +1,7 @@
 import { Route, HttpMethod} from './route';
 import { Routes, Namespace } from './namespace';
 import { RoutingContext } from './routing-context';
+import * as LambdaProxy from './lambda-proxy';
 import { flattenRoutes } from './router';
 
 import * as _ from 'lodash';
@@ -9,46 +10,36 @@ import * as _string from 'underscore.string';
 
 const JoiToSwagger = require('joi-to-swagger');
 
+import * as Swagger from 'swagger-schema-official';
+
 export class SwaggerRoute extends Namespace {
-  constructor(
-    path: string,
-    info: {
-      info: {
-        title: string;
-        version: string;
-      },
-      host: string;
-      basePath: string;
-      schemas: Array<'http' | 'https'>;
-    },
-    routes: Routes
-  ) {
+  constructor(path: string, info: Swagger.Info, routes: Routes) {
+
+    const CorsHeaders = function(origin: string) {
+      return {
+        'Access-Control-Allow-Origin': origin || '',
+        'Access-Control-Allow-Headers': [
+          'Content-Type',
+        ].join(', '),
+        'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
+        'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
+      };
+    }
+
     super(path, {
       children: [
-        Route.OPTIONS('/', 'CORS Preflight Endpoint for Swagger Documentation API', {}, async function() {
-          return this.json('', 204, {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': this.headers.origin || '',
-            'Access-Control-Allow-Headers': [
-              'Content-Type',
-            ].join(', '),
-            'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
-            'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
-          });
-        }),
+        Route.OPTIONS(
+          '/', 'CORS Preflight Endpoint for Swagger Documentation API', {},
+          async function() {
+            return this.json('', 204, CorsHeaders(this.headers.origin));
+          }),
 
-        Route.GET('/', 'Swagger Documentation API', {}, async function() {
-          const docGenerator = new SwaggerGenerator();
-          const json = docGenerator.generateJSON(info, routes);
-          return this.json(json, 200, {
-            'Access-Control-Allow-Origin': this.headers.origin || '',
-            'Access-Control-Allow-Headers': [
-              'Content-Type',
-            ].join(', '),
-            'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
-            'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
-          });
-        }),
+        Route.GET('/', 'Swagger Documentation API', {},
+          async function() {
+            const docGenerator = new SwaggerGenerator();
+            const json = docGenerator.generateJSON(info, this.request, routes);
+            return this.json(json, 200, CorsHeaders(this.headers.origin));
+          }),
       ],
     });
   }
@@ -57,63 +48,50 @@ export class SwaggerRoute extends Namespace {
 export class SwaggerGenerator {
   constructor() {}
 
-  generateJSON(
-    info: {
-      info: {
-        title: string;
-        version: string;
-      },
-      host: string;
-      basePath: string;
-      schemas: Array<'http' | 'https'>;
-    }, routes: Routes
-  ): any {
-    const flattenedRoutes = flattenRoutes(routes);
-    const paths: {
-      [path: string]: {
-        [method: string]: Path;
-      }
-    } = {};
+  generateJSON(info: Swagger.Info, request: LambdaProxy.Event, routes: Routes): Swagger.Spec {
+    const paths: { [pathName: string]: Swagger.Path } = {};
 
-    flattenedRoutes.forEach((routes) => {
+    flattenRoutes(routes).forEach((routes) => {
       const endRoute = (routes[routes.length - 1] as Route);
       const corgiPath = routes.map(r => r.path).join('');
       const swaggerPath = this.toSwaggerPath(corgiPath);
 
       if (!paths[swaggerPath]) {
-        paths[swaggerPath] = {}
+        paths[swaggerPath] = {} as Swagger.Path;
       }
-      paths[swaggerPath][endRoute.method.toLowerCase()] = {
+      const operation: Swagger.Operation = {
         description: endRoute.desc,
         produces: [
           "application/json; charset=utf-8"
         ],
-        parameters: _(routes).flatMap((route) => {
+        parameters: _.flatMap(routes, (route) => {
           if (route instanceof Namespace) {
             // Namespace only supports path
             return _.map(route.params, (schema, name) => {
               const { swagger } = JoiToSwagger(schema);
-              return {
+              const param: Swagger.PathParameter = {
                 in: 'path',
                 name: name,
                 description: '',
                 type: swagger.type,
                 required: true
-              } as Parameter;
+              };
+              return param;
             });
           } else {
             return _.map(route.params, (paramDef, name) => {
               const { swagger } = JoiToSwagger(paramDef.def);
-              return {
+              const param: Swagger.Parameter = {
                 in: paramDef.in,
                 name: name,
                 description: '',
                 type: swagger.type,
                 required: true
-              } as Parameter;
+              };
+              return param;
             });
           }
-        }).value(),
+        }),
         responses: {
           "200": {
             "description": "Success"
@@ -121,21 +99,49 @@ export class SwaggerGenerator {
         },
         operationId: this.routesToOperationId(corgiPath, endRoute.method),
       };
+
+      switch (endRoute.method) {
+        case 'GET': {
+          paths[swaggerPath].get = operation;
+        } break;
+        case 'PUT': {
+          paths[swaggerPath].put = operation;
+        } break;
+        case 'POST': {
+          paths[swaggerPath].post = operation;
+        } break;
+        case 'DELETE': {
+          paths[swaggerPath].delete = operation;
+        } break;
+        case 'OPTIONS': {
+          paths[swaggerPath].options = operation;
+        } break;
+        case 'HEAD': {
+          paths[swaggerPath].head = operation;
+        } break;
+      }
     });
 
-    const tags: Tag[] = [];
-
-    const swagger = {
-      info: info.info,
+    const swagger: Swagger.Spec = {
       swagger: "2.0",
+      info: info,
+      // externalDocs?: ExternalDocs;
+      host: request.headers["Host"],
+      basePath: `/${request.requestContext.stage}/`,
+      schemes: [
+        request.headers["X-Forwarded-Proto"]
+      ],
+      // consumes?: string[];
       produces: [
         "application/json; charset=utf-8",
       ],
-      host: info.host,
-      basePath: info.basePath,
-      schemas: info.schemas,
-      tags: tags,
-      paths: paths,
+      paths,
+      tags: [],
+      // definitions?: {[definitionsName: string]: Schema };
+      // parameters?: {[parameterName: string]: BodyParameter|QueryParameter};
+      // responses?: {[responseName: string]: Response };
+      // security?: Array<{[securityDefinitionName: string]: string[]}>;
+      // securityDefinitions?: { [securityDefinitionName: string]: Security};
     };
 
     return swagger;
@@ -157,30 +163,4 @@ export class SwaggerGenerator {
 
     return `${_string.capitalize(method.toLowerCase())}${operation}`;
   }
-}
-
-interface Tag {
-  name: string;
-  description: string;
-}
-
-interface Path {
-  description: string;
-  produces: string[];
-  parameters?: Parameter[];
-  responses: { [key: string]: Response; },
-  tags?: string[];
-  operationId: string;
-}
-
-interface Parameter {
-  in: 'query' | 'header' | 'path' | 'formData' | 'body';
-  name: string;
-  description: string;
-  type: string;
-  required: boolean;
-}
-
-interface Response {
-  description: string;
 }

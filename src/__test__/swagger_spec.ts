@@ -12,6 +12,8 @@ import {
   SwaggerRoute,
 } from '../swagger';
 
+import * as LambdaProxy from '../lambda-proxy';
+
 import * as Joi from 'joi';
 
 import * as chai from 'chai';
@@ -38,93 +40,106 @@ describe("SwaggerRoute", () => {
     new SwaggerRoute(
       '/api/doc',
       {
-        info: {
-          title: "TEST API",
-          version: "1.0.0",
-        },
-        host: "www.vingle.net",
-        schemas: ['https'],
-        basePath: "/",
+        title: "TEST API",
+        version: "1.0.0",
       },
       _routes
     ),
     ..._routes,
   ]
 
+  const mockRequest: LambdaProxy.Event = {
+    path: "/api/doc",
+    httpMethod: "GET",
+    headers: {
+      "Host": "api.example.net",
+      "Origin": "https://foo.bar",
+      "X-Forwarded-Proto": "https",
+    },
+    requestContext: {
+      requestId: "stub",
+      stage: "prod",
+    }
+  } as any;
+
   it("should return JSON doc", async () => {
     const router = new Router(routes);
-    const res = await router.resolve({
-      path: "/api/doc",
-      httpMethod: 'GET'
-    } as any);
+    const res = await router.resolve(mockRequest);
 
     chai.expect(res.statusCode).to.eq(200)
     chai.expect(JSON.parse(res.body)).to.deep.eq({
-          "info": {
-              "title": "TEST API",
-              "version": "1.0.0"
-          },
-          "swagger": "2.0",
-          "produces": ["application/json; charset=utf-8"],
-          "host": "www.vingle.net",
-          "basePath": "/",
-          "schemas": [
-            "https"
-          ],
-          "tags": [],
-          "paths": {
-              "/api/{userId}": {
-                  "get": {
-                      "description": "a",
-                      "produces": ["application/json; charset=utf-8"],
-                      "parameters": [{
-                          "in": "path",
-                          "name": "userId",
-                          "description": "",
-                          "type": "number",
-                          "required": true
-                      }, {
-                          "in": "query",
-                          "name": "testerId",
-                          "description": "",
-                          "type": "number",
-                          "required": true
-                      }],
-                      "responses": {
-                          "200": {
-                              "description": "Success"
-                          }
-                      },
-                      "operationId": "GetApiUserId"
-                  }
-              },
-              "/api/a": {
-                  "post": {
-                      "description": "a",
-                      "produces": ["application/json; charset=utf-8"],
-                      "parameters": [],
-                      "responses": {
-                          "200": {
-                              "description": "Success"
-                          }
-                      },
-                      "operationId": "PostApiA"
-                  }
-              },
-              "/api/c": {
-                  "get": {
-                      "description": "a",
-                      "produces": ["application/json; charset=utf-8"],
-                      "parameters": [],
-                      "responses": {
-                          "200": {
-                              "description": "Success"
-                          }
-                      },
-                      "operationId": "GetApiC"
-                  }
+      "info": {
+        "title": "TEST API",
+        "version": "1.0.0"
+      },
+      "swagger": "2.0",
+      "produces": ["application/json; charset=utf-8"],
+      "host": "api.example.net",
+      "basePath": "/prod/",
+      "schemes": [
+        "https"
+      ],
+      "tags": [],
+      "paths": {
+        "/api/{userId}": {
+          "get": {
+            "description": "a",
+            "produces": ["application/json; charset=utf-8"],
+            "parameters": [{
+              "in": "path",
+              "name": "userId",
+              "description": "",
+              "type": "number",
+              "required": true
+            }, {
+              "in": "query",
+              "name": "testerId",
+              "description": "",
+              "type": "number",
+              "required": true
+            }],
+            "responses": {
+              "200": {
+                "description": "Success"
               }
+            },
+            "operationId": "GetApiUserId"
           }
+        },
+        "/api/a": {
+          "post": {
+            "description": "a",
+            "produces": ["application/json; charset=utf-8"],
+            "parameters": [],
+            "responses": {
+              "200": {
+                "description": "Success"
+              }
+            },
+            "operationId": "PostApiA"
+          }
+        },
+        "/api/c": {
+          "get": {
+            "description": "a",
+            "produces": ["application/json; charset=utf-8"],
+            "parameters": [],
+            "responses": {
+              "200": {
+                "description": "Success"
+              }
+            },
+            "operationId": "GetApiC"
+          }
+        }
+      }
+    });
+
+    chai.expect(res.headers).to.include({
+      'Access-Control-Allow-Origin': 'https://foo.bar',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
+      'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
     });
   });
 
@@ -146,24 +161,6 @@ describe("SwaggerRoute", () => {
       'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
     });
   });
-
-  it("should have CORS headers on GET method response", async () => {
-    const router = new Router(routes);
-    const res = await router.resolve({
-      path: "/api/doc",
-      httpMethod: 'GET',
-      headers: {
-        'Origin': 'https://foo.bar'
-      }
-    } as any);
-
-    chai.expect(res.headers).to.include({
-      'Access-Control-Allow-Origin': 'https://foo.bar',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
-      'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
-    });
-  });
 });
 
 describe(SwaggerGenerator.name, () => {
@@ -171,7 +168,7 @@ describe(SwaggerGenerator.name, () => {
     it("should convert regexPath to swaggerPath", () => {
       const generator = new SwaggerGenerator();
       expect(
-        generator.toSwaggerPath('/users/:userId/interests/:interest')
+      generator.toSwaggerPath('/users/:userId/interests/:interest')
       ).to.eq('/users/{userId}/interests/{interest}');
     });
   });
@@ -180,10 +177,10 @@ describe(SwaggerGenerator.name, () => {
     it("should build natural operationId from given path and method", () => {
       const generator = new SwaggerGenerator();
       expect(
-        generator.routesToOperationId(
-          '/users/:userId/interests/:interest',
-          'GET',
-        )
+      generator.routesToOperationId(
+      '/users/:userId/interests/:interest',
+      'GET',
+      )
       ).to.eq('GetUsersUserIdInterestsInterest');
     });
   });
