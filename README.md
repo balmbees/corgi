@@ -82,15 +82,15 @@ Ok, fairly good, since it's on lambda and api gateway so everything is managed a
 but surely, it will be really messy soon.
 
 there are several frameworks that built for this,
-(even the one that running express itself on lambda even though it's completely unnecessary to run HTTP Server on lambda, which is what exactly AWS APIGateway is for)
-[lambda-req](https://www.npmjs.com/package/lambda-req)
-[aws-serverless-express](https://github.com/awslabs/aws-serverless-express)
-[serverless-express](https://claudiajs.com/tutorials/serverless-express.html)
+(such as running express itself on lambda, eventhough which is what exactly AWS APIGateway is for)  
+[lambda-req](https://www.npmjs.com/package/lambda-req)  
+[aws-serverless-express](https://github.com/awslabs/aws-serverless-express)  
+[serverless-express](https://claudiajs.com/tutorials/serverless-express.html)  
 
 we did considered about using any kind of those express wrapping seriously,
 but we just felt like it would be nicer to just write one for Lambda.
 
-inspired by [Grape](https://github.com/ruby-grape/grape) a lot,since we really liked it
+inspired by [Grape](https://github.com/ruby-grape/grape) a lot, since we really liked it
 
 ## Corgi Example
 
