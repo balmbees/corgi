@@ -22,11 +22,9 @@ Whole thing supports async/await for sure, written in typescript also
 
 ## TODO
 1. HTTP Body Parser
-    1. Base64Encoding support (HTTP Body Parser)
+    Base64Encoding support
 2. View Framework
     should support Swagger Response schema
-3. HTTP Header Parser (getter)
-    should support HTTP Header Set / Get, ignoring cases
 
 ## Why do i need a extra Framework for Lambda?
 
@@ -82,10 +80,10 @@ Ok, fairly good, since it's on lambda and api gateway so everything is managed a
 but surely, it will be really messy soon.
 
 there are several frameworks that built for this,
-(such as running express itself on lambda, eventhough which is what exactly AWS APIGateway is for)  
-[lambda-req](https://www.npmjs.com/package/lambda-req)  
-[aws-serverless-express](https://github.com/awslabs/aws-serverless-express)  
-[serverless-express](https://claudiajs.com/tutorials/serverless-express.html)  
+(such as running express itself on lambda, eventhough which is what exactly AWS APIGateway is for)
+[lambda-req](https://www.npmjs.com/package/lambda-req)
+[aws-serverless-express](https://github.com/awslabs/aws-serverless-express)
+[serverless-express](https://claudiajs.com/tutorials/serverless-express.html)
 
 we did considered about using any kind of those express wrapping seriously,
 but we just felt like it would be nicer to just write one for Lambda.

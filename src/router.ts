@@ -2,7 +2,7 @@ import * as pathToRegexp from 'path-to-regexp';
 import * as LambdaProxy from './lambda-proxy';
 import { Route } from './route';
 import { Routes, Namespace } from './namespace';
-import { RootNamespace } from './root-namespace';
+import { RootNamespace, StandardErrorResponseBody } from './root-namespace';
 import { RoutingContext } from './routing-context';
 import { ParameterInputType } from './parameter';
 
@@ -52,9 +52,32 @@ export class Router {
 
   handler() {
     return (event: LambdaProxy.Event, context: LambdaProxy.Context) => {
-      this.resolve(event).then((response) => {
+      let timeoutHandle: NodeJS.Timer = null;
+
+      Promise.race([
+        this.resolve(event),
+        new Promise<LambdaProxy.Response>((resolve, reject) => {
+          timeoutHandle = setTimeout(() => {
+            const errorBody: StandardErrorResponseBody = {
+              error: {
+                id: event.requestContext.requestId,
+                message: `Service timeout. ${JSON.stringify(event)}`,
+              }
+            }
+            reject({
+              statusCode: 500,
+              headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+              },
+              body: JSON.stringify(errorBody),
+            });
+          }, context.getRemainingTimeInMillis() - 4)
+        }),
+      ]).then((response) => {
+        clearTimeout(timeoutHandle);
         context.succeed(response);
       }, (error) => {
+        clearTimeout(timeoutHandle);
         context.fail(error);
       });
     };
