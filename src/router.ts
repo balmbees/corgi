@@ -71,7 +71,7 @@ export class Router {
               },
               body: JSON.stringify(errorBody),
             });
-          }, context.getRemainingTimeInMillis() - 4)
+          }, context.getRemainingTimeInMillis() - 10)
         }),
       ]).then((response) => {
         clearTimeout(timeoutHandle);
