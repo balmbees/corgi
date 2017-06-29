@@ -22,11 +22,9 @@ Whole thing supports async/await for sure, written in typescript also
 
 ## TODO
 1. HTTP Body Parser
-    1. Base64Encoding support (HTTP Body Parser)
+    Base64Encoding support
 2. View Framework
     should support Swagger Response schema
-3. HTTP Header Parser (getter)
-    should support HTTP Header Set / Get, ignoring cases
 
 ## Why do i need a extra Framework for Lambda?
 
