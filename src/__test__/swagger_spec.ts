@@ -29,7 +29,7 @@ describe("SwaggerRoute", () => {
     }, async function(this: RoutingContext) {
       return this.json({});
     }),
-    Route.POST('/api/a', 'a', {}, async function(this: RoutingContext) {
+    Route.POST('/api/a', { desc: 'a', operationId: "GetAPIa" }, {}, async function(this: RoutingContext) {
       return this.json({});
     }),
     Route.GET('/api/c', 'a', {}, async function(this: RoutingContext) {
@@ -116,7 +116,7 @@ describe("SwaggerRoute", () => {
                 "description": "Success"
               }
             },
-            "operationId": "PostApiA"
+            "operationId": "GetAPIa",
           }
         },
         "/api/c": {
