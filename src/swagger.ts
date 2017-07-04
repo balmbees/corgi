@@ -97,7 +97,7 @@ export class SwaggerGenerator {
             "description": "Success"
           }
         },
-        operationId: this.routesToOperationId(corgiPath, endRoute.method),
+        operationId: endRoute.operationId || this.routesToOperationId(corgiPath, endRoute.method),
       };
 
       switch (endRoute.method) {
