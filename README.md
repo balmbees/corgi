@@ -26,7 +26,7 @@ Whole thing supports async/await for sure, written in typescript also
 2. View Framework
     should support Swagger Response schema
 
-## Why do i need a extra Framework for Lambda?
+## Why do i need an extra Framework for Lambda?
 
 So simple lambda handler looks like this
 
