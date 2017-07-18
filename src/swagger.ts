@@ -127,7 +127,7 @@ export class SwaggerGenerator {
       info: info,
       // externalDocs?: ExternalDocs;
       host: request.headers["Host"],
-      basePath: `/${request.requestContext.stage}/`,
+      basePath: `/${request.requestContext!.stage}/`,
       schemes: [
         request.headers["X-Forwarded-Proto"]
       ],

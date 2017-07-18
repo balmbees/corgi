@@ -14,7 +14,7 @@ const DefaultJoiValidateOptions = {
 // ---- RoutingContext
 export class RoutingContext {
   private validatedParams: { [key:string]: any };
-  private normalizedHeaders: { [key: string]: string };
+  private normalizedHeaders: { [key: string]: string } | null;
   constructor(
     public readonly request: LambdaProxy.Event,
     private pathParams: { [key:string]: string }
@@ -24,7 +24,7 @@ export class RoutingContext {
   }
 
   get requestId() {
-    return this.request.requestContext.requestId;
+    return this.request.requestContext!.requestId;
   }
 
   private decodeURI(object: { [key: string]: any }) {
@@ -67,7 +67,7 @@ export class RoutingContext {
       _validate(this.decodeURI(this.pathParams), groupByIn['path']);
     }
     if (groupByIn['query']) {
-      _validate(this.decodeURI(this.request.queryStringParameters), groupByIn['query']);
+      _validate(this.decodeURI(this.request.queryStringParameters!), groupByIn['query']);
     }
     if (groupByIn['body']) {
       _validate(this.bodyJSON, groupByIn['body']);
@@ -87,7 +87,7 @@ export class RoutingContext {
   // Body Parser
   get bodyJSON(): any {
     // TODO Check Header Content-Type
-    return JSON.parse(this.request.body);
+    return JSON.parse(this.request.body!);
   }
 
   // Response Helpers

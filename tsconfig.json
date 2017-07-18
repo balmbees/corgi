@@ -5,7 +5,9 @@
     "declaration": true,
     "noImplicitAny": true,
     "sourceMap": true,
-    "outDir": "dst"
+    "outDir": "dst",
+    "strictNullChecks": true,
+    "strict": true
   },
   "exclude": [
     "**/__test__/"
