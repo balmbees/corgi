@@ -54,7 +54,7 @@ export interface RouteSimplifiedOptions {
 export interface RouteOptions {
   path: string;
   method: HttpMethod;
-  desc: string;
+  desc?: string;
   /**
    * Human readable operationId of given route
    */

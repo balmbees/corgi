@@ -5,6 +5,8 @@ import {
   Routes,
   Router,
   Parameter,
+  Middleware,
+  Response,
 } from '../index';
 import * as Joi from 'joi';
 
@@ -12,10 +14,56 @@ import * as Joi from 'joi';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
-
+const expect = chai.expect;
 
 describe("Router", () => {
   describe("#handler", () => {
+    describe("middlewares", () => {
+      it("should run middlewares one by one in order", async () => {
+        const router = new Router([
+          Route.GET('/', '', {}, async function() {
+            return {
+              statusCode: 200,
+              headers: { 'Content-Type': 'application/json; charset=utf-8' },
+              body: this.request.body!,
+            };
+          })
+        ], {
+          middlewares: [
+            {
+              before: async function(routingContext: RoutingContext): Promise<Response | void> {
+                routingContext.request.body = "A";
+              },
+              after: async function(routingContext: RoutingContext, response: Response): Promise<Response> {
+                response.body += "C";
+                return response;
+              }
+            }, {
+              before: async function(routingContext: RoutingContext): Promise<Response | void> {
+                routingContext.request.body += "B";
+              },
+              after: async function(routingContext: RoutingContext, response: Response): Promise<Response> {
+                response.body += "D";
+                return response;
+              }
+            }
+          ]
+        });
+
+        const res = await router.resolve({
+          path: '/',
+          httpMethod: 'GET',
+          queryStringParameters: {
+          },
+          requestContext: {
+            "requestId": "request-id",
+          }
+        } as any);
+
+        expect(res.body).to.eq("ABDC");
+      });
+    });
+
     it("should raise timeout if it's really get delayed", async () => {
       const router = new Router([
         Route.GET('/', '', {}, async function() {

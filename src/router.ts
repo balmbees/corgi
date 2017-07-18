@@ -1,12 +1,13 @@
 import * as pathToRegexp from 'path-to-regexp';
+import * as _ from 'lodash';
+
 import * as LambdaProxy from './lambda-proxy';
 import { Route } from './route';
 import { Routes, Namespace } from './namespace';
 import { RootNamespace, StandardErrorResponseBody } from './root-namespace';
 import { RoutingContext } from './routing-context';
 import { ParameterInputType } from './parameter';
-
-import * as _ from 'lodash';
+import { Middleware } from './middleware';
 
 // ---- Router
 
@@ -41,18 +42,22 @@ export function flattenRoute(parents: Array<Route | Namespace>, route: Route | N
   }
 }
 
+
 export class Router {
   private flattenRoutes: Array<Routes>;
+  private middlewares: Middleware[];
 
-  constructor(routes: Routes) {
+  constructor(routes: Routes, options: { middlewares?: Middleware[] } = {}) {
     this.flattenRoutes = flattenRoutes([
       new RootNamespace(routes)
     ]);
+
+    this.middlewares = options.middlewares || [];
   }
 
   handler() {
     return (event: LambdaProxy.Event, context: LambdaProxy.Context) => {
-      let timeoutHandle: NodeJS.Timer = null;
+      let timeoutHandle: NodeJS.Timer | null = null;
 
       Promise.race([
         this.resolve(event),
@@ -60,7 +65,7 @@ export class Router {
           timeoutHandle = setTimeout(() => {
             const errorBody: StandardErrorResponseBody = {
               error: {
-                id: event.requestContext.requestId,
+                id: event.requestContext!.requestId,
                 message: `Service timeout. ${JSON.stringify(event)}`,
               }
             }
@@ -74,10 +79,12 @@ export class Router {
           }, context.getRemainingTimeInMillis() - 10)
         }),
       ]).then((response) => {
-        clearTimeout(timeoutHandle);
+        if (timeoutHandle)
+          clearTimeout(timeoutHandle);
         context.succeed(response);
       }, (error) => {
-        clearTimeout(timeoutHandle);
+        if (timeoutHandle)
+          clearTimeout(timeoutHandle);
         context.fail(error);
       });
     };
@@ -103,6 +110,7 @@ export class Router {
           });
 
           const routingContext = new RoutingContext(event, pathParams);
+          const router = this;
 
           const stepRoute = async function(currentRoute: Route | Namespace, nextRoutes: Routes) : Promise<LambdaProxy.Response> {
             if (currentRoute instanceof Namespace) {
@@ -124,7 +132,7 @@ export class Router {
                   await namespace.before.call(routingContext);
                 }
                 return await stepRoute(nextRoutes[0], nextRoutes.slice(1));
-              } catch(e) {
+              } catch (e) {
                 if (namespace.exceptionHandler) {
                   const res = await namespace.exceptionHandler.call(routingContext, e);
                   if (!res) {
@@ -137,12 +145,25 @@ export class Router {
                   throw e; // Just rethrow to parent handler
                 }
               }
-            } else if (currentRoute instanceof Route) {
+            } else {
               // Parameter Validation
-              routingContext.validateAndUpdateParams(currentRoute.params);
+              routingContext.validateAndUpdateParams(currentRoute.params || {});
+
+              // Run before middlewares
+              for (const middleware of router.middlewares) {
+                if (middleware.before)
+                  await middleware.before(routingContext);
+              }
 
               // Actual Handler
-              return await currentRoute.handler.call(routingContext);
+              let res = await currentRoute.handler.call(routingContext);
+
+              // Run after middlewares
+              for (const middleware of _.reverse(router.middlewares)) {
+                if (middleware.after)
+                  res = await middleware.after(routingContext, res);
+              }
+              return res;
             }
           }
 

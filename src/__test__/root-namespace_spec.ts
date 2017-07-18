@@ -33,7 +33,7 @@ describe("RootNamespace", () => {
         'error':{
           'id':'request-id',
           'summary':'Ooops something went wrong',
-          'message':'TEST ERROR'
+          'message':'Error : TEST ERROR'
         }
       });
       expect(res.statusCode).to.be.eq(500);
