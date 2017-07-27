@@ -5,14 +5,14 @@ import {
   Routes,
   Router,
   Parameter,
-} from '../index';
+} from '../../index';
 
 import {
   SwaggerGenerator,
   SwaggerRoute,
-} from '../swagger';
+} from '../index';
 
-import * as LambdaProxy from '../lambda-proxy';
+import * as LambdaProxy from '../../lambda-proxy';
 
 import * as Joi from 'joi';
 
@@ -26,6 +26,9 @@ describe("SwaggerRoute", () => {
     Route.GET('/api/:userId', 'a', {
       userId: Parameter.Path(Joi.number()),
       testerId: Parameter.Query(Joi.number().required()),
+      user: Parameter.Body(Joi.object({
+        name: Joi.string().required(),
+      }))
     }, async function(this: RoutingContext) {
       return this.json({});
     }),
@@ -66,7 +69,7 @@ describe("SwaggerRoute", () => {
     const router = new Router(routes);
     const res = await router.resolve(mockRequest);
 
-    chai.expect(res.statusCode).to.eq(200)
+    chai.expect(res.statusCode).to.eq(200);
     chai.expect(JSON.parse(res.body)).to.deep.eq({
       "info": {
         "title": "TEST API",
@@ -97,7 +100,25 @@ describe("SwaggerRoute", () => {
               "description": "",
               "type": "number",
               "required": true
-            }],
+            }, {
+              "description": "",
+              "in": "body",
+              "name": "user",
+              "required": true,
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "type": "object"
+              }
+            }
+          ],
             "responses": {
               "200": {
                 "description": "Success"

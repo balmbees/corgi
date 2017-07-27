@@ -1,16 +1,16 @@
-import { Route, HttpMethod} from './route';
-import { Routes, Namespace } from './namespace';
-import { RoutingContext } from './routing-context';
-import * as LambdaProxy from './lambda-proxy';
-import { flattenRoutes } from './router';
+import { Route, HttpMethod} from '../route';
+import { Routes, Namespace } from '../namespace';
+import { RoutingContext } from '../routing-context';
+import * as LambdaProxy from '../lambda-proxy';
+import { flattenRoutes } from '../router';
 
 import * as _ from 'lodash';
 import * as Joi from 'joi';
 import * as _string from 'underscore.string';
-
-const JoiToSwagger = require('joi-to-swagger');
-
 import * as Swagger from 'swagger-schema-official';
+
+import JoiToJSONSchema = require("joi-to-json-schema");
+import JoiToSwagger = require("joi-to-swagger");
 
 export class SwaggerRoute extends Namespace {
   constructor(path: string, info: Swagger.Info, routes: Routes) {
@@ -80,15 +80,30 @@ export class SwaggerGenerator {
             });
           } else {
             return _.map(route.params, (paramDef, name) => {
-              const { swagger } = JoiToSwagger(paramDef.def);
-              const param: Swagger.Parameter = {
-                in: paramDef.in,
-                name: name,
-                description: '',
-                type: swagger.type,
-                required: true
-              };
-              return param;
+              if (paramDef.in === "body") {
+                const JSONSchema = JoiToJSONSchema(paramDef.def, (object => {
+                  delete object.patterns;
+                  return object;
+                }));
+                const param: Swagger.Parameter = {
+                  in: paramDef.in,
+                  name: name,
+                  description: '',
+                  schema: JSONSchema,
+                  required: true
+                };
+                return param;
+              } else {
+                const { swagger } = JoiToSwagger(paramDef.def);
+                const param: Swagger.Parameter = {
+                  in: paramDef.in,
+                  name: name,
+                  description: '',
+                  type: swagger.type,
+                  required: true
+                };
+                return param;
+              }
             });
           }
         }),
