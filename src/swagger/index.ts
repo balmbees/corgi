@@ -97,6 +97,11 @@ export class SwaggerGenerator {
                   name: name,
                   description: '',
                 }, swagger);
+
+                if (paramDef.in === 'path') {
+                  param.required = true;
+                }
+
                 return param;
               }
             });

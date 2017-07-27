@@ -102,7 +102,8 @@ describe("SwaggerRoute", () => {
                       "name":"userId",
                       "description":"",
                       "type":"number",
-                      "format":"float"
+                      "format":"float",
+                      "required": true
                   },
                   {
                       "in":"query",
