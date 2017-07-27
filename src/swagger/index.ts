@@ -81,27 +81,22 @@ export class SwaggerGenerator {
           } else {
             return _.map(route.params, (paramDef, name) => {
               if (paramDef.in === "body") {
-                const JSONSchema = JoiToJSONSchema(paramDef.def, (object => {
-                  delete object.patterns;
-                  return object;
-                }));
-                const param: Swagger.Parameter = {
-                  in: paramDef.in,
-                  name: name,
-                  description: '',
-                  schema: JSONSchema,
-                  required: true
-                };
-                return param;
-              } else {
                 const { swagger } = JoiToSwagger(paramDef.def);
                 const param: Swagger.Parameter = {
                   in: paramDef.in,
                   name: name,
                   description: '',
-                  type: swagger.type,
+                  schema: swagger,
                   required: true
                 };
+                return param;
+              } else {
+                const { swagger } = JoiToSwagger(paramDef.def);
+                const param: Swagger.Parameter = Object.assign({
+                  in: paramDef.in,
+                  name: name,
+                  description: '',
+                }, swagger);
                 return param;
               }
             });

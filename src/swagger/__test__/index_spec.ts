@@ -26,8 +26,12 @@ describe("SwaggerRoute", () => {
     Route.GET('/api/:userId', 'a', {
       userId: Parameter.Path(Joi.number()),
       testerId: Parameter.Query(Joi.number().required()),
+      userIds: Parameter.Query(Joi.array().items(Joi.number())),
       user: Parameter.Body(Joi.object({
         name: Joi.string().required(),
+        tags: Joi.array().items(Joi.object({
+          name: Joi.string()
+        }), Joi.string())
       }))
     }, async function(this: RoutingContext) {
       return this.json({});
@@ -70,90 +74,128 @@ describe("SwaggerRoute", () => {
     const res = await router.resolve(mockRequest);
 
     chai.expect(res.statusCode).to.eq(200);
+    console.log(res.body);
     chai.expect(JSON.parse(res.body)).to.deep.eq({
-      "info": {
-        "title": "TEST API",
-        "version": "1.0.0"
+      "swagger":"2.0",
+      "info":{
+          "title":"TEST API",
+          "version":"1.0.0"
       },
-      "swagger": "2.0",
-      "produces": ["application/json; charset=utf-8"],
-      "host": "api.example.net",
-      "basePath": "/prod/",
-      "schemes": [
-        "https"
+      "host":"api.example.net",
+      "basePath":"/prod/",
+      "schemes":[
+          "https"
       ],
-      "tags": [],
-      "paths": {
-        "/api/{userId}": {
-          "get": {
-            "description": "a",
-            "produces": ["application/json; charset=utf-8"],
-            "parameters": [{
-              "in": "path",
-              "name": "userId",
-              "description": "",
-              "type": "number",
-              "required": true
-            }, {
-              "in": "query",
-              "name": "testerId",
-              "description": "",
-              "type": "number",
-              "required": true
-            }, {
-              "description": "",
-              "in": "body",
-              "name": "user",
-              "required": true,
-              "schema": {
-                "additionalProperties": false,
-                "properties": {
-                  "name": {
-                    "type": "string"
+      "produces":[
+          "application/json; charset=utf-8"
+      ],
+      "paths":{
+          "/api/{userId}":{
+            "get":{
+                "description":"a",
+                "produces":[
+                  "application/json; charset=utf-8"
+                ],
+                "parameters":[
+                  {
+                      "in":"path",
+                      "name":"userId",
+                      "description":"",
+                      "type":"number",
+                      "format":"float"
+                  },
+                  {
+                      "in":"query",
+                      "name":"testerId",
+                      "description":"",
+                      "type":"number",
+                      "format":"float"
+                  },
+                  {
+                      "in":"query",
+                      "name":"userIds",
+                      "description":"",
+                      "type":"array",
+                      "items":{
+                        "type":"number",
+                        "format":"float"
+                      }
+                  },
+                  {
+                      "in":"body",
+                      "name":"user",
+                      "description":"",
+                      "schema":{
+                        "type":"object",
+                        "required":[
+                            "name"
+                        ],
+                        "properties":{
+                            "name":{
+                              "type":"string"
+                            },
+                            "tags":{
+                              "type":"array",
+                              "items":{
+                                  "type":"object",
+                                  "properties":{
+                                    "name":{
+                                        "type":"string"
+                                    }
+                                  }
+                              }
+                            }
+                        }
+                      },
+                      "required":true
+                  }
+                ],
+                "responses":{
+                  "200":{
+                      "description":"Success"
                   }
                 },
-                "required": [
-                  "name"
-                ],
-                "type": "object"
-              }
+                "operationId":"GetApiUserId"
             }
-          ],
-            "responses": {
-              "200": {
-                "description": "Success"
-              }
-            },
-            "operationId": "GetApiUserId"
+          },
+          "/api/a":{
+            "post":{
+                "description":"a",
+                "produces":[
+                  "application/json; charset=utf-8"
+                ],
+                "parameters":[
+
+                ],
+                "responses":{
+                  "200":{
+                      "description":"Success"
+                  }
+                },
+                "operationId":"GetAPIa"
+            }
+          },
+          "/api/c":{
+            "get":{
+                "description":"a",
+                "produces":[
+                  "application/json; charset=utf-8"
+                ],
+                "parameters":[
+
+                ],
+                "responses":{
+                  "200":{
+                      "description":"Success"
+                  }
+                },
+                "operationId":"GetApiC"
+            }
           }
-        },
-        "/api/a": {
-          "post": {
-            "description": "a",
-            "produces": ["application/json; charset=utf-8"],
-            "parameters": [],
-            "responses": {
-              "200": {
-                "description": "Success"
-              }
-            },
-            "operationId": "GetAPIa",
-          }
-        },
-        "/api/c": {
-          "get": {
-            "description": "a",
-            "produces": ["application/json; charset=utf-8"],
-            "parameters": [],
-            "responses": {
-              "200": {
-                "description": "Success"
-              }
-            },
-            "operationId": "GetApiC"
-          }
-        }
-      }
+      },
+      "tags":[
+
+      ]
     });
 
     chai.expect(res.headers).to.include({
