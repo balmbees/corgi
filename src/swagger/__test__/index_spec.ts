@@ -24,14 +24,15 @@ const expect = chai.expect;
 describe("SwaggerRoute", () => {
   const _routes: Routes = [
     Route.GET('/api/:userId', 'a', {
-      userId: Parameter.Path(Joi.number()),
+      userId: Parameter.Path(Joi.number().integer()),
       testerId: Parameter.Query(Joi.number().required()),
       userIds: Parameter.Query(Joi.array().items(Joi.number())),
       user: Parameter.Body(Joi.object({
         name: Joi.string().required(),
         tags: Joi.array().items(Joi.object({
           name: Joi.string()
-        }), Joi.string())
+        }), Joi.string()),
+        test: Joi.object(),
       }))
     }, async function(this: RoutingContext) {
       return this.json({});
@@ -75,6 +76,8 @@ describe("SwaggerRoute", () => {
 
     chai.expect(res.statusCode).to.eq(200);
 
+    console.log(res.body);
+
     chai.expect(JSON.parse(res.body)).to.deep.eq({
       "swagger":"2.0",
       "info":{
@@ -101,8 +104,7 @@ describe("SwaggerRoute", () => {
                       "in":"path",
                       "name":"userId",
                       "description":"",
-                      "type":"number",
-                      "format":"float",
+                      "type":"integer",
                       "required": true
                   },
                   {
@@ -110,7 +112,6 @@ describe("SwaggerRoute", () => {
                       "name":"testerId",
                       "description":"",
                       "type":"number",
-                      "format":"float"
                   },
                   {
                       "in":"query",
@@ -119,7 +120,6 @@ describe("SwaggerRoute", () => {
                       "type":"array",
                       "items":{
                         "type":"number",
-                        "format":"float"
                       }
                   },
                   {
@@ -145,7 +145,11 @@ describe("SwaggerRoute", () => {
                                     }
                                   }
                               }
-                            }
+                            },
+                          "test": {
+                            "properties": {},
+                            "type": "object",
+                          },
                         }
                       },
                       "required":true

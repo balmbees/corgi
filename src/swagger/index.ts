@@ -12,6 +12,22 @@ import * as Swagger from 'swagger-schema-official';
 import JoiToJSONSchema = require("joi-to-json-schema");
 import JoiToSwagger = require("joi-to-swagger");
 
+function deepOmit(obj: any, keysToOmit: string[]) {
+  var keysToOmitIndex = _.keyBy(keysToOmit); // create an index object of the keys that should be omitted
+
+  function omitFromObject(obj: any) { // the inner function which will be called recursivley
+    return _.transform(obj, function(result, value, key) { // transform to a new object
+      if (key in keysToOmitIndex) { // if the key is in the index skip it
+        return;
+      }
+
+      result[key] = _.isObject(value) ? omitFromObject(value) : value; // if the key is an object run it through the inner function - omitFromObject
+    })
+  }
+
+  return omitFromObject(obj); // return the inner function result
+}
+
 export class SwaggerRoute extends Namespace {
   constructor(path: string, info: Swagger.Info, routes: Routes) {
 
@@ -68,12 +84,12 @@ export class SwaggerGenerator {
           if (route instanceof Namespace) {
             // Namespace only supports path
             return _.map(route.params, (schema, name) => {
-              const { swagger } = JoiToSwagger(schema);
+              const joiSchema = JoiToJSONSchema(schema);
               const param: Swagger.PathParameter = {
                 in: 'path',
                 name: name,
                 description: '',
-                type: swagger.type,
+                type: joiSchema.type,
                 required: true
               };
               return param;
@@ -81,22 +97,22 @@ export class SwaggerGenerator {
           } else {
             return _.map(route.params, (paramDef, name) => {
               if (paramDef.in === "body") {
-                const { swagger } = JoiToSwagger(paramDef.def);
+                const joiSchema = JoiToJSONSchema(paramDef.def);
                 const param: Swagger.Parameter = {
                   in: paramDef.in,
                   name: name,
                   description: '',
-                  schema: swagger,
+                  schema: joiSchema,
                   required: true
                 };
                 return param;
               } else {
-                const { swagger } = JoiToSwagger(paramDef.def);
+                const joiSchema = JoiToJSONSchema(paramDef.def);
                 const param: Swagger.Parameter = Object.assign({
                   in: paramDef.in,
                   name: name,
                   description: '',
-                }, swagger);
+                }, joiSchema);
 
                 if (paramDef.in === 'path') {
                   param.required = true;
@@ -106,7 +122,7 @@ export class SwaggerGenerator {
               }
             });
           }
-        }),
+        }).map((param) => deepOmit(param, ["additionalProperties", "patterns"])) as any,
         responses: {
           "200": {
             "description": "Success"
@@ -136,6 +152,7 @@ export class SwaggerGenerator {
         } break;
       }
     });
+
 
     const swagger: Swagger.Spec = {
       swagger: "2.0",
