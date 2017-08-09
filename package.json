@@ -1,6 +1,6 @@
 {
   "name": "vingle-corgi",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
@@ -23,22 +23,6 @@
     "url": "https://github.com/balmbees/corgi/issues"
   },
   "homepage": "https://github.com/balmbees/corgi#readme",
-  "dependencies": {
-    "@types/joi": "10.4.0",
-    "@types/lodash": "4.14.65",
-    "@types/node": "7.0.27",
-    "@types/swagger-schema-official": "2.0.5",
-    "@types/underscore.string": "0.0.30",
-    "aws-xray-sdk-core": "1.1.2",
-    "joi": "10.5.2",
-    "joi-to-json-schema": "3.0.0",
-    "joi-to-swagger": "1.1.0",
-    "lodash": "4.17.4",
-    "path-to-regexp": "1.7.0",
-    "swagger-schema-official": "2.0.0-bab6bed",
-    "typescript": "2.3.4",
-    "underscore.string": "3.3.4"
-  },
   "devDependencies": {
     "@types/chai": "4.0.0",
     "@types/chai-as-promised": "0.0.31",
@@ -47,5 +31,23 @@
     "chai-as-promised": "6.0.0",
     "mocha": "3.4.2",
     "publish": "0.6.0"
+  },
+  "dependencies": {
+    "@types/joi": "10.4.0",
+    "@types/lodash": "4.14.65",
+    "@types/node": "7.0.27",
+    "@types/qs": "^6.5.0",
+    "@types/swagger-schema-official": "2.0.5",
+    "@types/underscore.string": "0.0.30",
+    "aws-xray-sdk-core": "1.1.2",
+    "joi": "10.5.2",
+    "joi-to-json-schema": "3.0.0",
+    "joi-to-swagger": "1.1.0",
+    "lodash": "4.17.4",
+    "path-to-regexp": "1.7.0",
+    "qs": "^6.5.0",
+    "swagger-schema-official": "2.0.0-bab6bed",
+    "typescript": "2.3.4",
+    "underscore.string": "3.3.4"
   }
 }

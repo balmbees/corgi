@@ -74,7 +74,7 @@ describe("SwaggerRoute", () => {
     const res = await router.resolve(mockRequest);
 
     chai.expect(res.statusCode).to.eq(200);
-    console.log(res.body);
+
     chai.expect(JSON.parse(res.body)).to.deep.eq({
       "swagger":"2.0",
       "info":{
