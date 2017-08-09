@@ -28,7 +28,7 @@ describe("RootNamespace", () => {
           "requestId": "request-id",
         }
       } as any);
-      console.log(JSON.stringify(res, null, 2));
+
       expect(JSON.parse(res["body"])).to.deep.eq({
         'error':{
           'id':'request-id',

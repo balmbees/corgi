@@ -26,6 +26,10 @@ describe("RoutingContext", () => {
           testId: "12345",
           not_allowed_param: "xxx",
           encodedParam: "%ED%94%BD%EC%8B%9C",
+          "arrayParameter[0]": "1",
+          "arrayParameter[1]": "2",
+          "arrayParameter[2]": "3",
+          "arrayParameter[3]": "4",
         }
       } as any, {
         userId: "33",
@@ -43,6 +47,7 @@ describe("RoutingContext", () => {
         })),
         userId: Parameter.Path(Joi.number()),
         interest: Parameter.Path(Joi.strict()),
+        arrayParameter: Parameter.Query(Joi.array().items(Joi.number().integer())),
       });
 
       expect(context.params).to.deep.eq({
@@ -56,6 +61,7 @@ describe("RoutingContext", () => {
         },
         userId: 33,
         interest: "픽시",
+        arrayParameter: [1, 2, 3, 4],
       })
     });
   });

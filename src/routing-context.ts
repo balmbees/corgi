@@ -1,6 +1,7 @@
 import * as LambdaProxy from './lambda-proxy';
 import * as Joi from 'joi';
 import * as _ from 'lodash';
+import * as qs from 'qs';
 
 import { ParameterDefinitionMap } from './parameter';
 
@@ -67,7 +68,9 @@ export class RoutingContext {
       _validate(this.decodeURI(this.pathParams), groupByIn['path']);
     }
     if (groupByIn['query']) {
-      _validate(this.decodeURI(this.request.queryStringParameters!), groupByIn['query']);
+      // API Gateway only support string parsing. but with this, now it would support Array<String> / Object<String, String> parsing too
+      const queryStringParameters = qs.parse(qs.stringify(this.request.queryStringParameters));
+      _validate(this.decodeURI(queryStringParameters), groupByIn['query']);
     }
     if (groupByIn['body']) {
       _validate(this.bodyJSON, groupByIn['body']);

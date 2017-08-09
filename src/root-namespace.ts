@@ -26,8 +26,6 @@ export class RootNamespace extends Namespace {
             message: `${error.name} : ${error.message}`,
           }
         };
-        console.log(`Error - ${this.requestId}\n${error.stack}`);
-
         return this.json(body, 500);
       },
       children
