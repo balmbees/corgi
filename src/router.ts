@@ -42,7 +42,6 @@ export function flattenRoute(parents: Array<Route | Namespace>, route: Route | N
   }
 }
 
-
 export class Router {
   private flattenRoutes: Array<Routes>;
   private middlewares: Middleware[];
@@ -85,7 +84,20 @@ export class Router {
       }, (error) => {
         if (timeoutHandle)
           clearTimeout(timeoutHandle);
-        context.fail(error);
+
+        const converted = Object.getOwnPropertyNames(error)
+          .reduce((hash, key) => {
+            hash[key] = error[key];
+            return hash;
+          }, {} as { [key: string]: any });
+
+        context.succeed({
+          statusCode: 500,
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          body: JSON.stringify({
+            "error": { "message": `${JSON.stringify(converted)}` }
+          }),
+        });
       });
     };
   }
