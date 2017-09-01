@@ -24,10 +24,7 @@ describe("RootNamespace", () => {
       const res = await router.resolve({
         path: '/test',
         httpMethod: 'GET',
-        requestContext: {
-          "requestId": "request-id",
-        }
-      } as any);
+      } as any, "request-id");
 
       expect(JSON.parse(res["body"])).to.deep.eq({
         'error':{

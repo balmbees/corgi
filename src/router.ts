@@ -59,12 +59,12 @@ export class Router {
       let timeoutHandle: NodeJS.Timer | null = null;
 
       Promise.race([
-        this.resolve(event),
+        this.resolve(event, context.awsRequestId),
         new Promise<LambdaProxy.Response>((resolve, reject) => {
           timeoutHandle = setTimeout(() => {
             const errorBody: StandardErrorResponseBody = {
               error: {
-                id: event.requestContext!.requestId,
+                id: context.awsRequestId,
                 message: `Service timeout. ${JSON.stringify(event)}`,
               }
             }
@@ -102,7 +102,7 @@ export class Router {
     };
   }
 
-  async resolve(event: LambdaProxy.Event): Promise<LambdaProxy.Response> {
+  async resolve(event: LambdaProxy.Event, requestId?: string): Promise<LambdaProxy.Response> {
     for (const flattenRoute of this.flattenRoutes) {
       const endRoute = (flattenRoute[flattenRoute.length - 1] as Route);
       const method = endRoute.method;
@@ -121,7 +121,7 @@ export class Router {
             pathParams[key.name] = match[index + 1];
           });
 
-          const routingContext = new RoutingContext(event, pathParams);
+          const routingContext = new RoutingContext(event, requestId, pathParams);
           const router = this;
 
           const stepRoute = async function(currentRoute: Route | Namespace, nextRoutes: Routes) : Promise<LambdaProxy.Response> {

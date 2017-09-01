@@ -55,16 +55,13 @@ describe("Router", () => {
           httpMethod: 'GET',
           queryStringParameters: {
           },
-          requestContext: {
-            "requestId": "request-id",
-          }
-        } as any);
+        } as any, "request-id");
 
         expect(res.body).to.eq("ABDC");
       });
     });
 
-    it.only("should raise timeout if it's really get delayed", async () => {
+    it("should raise timeout if it's really get delayed", async () => {
       const router = new Router([
         Route.GET('/', '', {}, async function() {
           await new Promise((resolve, reject) => {
@@ -85,9 +82,6 @@ describe("Router", () => {
             httpMethod: 'GET',
             queryStringParameters: {
             },
-            requestContext: {
-              "requestId": "request-id",
-            }
           } as any,
           {
             succeed: function(result?: Object) {
@@ -101,7 +95,8 @@ describe("Router", () => {
             },
             getRemainingTimeInMillis: function() {
               return 100;
-            }
+            },
+            awsRequestId: "request-id",
           } as any
         );
       });

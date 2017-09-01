@@ -5,7 +5,7 @@ import { Namespace, Routes } from './namespace';
 //  http://jsonapi.org/format/#error-objects
 export interface StandardErrorResponseBody {
   error: {
-    id: string;
+    id?: string;
     message: string;
     summary?: string;
     errors?: Array<{

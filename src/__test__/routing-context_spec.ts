@@ -31,7 +31,7 @@ describe("RoutingContext", () => {
           "arrayParameter[2]": "3",
           "arrayParameter[3]": "4",
         }
-      } as any, {
+      } as any, "request-id", {
         userId: "33",
         interest: "%ED%94%BD%EC%8B%9C",
       });
@@ -77,7 +77,7 @@ describe("RoutingContext", () => {
           'User-Agent': 'Googlebot/1.0',
         },
         queryStringParameters: null,
-      } as any, {});
+      } as any, "request-id", {});
 
       expect(context.headers).to.be.deep.eq({
         'origin': 'https://bar.baz',
@@ -95,7 +95,7 @@ describe("RoutingContext", () => {
           'Host': 'www.vingle.net',
         },
         queryStringParameters: null,
-      } as any, {});
+      } as any, "request-id", {});
 
 
       // HACK: setup trap for testing call count

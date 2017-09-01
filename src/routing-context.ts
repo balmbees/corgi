@@ -18,14 +18,11 @@ export class RoutingContext {
   private normalizedHeaders: { [key: string]: string } | null;
   constructor(
     public readonly request: LambdaProxy.Event,
+    public readonly requestId: string | undefined,
     private pathParams: { [key:string]: string }
   ) {
     this.validatedParams = {};
     this.normalizedHeaders = null;
-  }
-
-  get requestId() {
-    return this.request.requestContext!.requestId;
   }
 
   private decodeURI(object: { [key: string]: any }) {

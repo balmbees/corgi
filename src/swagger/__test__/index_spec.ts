@@ -65,18 +65,16 @@ describe("SwaggerRoute", () => {
       "X-Forwarded-Proto": "https",
     },
     requestContext: {
-      requestId: "stub",
       stage: "prod",
-    }
+    },
   } as any;
 
   it("should return JSON doc", async () => {
     const router = new Router(routes);
     const res = await router.resolve(mockRequest);
 
-    chai.expect(res.statusCode).to.eq(200);
-
     console.log(res.body);
+    chai.expect(res.statusCode).to.eq(200);
 
     chai.expect(JSON.parse(res.body)).to.deep.eq({
       "swagger":"2.0",
