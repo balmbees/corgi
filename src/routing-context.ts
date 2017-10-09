@@ -6,7 +6,7 @@ import * as qs from 'qs';
 import { ParameterDefinitionMap } from './parameter';
 
 //
-const DefaultJoiValidateOptions = {
+const DefaultJoiValidateOptions: Joi.ValidationOptions = {
   stripUnknown: true,
   presence: 'required',
   abortEarly: false,
