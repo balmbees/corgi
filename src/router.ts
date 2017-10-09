@@ -171,7 +171,7 @@ export class Router {
               let res = await currentRoute.handler.call(routingContext);
 
               // Run after middlewares
-              for (const middleware of _.reverse(router.middlewares)) {
+              for (const middleware of router.middlewares.slice().reverse()) {
                 if (middleware.after)
                   res = await middleware.after(routingContext, res);
               }
