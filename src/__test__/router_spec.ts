@@ -50,7 +50,19 @@ describe("Router", () => {
           ]
         });
 
-        const res = await router.resolve({
+        let res;
+
+        res = await router.resolve({
+          path: '/',
+          httpMethod: 'GET',
+          queryStringParameters: {
+          },
+        } as any, "request-id");
+
+        expect(res.body).to.eq("ABDC");
+
+        // should preserve middleware order
+        res = await router.resolve({
           path: '/',
           httpMethod: 'GET',
           queryStringParameters: {
