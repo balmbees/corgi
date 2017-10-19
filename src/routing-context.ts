@@ -16,6 +16,7 @@ const DefaultJoiValidateOptions: Joi.ValidationOptions = {
 export class RoutingContext {
   private validatedParams: { [key:string]: any };
   private normalizedHeaders: { [key: string]: string } | null;
+
   constructor(
     public readonly request: LambdaProxy.Event,
     public readonly requestId: string | undefined,

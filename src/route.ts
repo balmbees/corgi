@@ -16,6 +16,10 @@ export class Route {
   get params() { return this.options.params; }
   get operationId() { return this.options.operationId; }
 
+  public getMiddlewareMetadata<MiddlewareMetadata>(middlewareClass: any) : MiddlewareMetadata | undefined {
+    return this.options.middlewareMetadata && this.options.middlewareMetadata[middlewareClass];
+  }
+
   // Simplified Constructors
   static GET(path: string, descOrOptions: string | RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
     return this._factory(path, 'GET', descOrOptions, params, handler);
@@ -40,16 +44,25 @@ export class Route {
     if (typeof descOrOptions === "string") {
       descOrOptions = { desc: descOrOptions };
     }
-    return new this({ path, method, desc: descOrOptions.desc, operationId: descOrOptions.operationId, params, handler });
+    return new this({
+      path,
+      method,
+      desc: descOrOptions.desc,
+      operationId: descOrOptions.operationId,
+      middlewareMetadata: descOrOptions.middlewares || {},
+      params,
+      handler
+    });
   }
 }
 
 export interface RouteSimplifiedOptions {
   desc?: string;
   operationId?: string;
+  middlewares?: {
+    [middlewareClass: string]: any;
+  };
 }
-
-
 
 export interface RouteOptions {
   path: string;
@@ -59,6 +72,10 @@ export interface RouteOptions {
    * Human readable operationId of given route
    */
   operationId?: string;
+  middlewareMetadata?: {
+    [middlewareClass: string]: any;
+  };
+
   params?: ParameterDefinitionMap;
   handler: RouteHandler;
 }

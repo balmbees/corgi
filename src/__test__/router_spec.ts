@@ -6,6 +6,8 @@ import {
   Router,
   Parameter,
   Middleware,
+  MiddlewareBeforeOptions,
+  MiddlewareAfterOptions,
   Response,
 } from '../index';
 import * as Joi from 'joi';
@@ -31,20 +33,20 @@ describe("Router", () => {
         ], {
           middlewares: [
             {
-              before: async function(routingContext: RoutingContext): Promise<Response | void> {
-                routingContext.request.body = "A";
+              before: async function(options: MiddlewareBeforeOptions): Promise<Response | void> {
+                options.routingContext.request.body = "A";
               },
-              after: async function(routingContext: RoutingContext, response: Response): Promise<Response> {
-                response.body += "C";
-                return response;
+              after: async function (options: MiddlewareAfterOptions): Promise<Response> {
+                options.response.body += "C";
+                return options.response;
               }
             }, {
-              before: async function(routingContext: RoutingContext): Promise<Response | void> {
-                routingContext.request.body += "B";
+              before: async function (options: MiddlewareBeforeOptions): Promise<Response | void> {
+                options.routingContext.request.body += "B";
               },
-              after: async function(routingContext: RoutingContext, response: Response): Promise<Response> {
-                response.body += "D";
-                return response;
+              after: async function (options: MiddlewareAfterOptions): Promise<Response> {
+                options.response.body += "D";
+                return options.response;
               }
             }
           ]

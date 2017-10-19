@@ -164,18 +164,18 @@ export class Router {
               // Run before middlewares
               for (const middleware of router.middlewares) {
                 if (middleware.before)
-                  await middleware.before(routingContext);
+                  await middleware.before({ routingContext, currentRoute });
               }
 
               // Actual Handler
-              let res = await currentRoute.handler.call(routingContext);
+              let response = await currentRoute.handler.call(routingContext);
 
               // Run after middlewares
               for (const middleware of router.middlewares.slice().reverse()) {
                 if (middleware.after)
-                  res = await middleware.after(routingContext, res);
+                  response = await middleware.after({ routingContext, currentRoute, response });
               }
-              return res;
+              return response;
             }
           }
 

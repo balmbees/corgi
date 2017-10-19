@@ -1,6 +1,7 @@
-import { Middleware } from '../middleware';
+import { Middleware, MiddlewareBeforeOptions, MiddlewareAfterOptions } from '../middleware';
 import { RoutingContext } from '../routing-context';
 import { Response } from '../lambda-proxy';
+import { Route } from "../route";
 
 const AWSXRay = require("aws-xray-sdk-core");
 interface AWSXRaySegment {
@@ -12,8 +13,8 @@ export class XRayMiddleware implements Middleware {
   private segment: AWSXRaySegment | undefined;
 
   // runs before the application, if it returns Promise<Response>, Routes are ignored and return the response
-  async before(routingContext: RoutingContext): Promise<Response | void> {
-    const vingleTraceId = routingContext.headers['x-vingle-trace-id']
+  async before(options: MiddlewareBeforeOptions): Promise<Response | void> {
+    const vingleTraceId = options.routingContext.headers['x-vingle-trace-id']
     if (vingleTraceId) {
       const parentSeg = AWSXRay.resolveSegment(undefined);
       this.segment = parentSeg.addNewSubsegment("corgi-route") as AWSXRaySegment;
@@ -24,12 +25,12 @@ export class XRayMiddleware implements Middleware {
   }
 
   // runs after the application, should return response
-  async after(routingContext: RoutingContext, response: Response): Promise<Response> {
+  async after(options: MiddlewareAfterOptions): Promise<Response> {
     if (this.segment) {
       this.segment.close();
     }
     this.segment = undefined;
 
-    return response;
+    return options.response;
   }
 }
