@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import * as _string from 'underscore.string';
 import * as Swagger from 'swagger-schema-official';
 
-import JoiToJSONSchema = require("joi-to-json-schema");
+import JoiToJSONSchema = require("@vingle/joi-to-json-schema");
 
 function deepOmit(obj: any, keysToOmit: string[]) {
   var keysToOmitIndex = _.keyBy(keysToOmit); // create an index object of the keys that should be omitted
