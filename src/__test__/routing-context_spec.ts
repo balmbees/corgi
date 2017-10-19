@@ -10,7 +10,7 @@ const expect = chai.expect;
 describe("RoutingContext", () => {
   describe("#validateAndUpdateParams", () => {
     it("should parse and validate JsonBody params", () => {
-      const context = new RoutingContext({
+      const context = new RoutingContext({} as any, {
         path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
         httpMethod: 'POST',
         body: JSON.stringify({
@@ -68,7 +68,7 @@ describe("RoutingContext", () => {
 
   describe("#normalizeHeaders", () => {
     it("should normalize headers", () => {
-      const context = new RoutingContext({
+      const context = new RoutingContext({} as any, {
         path: "/api/33/followings",
         httpMethod: 'POST',
         body: JSON.stringify({ foo: 'bar' }),
@@ -86,7 +86,7 @@ describe("RoutingContext", () => {
     });
 
     it("should be called lazily / should be cached", () => {
-      const context = new RoutingContext({
+      const context = new RoutingContext({} as any, {
         path: "/api/wow/awesome",
         httpMethod: 'POST',
         body: JSON.stringify({ such: 'value' }),

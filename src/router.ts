@@ -44,6 +44,7 @@ export function flattenRoute(parents: Array<Route | Namespace>, route: Route | N
 
 export class Router {
   private flattenRoutes: Array<Routes>;
+  private operationIdRouteMap: { [operationId: string]: Route } = {};
   private middlewares: Middleware[];
 
   constructor(routes: Routes, options: { middlewares?: Middleware[] } = {}) {
@@ -51,7 +52,28 @@ export class Router {
       new RootNamespace(routes)
     ]);
 
+    this.operationIdRouteMap =
+      _.chain(this.flattenRoutes)
+        .map(routes => _.last(routes) as Route)
+        .filter(route => !!route.operationId)
+        .groupBy(route => route.operationId)
+        .mapValues((routes: Route[], operationId: string) => {
+          if (routes.length > 1) {
+            throw new Error(`route has duplicated operationId: "${operationId}"`)
+          }
+          return routes[0];
+        })
+        .value();
+
     this.middlewares = options.middlewares || [];
+  }
+
+  findMiddleware<T extends Middleware>(middlewareClass: any): T | undefined {
+    return this.middlewares.find(middleware => middleware instanceof middlewareClass) as T | undefined;
+  }
+
+  findRoute(operationId: string) {
+    return this.operationIdRouteMap[operationId] as Route | undefined;
   }
 
   handler() {
@@ -121,7 +143,7 @@ export class Router {
             pathParams[key.name] = match[index + 1];
           });
 
-          const routingContext = new RoutingContext(event, requestId, pathParams);
+          const routingContext = new RoutingContext(this, event, requestId, pathParams);
           const router = this;
 
           const stepRoute = async function(currentRoute: Route | Namespace, nextRoutes: Routes) : Promise<LambdaProxy.Response> {
@@ -163,8 +185,12 @@ export class Router {
 
               // Run before middlewares
               for (const middleware of router.middlewares) {
-                if (middleware.before)
-                  await middleware.before({ routingContext, currentRoute });
+                if (middleware.before) {
+                  const response = await middleware.before({ routingContext, currentRoute });
+                  if (response) {
+                    return response;
+                  }
+                }
               }
 
               // Actual Handler

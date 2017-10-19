@@ -15,7 +15,7 @@ describe("RootNamespace", () => {
   describe("#exceptionHandler", () => {
     it("should handler general error and build json response", async () => {
       const rootNamespace = new RootNamespace([
-        Route.GET('/test', '', {}, async function() {
+        Route.GET('/test', { operationId: "test" }, {}, async function() {
           throw new CustomError("TEST ERROR");
         })
       ]);

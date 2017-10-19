@@ -19,11 +19,26 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe("Router", () => {
+  describe("#constructor", () => {
+    it("should raise error if there is duplicated operationId", () => {
+      expect(() => {
+        const router = new Router([
+          Route.GET('/', { operationId: "getIndex" }, {}, async function () {
+            return this.json("");
+          }),
+          Route.GET('/wrong-path', { operationId: "getIndex" }, {}, async function () {
+            return this.json("");
+          })
+        ]);
+      }).to.throw(Error, "route has duplicated operationId: \"getIndex\"");
+    });
+  });
+
   describe("#handler", () => {
     describe("middlewares", () => {
       it("should run middlewares one by one in order", async () => {
         const router = new Router([
-          Route.GET('/', '', {}, async function() {
+          Route.GET('/', { operationId: "getIndex" }, {}, async function() {
             return {
               statusCode: 200,
               headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -77,7 +92,7 @@ describe("Router", () => {
 
     it("should raise timeout if it's really get delayed", async () => {
       const router = new Router([
-        Route.GET('/', '', {}, async function() {
+        Route.GET('/', { operationId: "getIndex" }, {}, async function() {
           await new Promise((resolve, reject) => {
             setTimeout(() => {
               resolve();

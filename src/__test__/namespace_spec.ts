@@ -14,7 +14,7 @@ describe("Namespace", () => {
       const namespace  =
         new Namespace('/api', {
           children: [
-            Route.GET('/test', '', {}, async function() {
+            Route.GET('/test', { operationId: "test" }, {}, async function() {
               return this.json({});
             })
           ]

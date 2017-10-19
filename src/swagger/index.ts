@@ -42,12 +42,12 @@ export class SwaggerRoute extends Namespace {
     super(path, {
       children: [
         Route.OPTIONS(
-          '/', 'CORS Preflight Endpoint for Swagger Documentation API', {},
+          '/', { desc: 'CORS Preflight Endpoint for Swagger Documentation API', operationId: 'optionSwagger' }, {},
           async function() {
             return this.json('', 204, CorsHeaders(this.headers.origin));
           }),
 
-        Route.GET('/', 'Swagger Documentation API', {},
+        Route.GET('/', { desc: 'Swagger Documentation API', operationId: 'getSwagger' }, {},
           async function() {
             const docGenerator = new SwaggerGenerator();
             const json = docGenerator.generateJSON(info, this.request, routes);

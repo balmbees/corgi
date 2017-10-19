@@ -21,35 +21,32 @@ export class Route {
   }
 
   // Simplified Constructors
-  static GET(path: string, descOrOptions: string | RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
-    return this._factory(path, 'GET', descOrOptions, params, handler);
+  static GET(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
+    return this._factory(path, 'GET', options, params, handler);
   }
-  static PUT(path: string, descOrOptions: string | RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
-    return this._factory(path, 'PUT', descOrOptions, params, handler);
+  static PUT(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
+    return this._factory(path, 'PUT', options, params, handler);
   }
-  static POST(path: string, descOrOptions: string | RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
-    return this._factory(path, 'POST', descOrOptions, params, handler);
+  static POST(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
+    return this._factory(path, 'POST', options, params, handler);
   }
-  static DELETE(path: string, descOrOptions: string | RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
-    return this._factory(path, 'DELETE', descOrOptions, params, handler);
+  static DELETE(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
+    return this._factory(path, 'DELETE', options, params, handler);
   }
-  static OPTIONS(path: string, descOrOptions: string | RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
-    return this._factory(path, 'OPTIONS', descOrOptions, params, handler);
+  static OPTIONS(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
+    return this._factory(path, 'OPTIONS', options, params, handler);
   }
-  static HEAD(path: string, descOrOptions: string | RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
-    return this._factory(path, 'HEAD', descOrOptions, params, handler);
+  static HEAD(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
+    return this._factory(path, 'HEAD', options, params, handler);
   }
 
-  private static _factory(path: string, method: HttpMethod, descOrOptions: string | RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
-    if (typeof descOrOptions === "string") {
-      descOrOptions = { desc: descOrOptions };
-    }
+  private static _factory(path: string, method: HttpMethod, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
     return new this({
       path,
       method,
-      desc: descOrOptions.desc,
-      operationId: descOrOptions.operationId,
-      middlewareMetadata: descOrOptions.middlewares || {},
+      desc: options.desc,
+      operationId: options.operationId,
+      middlewareMetadata: options.middlewares || {},
       params,
       handler
     });
@@ -58,7 +55,7 @@ export class Route {
 
 export interface RouteSimplifiedOptions {
   desc?: string;
-  operationId?: string;
+  operationId: string;
   middlewares?: {
     [middlewareClass: string]: any;
   };

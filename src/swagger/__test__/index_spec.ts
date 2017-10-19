@@ -23,7 +23,7 @@ const expect = chai.expect;
 
 describe("SwaggerRoute", () => {
   const _routes: Routes = [
-    Route.GET('/api/:userId', 'a', {
+    Route.GET('/api/:userId', { desc: 'a', operationId: 'GetApiUserId' }, {
       userId: Parameter.Path(Joi.number().integer()),
       testerId: Parameter.Query(Joi.number().required()),
       userIds: Parameter.Query(Joi.array().items(Joi.number())),
@@ -40,7 +40,7 @@ describe("SwaggerRoute", () => {
     Route.POST('/api/a', { desc: 'a', operationId: "GetAPIa" }, {}, async function(this: RoutingContext) {
       return this.json({});
     }),
-    Route.GET('/api/c', 'a', {}, async function(this: RoutingContext) {
+    Route.GET('/api/c', { desc: 'a', operationId: "GetApiC" }, {}, async function(this: RoutingContext) {
       return this.json({});
     }),
   ];

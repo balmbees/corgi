@@ -9,36 +9,42 @@ export interface CacheStore {
   delete(key: string): Promise<boolean>;
 }
 
-export interface CacheMiddlewareMetadata {
+export class CacheMiddlewareMetadata {
   /**
    * in second
    */
-  expiresIn: number;
+  constructor(public expiresIn: number) {
+
+  }
 }
 
 export class CacheMiddleware implements Middleware {
   constructor(private store: CacheStore) {}
 
-  cacheKey(routingContext: RoutingContext) {
-    return [
-      routingContext.request.httpMethod,
-      routingContext.request.path,
-      routingContext.request.queryStringParameters,
-    ].join("-");
+  cacheKey(operationId: string, params: any) {
+    return `${operationId}.${JSON.stringify(params)}`;
   }
 
-  async deleteCache(route: Route) {
-    return await this.store.delete(
-      `${route.method} `
-    );
+  async deleteCache(operationId: string, params: any) {
+    return await this.store.delete(this.cacheKey(operationId, params))
   }
 
   // runs before the application, if it returns Promise<Response>, Routes are ignored and return the response
   async before(options: MiddlewareBeforeOptions): Promise<Response | void> {
+    const { currentRoute, routingContext } = options;
+
     // if the route is ready for cache
-    const metadata = options.currentRoute.getMiddlewareMetadata<CacheMiddlewareMetadata>(CacheMiddleware);
+    const metadata = currentRoute.getMiddlewareMetadata<CacheMiddlewareMetadata>('cache');
     if (metadata) {
-      const cacheKey = this.cacheKey(options.routingContext);
+      const operationId = currentRoute.operationId;
+      if (!operationId) {
+        throw new Error("CacheMiddleware requires route to must have operationId");
+      }
+      if (currentRoute.method !== 'GET') {
+        throw new Error("CacheMiddleware requires route to must be GET");
+      }
+
+      const cacheKey = this.cacheKey(operationId, routingContext.params);
       const cachedRes = await this.store.get(cacheKey);
       if (cachedRes) {
         // and there is a cache
@@ -50,11 +56,16 @@ export class CacheMiddleware implements Middleware {
 
   // runs after the application, should return response
   async after(options: MiddlewareAfterOptions): Promise<Response> {
-    const metadata = options.currentRoute.getMiddlewareMetadata<CacheMiddlewareMetadata>(CacheMiddleware);
+    const { currentRoute, routingContext, response } = options;
+
+    const metadata = currentRoute.getMiddlewareMetadata<CacheMiddlewareMetadata>('cache');
     if (metadata) {
-      const cacheKey = this.cacheKey(options.routingContext);
-      await this.store.set(cacheKey, JSON.stringify(options.response), metadata.expiresIn);
+      // this already get checked from before anyway
+      const operationId = currentRoute.operationId!;
+      const cacheKey = this.cacheKey(operationId, routingContext.params);
+
+      await this.store.set(cacheKey, JSON.stringify(response), metadata.expiresIn);
     }
-    return options.response;
+    return response;
   }
 }
