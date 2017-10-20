@@ -8,27 +8,27 @@ Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration
 
 ## Features
 1. Cascade Routing
-2. Route parameter
-    such as "users/:userId/followings"
-3. Parameter Validation
-    it uses [Joi](https://github.com/hapijs/joi)
-4. Exception Handling
-    refer [example](src/__test__/e2e/complex_api.ts)
-5. Swagger Document Generation
-    [Swagger](http://swagger.io/) is API Documentation spec. Corgi support automatic swagger document generation.
-    refer [example](src/__test__/swagger_spec.ts)
+2. Route parameter  
+    - such as "users/:userId/followings"
+3. Parameter Validation  
+    - it uses [Joi](https://github.com/hapijs/joi)
+4. Exception Handling  
+    - refer [example](src/__test__/e2e/complex_api.ts)
+5. Swagger Document Generation  
+    - [Swagger](http://swagger.io/) is API Documentation spec. Corgi support automatic swagger document generation. 
+    - refer [example](src/__test__/swagger_spec.ts) 
 
 Whole thing supports async/await for sure, written in typescript also
 
 ## TODO
-1. HTTP Body Parser
-    Base64Encoding support
+1. HTTP Body Parser 
+    - Base64Encoding support
 2. View Framework
-    should support Swagger Response schema
+    - should support Swagger Response schema generation 
 
 ## Why do i need an extra Framework for Lambda?
 
-So simple lambda handler looks like this
+So simple lambda handler looks like this 
 
 ```js
 exports.myHandler = function(event, context, callback) {
@@ -38,8 +38,8 @@ exports.myHandler = function(event, context, callback) {
 }
 ```
 
-let's say you connected API Gateway, (using serverless maybe),
-as Lambda Proxy. and wanna build some Restful API with that.
+let's say you connected API Gateway, (using serverless maybe), 
+as Lambda Proxy. and wanna build some Restful API with that. 
 
 ```js
 exports.myHandler = function(event, context, callback) {
@@ -76,19 +76,19 @@ exports.myHandler = function(event, context, callback) {
 }
 ```
 
-Ok, fairly good, since it's on lambda and api gateway so everything is managed and scaled....etc.
-but surely, it will be really messy soon.
+Ok, fairly good, since it's on lambda and api gateway so everything is managed and scaled....etc. 
+but surely, it will be really messy soon 
 
-there are several frameworks that built for this,
-(such as running express itself on lambda, eventhough which is what exactly AWS APIGateway is for)  
-[lambda-req](https://www.npmjs.com/package/lambda-req)  
-[aws-serverless-express](https://github.com/awslabs/aws-serverless-express)  
-[serverless-express](https://claudiajs.com/tutorials/serverless-express.html)  
+there are several frameworks that built for this, 
+(such as running express itself on lambda, eventhough which is what exactly AWS APIGateway is for) 
+[lambda-req](https://www.npmjs.com/package/lambda-req) 
+[aws-serverless-express](https://github.com/awslabs/aws-serverless-express) 
+[serverless-express](https://claudiajs.com/tutorials/serverless-express.html) 
 
-we did considered about using any kind of those express wrapping seriously,
-but we just felt like it would be nicer to just write one for Lambda.
+we did seriously considered about using this kinds of express wrapping, 
+but we thought we can do better by just write one for Lambda. 
 
-inspired by [Grape](https://github.com/ruby-grape/grape) a lot, since we really liked it
+inspired by [Grape](https://github.com/ruby-grape/grape) a lot, since we really liked it 
 
 ## Corgi Example
 
