@@ -1,16 +1,13 @@
 import { Route, HttpMethod} from '../route';
 import { Routes, Namespace } from '../namespace';
-import { RoutingContext } from '../routing-context';
 import * as LambdaProxy from '../lambda-proxy';
 import { flattenRoutes } from '../router';
 
 import * as _ from 'lodash';
-import * as Joi from 'joi';
 import * as _string from 'underscore.string';
 import * as Swagger from 'swagger-schema-official';
 
-import JoiToJSONSchema = require("joi-to-json-schema");
-import JoiToSwagger = require("joi-to-swagger");
+import JoiToJSONSchema = require("@vingle/joi-to-json-schema");
 
 function deepOmit(obj: any, keysToOmit: string[]) {
   var keysToOmitIndex = _.keyBy(keysToOmit); // create an index object of the keys that should be omitted
@@ -40,7 +37,7 @@ export class SwaggerRoute extends Namespace {
         'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
         'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
       };
-    }
+    };
 
     super(path, {
       children: [
