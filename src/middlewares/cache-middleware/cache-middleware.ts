@@ -20,10 +20,10 @@ export class CacheMiddlewareMetadata {
 }
 
 export class CacheMiddleware implements Middleware {
-  constructor(private store: CacheStore) {}
+  constructor(private cacheKeyNamespace: string, private store: CacheStore) {}
 
   cacheKey(operationId: string, params: any) {
-    return `${operationId}.${JSON.stringify(params)}`;
+    return `${this.cacheKeyNamespace}.${operationId}.${JSON.stringify(params)}`;
   }
 
   async deleteCache(operationId: string, params: any) {

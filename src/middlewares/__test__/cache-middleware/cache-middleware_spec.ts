@@ -43,7 +43,7 @@ class MemoryStore implements CacheStore {
 describe('CacheMiddleware', () => {
   describe("#cacheKey", () => {
     it("should generate key", () => {
-      const middleware = new CacheMiddleware(new MemoryStore());
+      const middleware = new CacheMiddleware("CacheTestService", new MemoryStore());
       // const cacheKey = middleware.cacheKey()
     });
   });
@@ -84,7 +84,7 @@ describe('CacheMiddleware', () => {
       routes,
       {
         middlewares: [
-          new CacheMiddleware(new MemoryStore()),
+          new CacheMiddleware("CacheTestService", new MemoryStore()),
         ]
       }
     );
