@@ -1,17 +1,18 @@
-import { Middleware, MiddlewareBeforeOptions, MiddlewareAfterOptions } from '../middleware';
-import { RoutingContext } from '../routing-context';
-import { Response } from '../lambda-proxy';
-import { Route } from "../route";
+import { Middleware, MiddlewareBeforeOptions, MiddlewareAfterOptions } from '../../middleware';
+import { RoutingContext } from '../../routing-context';
+import { Response } from '../../lambda-proxy';
+import { Route } from "../../route";
 
 export interface CacheStore {
-  get(key: string): Promise<string>;
+  get(key: string): Promise<string | undefined>;
   set(key: string, value: string, expiresIn: number): Promise<void>;
   delete(key: string): Promise<boolean>;
 }
 
 export class CacheMiddlewareMetadata {
   /**
-   * in second
+   *
+   * @param expiresIn in seconds
    */
   constructor(public expiresIn: number) {
 

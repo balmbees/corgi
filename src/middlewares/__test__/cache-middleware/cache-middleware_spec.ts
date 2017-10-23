@@ -1,4 +1,8 @@
-import { CacheMiddleware, CacheMiddlewareMetadata, CacheStore } from "../cache-middleware";
+import {
+  CacheMiddleware,
+  CacheMiddlewareMetadata,
+  CacheStore
+} from "../../cache-middleware";
 import {
   Route,
   RoutingContext,
@@ -6,7 +10,7 @@ import {
   Routes,
   Router,
   Parameter,
-} from '../../index';
+} from '../../../index';
 import * as Joi from 'joi';
 
 import * as chai from 'chai';
@@ -69,7 +73,7 @@ describe('CacheMiddleware', () => {
             user.username = this.params.username;
 
             // Clear Cache
-            this.router.findMiddleware<CacheMiddleware>(CacheMiddleware)!.deleteCache('GetUser', { userId: this.params.userId });
+            (this.router.findMiddleware(CacheMiddleware) as CacheMiddleware).deleteCache('GetUser', { userId: this.params.userId });
 
             return this.json({});
           }),
