@@ -9,17 +9,14 @@ export interface CacheStore {
   delete(key: string): Promise<boolean>;
 }
 
-export class CacheMiddlewareMetadata {
+export interface CacheMiddlewareMetadata {
   /**
-   *
-   * @param expiresIn in seconds
+   * in seconds
    */
-  constructor(public expiresIn: number) {
-
-  }
+  expiresIn: number;
 }
 
-export class CacheMiddleware implements Middleware {
+export class CacheMiddleware implements Middleware<CacheMiddlewareMetadata> {
   constructor(private cacheKeyNamespace: string, private store: CacheStore) {}
 
   cacheKey(operationId: string, params: any) {
@@ -31,11 +28,9 @@ export class CacheMiddleware implements Middleware {
   }
 
   // runs before the application, if it returns Promise<Response>, Routes are ignored and return the response
-  async before(options: MiddlewareBeforeOptions): Promise<Response | void> {
-    const { currentRoute, routingContext } = options;
+  async before(options: MiddlewareBeforeOptions<CacheMiddlewareMetadata>): Promise<Response | void> {
+    const { currentRoute, routingContext, metadata } = options;
 
-    // if the route is ready for cache
-    const metadata = currentRoute.getMiddlewareMetadata<CacheMiddlewareMetadata>('cache');
     if (metadata) {
       const operationId = currentRoute.operationId;
       if (!operationId) {
@@ -56,10 +51,9 @@ export class CacheMiddleware implements Middleware {
   }
 
   // runs after the application, should return response
-  async after(options: MiddlewareAfterOptions): Promise<Response> {
-    const { currentRoute, routingContext, response } = options;
+  async after(options: MiddlewareAfterOptions<CacheMiddlewareMetadata>): Promise<Response> {
+    const { currentRoute, routingContext, response, metadata } = options;
 
-    const metadata = currentRoute.getMiddlewareMetadata<CacheMiddlewareMetadata>('cache');
     if (metadata) {
       // this already get checked from before anyway
       const operationId = currentRoute.operationId!;

@@ -47,23 +47,24 @@ describe("Router", () => {
           })
         ], {
           middlewares: [
-            {
-              before: async function(options: MiddlewareBeforeOptions): Promise<Response | void> {
+            new (class TestMiddleware implements Middleware {
+              async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
                 options.routingContext.request.body = "A";
-              },
-              after: async function (options: MiddlewareAfterOptions): Promise<Response> {
+              }
+              async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
                 options.response.body += "C";
                 return options.response;
               }
-            }, {
-              before: async function (options: MiddlewareBeforeOptions): Promise<Response | void> {
+            }),
+            new (class TestMiddleware implements Middleware {
+              async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
                 options.routingContext.request.body += "B";
-              },
-              after: async function (options: MiddlewareAfterOptions): Promise<Response> {
+              }
+              async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
                 options.response.body += "D";
                 return options.response;
               }
-            }
+            }),
           ]
         });
 

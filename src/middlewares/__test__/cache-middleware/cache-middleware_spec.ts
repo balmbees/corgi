@@ -62,7 +62,7 @@ describe('CacheMiddleware', () => {
           Route.GET('/', {
             operationId: 'GetUser',
             middlewares: {
-              cache: new CacheMiddlewareMetadata(360),
+              CacheMiddleware: { expiresIn: 360 },
             }
           }, {}, async function() {
             return this.json({

@@ -13,7 +13,7 @@ export class XRayMiddleware implements Middleware {
   private segment: AWSXRaySegment | undefined;
 
   // runs before the application, if it returns Promise<Response>, Routes are ignored and return the response
-  async before(options: MiddlewareBeforeOptions): Promise<Response | void> {
+  async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
     const vingleTraceId = options.routingContext.headers['x-vingle-trace-id']
     if (vingleTraceId) {
       const parentSeg = AWSXRay.resolveSegment(undefined);
@@ -25,7 +25,7 @@ export class XRayMiddleware implements Middleware {
   }
 
   // runs after the application, should return response
-  async after(options: MiddlewareAfterOptions): Promise<Response> {
+  async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
     if (this.segment) {
       this.segment.close();
     }
