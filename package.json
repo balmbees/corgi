@@ -32,12 +32,9 @@
     "@types/chai-as-promised": "^0.0.31",
     "@types/commander": "^2.11.0",
     "@types/debug": "0.0.30",
-    "@types/joi": "^10.4.0",
     "@types/lodash": "^4.14.65",
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.27",
-    "@types/qs": "^6.5.0",
-    "@types/swagger-schema-official": "2.0.5",
     "@types/underscore.string": "0.0.30",
     "chai": "^4.0.1",
     "chai-as-promised": "^6.0.0",
@@ -46,6 +43,9 @@
     "typescript": "^2.4.2"
   },
   "dependencies": {
+    "@types/joi": "^10.4.0",
+    "@types/qs": "^6.5.0",
+    "@types/swagger-schema-official": "2.0.5",
     "aws-xray-sdk-core": "^1.1.2",
     "bluebird": "^3.5.1",
     "commander": "^2.11.0",
