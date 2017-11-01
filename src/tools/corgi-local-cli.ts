@@ -29,7 +29,7 @@ if (!handlerPath) {
 }
 
 if (!port) {
-  console.error("invalid port number");
+  console.error("missing or invalid port number");
   program.help();
 }
 
