@@ -1,9 +1,12 @@
 {
   "name": "vingle-corgi",
-  "version": "1.4.10",
+  "version": "1.4.11-beta.1",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
+  "bin": {
+    "corgi-local": "./dst/tools/corgi-local-cli.js"
+  },
   "scripts": {
     "clean": "rm -Rf dst",
     "prebuild": "npm run clean",
@@ -24,8 +27,11 @@
   },
   "homepage": "https://github.com/balmbees/corgi#readme",
   "devDependencies": {
+    "@types/bluebird": "^3.5.18",
     "@types/chai": "^4.0.0",
     "@types/chai-as-promised": "^0.0.31",
+    "@types/commander": "^2.11.0",
+    "@types/debug": "0.0.30",
     "@types/joi": "^10.4.0",
     "@types/lodash": "^4.14.65",
     "@types/mocha": "^2.2.41",
@@ -41,9 +47,13 @@
   },
   "dependencies": {
     "aws-xray-sdk-core": "^1.1.2",
+    "bluebird": "^3.5.1",
+    "commander": "^2.11.0",
+    "debug": "^3.1.0",
     "joi": "^10.5.2",
     "joi-to-json-schema": "^3.2.0",
     "lodash": "^4.17.4",
+    "micro": "^9.0.0",
     "path-to-regexp": "^1.7.0",
     "qs": "^6.5.0",
     "swagger-schema-official": "2.0.0-bab6bed",
