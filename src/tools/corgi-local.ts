@@ -11,9 +11,17 @@ const micro = require("micro"); // tslint:disable-line
 
 export function createServer(
   handler: (event: LambdaProxy.Event, context: LambdaProxy.Context) => void,
+  options: {
+    verbose?: boolean,
+    timeout?: number,
+  } = {},
 ): http.Server {
   const LOG_TAG = "corgi-local";
   const log = debug(LOG_TAG);
+
+  if (options.verbose) {
+    log.enabled = true;
+  }
 
   return micro(async function(req: http.IncomingMessage, res: http.ServerResponse) {
     log(`${req.method} ${req.url}`);
@@ -53,7 +61,7 @@ export function createServer(
 
           resolve(handlerResponse);
         },
-        getRemainingTimeInMillis: () => 20000,
+        getRemainingTimeInMillis: () => options.timeout || 30 * 1000,
       } as any);
     });
 
