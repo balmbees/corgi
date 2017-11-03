@@ -22,6 +22,13 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe("SwaggerRoute", () => {
+  const PaginatedUserArraySchema = Joi.object({
+    data: Joi.array().items(Joi.object({
+      id: Joi.number().integer(),
+      username: Joi.string(),
+    }))
+  });
+
   const _routes: Routes = [
     Route.GET('/api/:userId', 'a', {
       userId: Parameter.Path(Joi.number().integer()),
@@ -43,6 +50,27 @@ describe("SwaggerRoute", () => {
     Route.GET('/api/c', 'a', {}, async function(this: RoutingContext) {
       return this.json({});
     }),
+    Route.GET(
+      '/api/users',
+      {
+        desc: 'get all users',
+        operationId: "GetUsers",
+        responses: {
+          [200]: {
+            desc: "Success",
+            schema: PaginatedUserArraySchema,
+          }
+        }
+      },
+      {},
+      async function (this: RoutingContext) {
+        return this.json({
+          data: [{
+            id: 100,
+            username: "abcd",
+          }]
+        });
+      }),
   ];
   const routes = [
     new SwaggerRoute(
@@ -50,6 +78,9 @@ describe("SwaggerRoute", () => {
       {
         title: "TEST API",
         version: "1.0.0",
+        definitions: {
+          PaginatedUsers: PaginatedUserArraySchema,
+        }
       },
       _routes
     ),
@@ -81,6 +112,27 @@ describe("SwaggerRoute", () => {
       "info":{
           "title":"TEST API",
           "version":"1.0.0"
+      },
+      "definitions": {
+        "PaginatedUsers": {
+          "properties": {
+            "data": {
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        }
       },
       "host":"api.example.net",
       "basePath":"/prod/",
@@ -193,6 +245,26 @@ describe("SwaggerRoute", () => {
                   }
                 },
                 "operationId":"GetApiC"
+            }
+          },
+          "/api/users": {
+            "get": {
+              "description": "get all users",
+              "produces": [
+                "application/json; charset=utf-8"
+              ],
+              "parameters": [
+
+              ],
+              "responses": {
+                "200": {
+                  "description": "Success",
+                  "schema": {
+                    "$ref": "#/definitions/PaginatedUsers",
+                  }
+                }
+              },
+              "operationId": "GetUsers"
             }
           }
       },

@@ -2,6 +2,8 @@ import * as LambdaProxy from './lambda-proxy';
 import { RoutingContext } from './routing-context';
 import { ParameterDefinitionMap } from './parameter';
 
+import * as Joi from "joi";
+
 export type HttpMethod = 'GET' | 'PUT' | 'POST' | 'DELETE' | 'OPTIONS' | 'HEAD';
 export type RouteHandler = (this: RoutingContext) => Promise<LambdaProxy.Response>;
 
@@ -15,6 +17,7 @@ export class Route {
   get handler() { return this.options.handler; }
   get params() { return this.options.params; }
   get operationId() { return this.options.operationId; }
+  get responses() { return this.options.responses; }
 
   // Simplified Constructors
   static GET(path: string, descOrOptions: string | RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: RouteHandler) {
@@ -40,16 +43,17 @@ export class Route {
     if (typeof descOrOptions === "string") {
       descOrOptions = { desc: descOrOptions };
     }
-    return new this({ path, method, desc: descOrOptions.desc, operationId: descOrOptions.operationId, params, handler });
+    return new this({ path, method, desc: descOrOptions.desc, operationId: descOrOptions.operationId, responses: descOrOptions.responses, params, handler });
   }
 }
 
 export interface RouteSimplifiedOptions {
   desc?: string;
   operationId?: string;
+  responses?: {
+    [statusCode: string]: ResponseSchema,
+  };
 }
-
-
 
 export interface RouteOptions {
   path: string;
@@ -59,6 +63,19 @@ export interface RouteOptions {
    * Human readable operationId of given route
    */
   operationId?: string;
+  responses?: {
+    [statusCode: string]: ResponseSchema,
+  };
   params?: ParameterDefinitionMap;
   handler: RouteHandler;
+}
+
+export interface ResponseSchemaEntity {
+  name: string;
+  schema: Joi.Schema;
+}
+
+export interface ResponseSchema {
+  desc?: string;
+  schema?: Joi.Schema;
 }
