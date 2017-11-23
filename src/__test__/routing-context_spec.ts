@@ -9,60 +9,88 @@ const expect = chai.expect;
 
 describe("RoutingContext", () => {
   describe("#validateAndUpdateParams", () => {
-    it("should parse and validate JsonBody params", () => {
-      const context = new RoutingContext({
-        path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
-        httpMethod: 'POST',
-        body: JSON.stringify({
+    context("when body is valid JSON", () => {
+      it("should parse and validate JsonBody params", () => {
+        const context = new RoutingContext({
+          path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
+          httpMethod: 'POST',
+          body: JSON.stringify({
+            update: {
+              fieldA: 12345,
+              fieldB: 54321,
+              fieldC: {
+                c: 100,
+              }
+            }
+          }),
+          queryStringParameters: {
+            testId: "12345",
+            not_allowed_param: "xxx",
+            encodedParam: "%ED%94%BD%EC%8B%9C",
+            "arrayParameter[0]": "1",
+            "arrayParameter[1]": "2",
+            "arrayParameter[2]": "3",
+            "arrayParameter[3]": "4",
+          }
+        } as any, "request-id", {
+          userId: "33",
+          interest: "%ED%94%BD%EC%8B%9C",
+        });
+
+        context.validateAndUpdateParams({
+          testId: Parameter.Query(Joi.number()),
+          encodedParam: Parameter.Query(Joi.string()),
+          update: Parameter.Body(Joi.object({
+            fieldA: Joi.number(),
+            fieldC: Joi.object({
+              c: Joi.number()
+            })
+          })),
+          userId: Parameter.Path(Joi.number()),
+          interest: Parameter.Path(Joi.string().strict()),
+          arrayParameter: Parameter.Query(Joi.array().items(Joi.number().integer())),
+        });
+
+        expect(context.params).to.deep.eq({
+          testId: 12345,
+          encodedParam: "픽시",
           update: {
             fieldA: 12345,
-            fieldB: 54321,
             fieldC: {
               c: 100,
             }
-          }
-        }),
-        queryStringParameters: {
-          testId: "12345",
-          not_allowed_param: "xxx",
-          encodedParam: "%ED%94%BD%EC%8B%9C",
-          "arrayParameter[0]": "1",
-          "arrayParameter[1]": "2",
-          "arrayParameter[2]": "3",
-          "arrayParameter[3]": "4",
-        }
-      } as any, "request-id", {
-        userId: "33",
-        interest: "%ED%94%BD%EC%8B%9C",
+          },
+          userId: 33,
+          interest: "픽시",
+          arrayParameter: [1, 2, 3, 4],
+        })
       });
+    });
 
-      context.validateAndUpdateParams({
-        testId: Parameter.Query(Joi.number()),
-        encodedParam: Parameter.Query(Joi.string()),
-        update: Parameter.Body(Joi.object({
-          fieldA: Joi.number(),
-          fieldC: Joi.object({
-            c: Joi.number()
-          })
-        })),
-        userId: Parameter.Path(Joi.number()),
-        interest: Parameter.Path(Joi.string().strict()),
-        arrayParameter: Parameter.Query(Joi.array().items(Joi.number().integer())),
+    context("when body is null (which means empty request body)", () => {
+      it("should parse and validate JsonBody params", () => {
+        const context = new RoutingContext({
+          path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
+          httpMethod: 'POST',
+          body: null,
+          queryStringParameters: null,
+        } as any, "request-id", {
+          userId: "33",
+          interest: "%ED%94%BD%EC%8B%9C",
+        });
+
+        context.validateAndUpdateParams({
+          update: Parameter.Body(Joi.object({
+            complex: Joi.array().items(Joi.number()).allow(null),
+          }).optional().default({ complex: null })),
+        });
+
+        expect(context.params).to.deep.eq({
+          update: {
+            complex: null,
+          },
+        });
       });
-
-      expect(context.params).to.deep.eq({
-        testId: 12345,
-        encodedParam: "픽시",
-        update: {
-          fieldA: 12345,
-          fieldC: {
-            c: 100,
-          }
-        },
-        userId: 33,
-        interest: "픽시",
-        arrayParameter: [1, 2, 3, 4],
-      })
     });
   });
 

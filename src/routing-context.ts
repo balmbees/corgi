@@ -87,7 +87,8 @@ export class RoutingContext {
   // Body Parser
   get bodyJSON(): any {
     // TODO Check Header Content-Type
-    return JSON.parse(this.request.body!);
+    // API Gateway define body as null if request body is empty
+    return this.request.body ? JSON.parse(this.request.body) : {};
   }
 
   // Response Helpers
