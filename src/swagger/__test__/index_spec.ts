@@ -202,7 +202,7 @@ describe("SwaggerRoute", () => {
                           },
                         }
                       },
-                      "required":true
+                      "required": false
                   }
                 ],
                 "responses":{
