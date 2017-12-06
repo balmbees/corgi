@@ -131,7 +131,7 @@ export class SwaggerGenerator {
                   schema: joiSchema,
                   // current joi typing doesn't have type definition for flags
                   // @see https://github.com/hapijs/joi/blob/v12/lib/types/any/index.js#L48-L64
-                  required: ((joiSchemaMetadata.flags || {}) as any).presence === "required",
+                  required: ((joiSchemaMetadata.flags || {}) as any).presence !== "optional",
                 };
                 return param;
               } else {
