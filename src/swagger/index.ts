@@ -122,13 +122,16 @@ export class SwaggerGenerator {
           } else {
             return _.map(route.params, (paramDef, name) => {
               if (paramDef.in === "body") {
+                const joiSchemaMetadata = paramDef.def.describe();
                 const joiSchema = JoiToSwaggerSchema(paramDef.def);
                 const param: Swagger.Parameter = {
                   in: paramDef.in,
                   name: name,
                   description: '',
                   schema: joiSchema,
-                  required: true
+                  // current joi typing doesn't have type definition for flags
+                  // @see https://github.com/hapijs/joi/blob/v12/lib/types/any/index.js#L48-L64
+                  required: ((joiSchemaMetadata.flags || {}) as any).presence !== "optional",
                 };
                 return param;
               } else {
