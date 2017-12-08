@@ -1,6 +1,7 @@
 language: node_js
 node_js:
 - '6'
+before_install: npm install npm@$(cat package.json | jq -r '.engines.npm') -g
 script:
 - npm run test
 deploy:
