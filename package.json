@@ -34,14 +34,14 @@
     "publish": "^0.6.0"
   },
   "dependencies": {
-    "@types/joi": "^10.4.0",
+    "@types/joi": "^13.0.2",
     "@types/lodash": "^4.14.65",
     "@types/node": "^7.0.27",
     "@types/qs": "^6.5.0",
     "@types/swagger-schema-official": "2.0.5",
     "@types/underscore.string": "0.0.30",
     "aws-xray-sdk-core": "^1.1.2",
-    "joi": "^10.5.2",
+    "joi": "^13.0.2",
     "joi-to-json-schema": "^3.2.0",
     "lodash": "^4.17.4",
     "path-to-regexp": "^1.7.0",
