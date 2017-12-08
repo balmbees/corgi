@@ -1,6 +1,6 @@
-import { Middleware } from '../middleware';
-import { RoutingContext } from '../routing-context';
-import { Response } from '../lambda-proxy';
+import { Middleware } from '../../middleware';
+import { RoutingContext } from '../../routing-context';
+import { Response } from '../../lambda-proxy';
 
 const AWSXRay = require("aws-xray-sdk-core");
 interface AWSXRaySegment {
@@ -48,9 +48,9 @@ export interface SamplingRule {
 export class XRayMiddleware implements Middleware {
   private segment: AWSXRaySegment | undefined;
 
-  constructor(samplingRules: SamplingRules | undefined) {
+  constructor(samplingRules?: SamplingRules) {
     if (samplingRules) {
-      AWSXRay.setSamplingRules(samplingRules);
+      AWSXRay.middleware.setSamplingRules(samplingRules);
     }
   }
 
