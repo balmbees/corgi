@@ -3,11 +3,12 @@ import { Routes, Namespace } from '../namespace';
 import * as LambdaProxy from '../lambda-proxy';
 import { flattenRoutes } from '../router';
 
+import * as Joi from 'joi';
 import * as _ from 'lodash';
 import * as _string from 'underscore.string';
 import * as Swagger from 'swagger-schema-official';
 
-import JoiToJSONSchema = require("@vingle/joi-to-json-schema");
+import JoiToJSONSchema = require("joi-to-json-schema");
 
 function deepOmit(obj: any, keysToOmit: string[]) {
   var keysToOmitIndex = _.keyBy(keysToOmit); // create an index object of the keys that should be omitted
@@ -25,8 +26,21 @@ function deepOmit(obj: any, keysToOmit: string[]) {
   return omitFromObject(obj); // return the inner function result
 }
 
+function JoiToSwaggerSchema(joiSchema: Joi.Schema) {
+  return deepOmit(JoiToJSONSchema(joiSchema), ["additionalProperties", "patterns"]) as any;
+}
+
+export type SwaggerRouteOptions = (
+  Swagger.Info &
+  { definitions?: { [definitionsName: string]: Joi.Schema } }
+);
+
 export class SwaggerRoute extends Namespace {
-  constructor(path: string, info: Swagger.Info, routes: Routes) {
+  constructor(
+    path: string,
+    info: SwaggerRouteOptions,
+    routes: Routes
+  ) {
 
     const CorsHeaders = function(origin: string) {
       return {
@@ -61,8 +75,22 @@ export class SwaggerRoute extends Namespace {
 export class SwaggerGenerator {
   constructor() {}
 
-  generateJSON(info: Swagger.Info, request: LambdaProxy.Event, routes: Routes): Swagger.Spec {
+  generateJSON(info: SwaggerRouteOptions, request: LambdaProxy.Event, routes: Routes): Swagger.Spec {
     const paths: { [pathName: string]: Swagger.Path } = {};
+
+    // Try to convert to reference, and if it fails return original scchema
+    const convertToReference = (schema: Joi.Schema) => {
+      if (info.definitions) {
+        for (const name in info.definitions) {
+          const def = info.definitions[name];
+          if (def === schema) {
+            return { "$ref": `#/definitions/${name}` };
+          }
+        }
+      }
+
+      return undefined;
+    };
 
     flattenRoutes(routes).forEach((routes) => {
       const endRoute = (routes[routes.length - 1] as Route);
@@ -81,7 +109,7 @@ export class SwaggerGenerator {
           if (route instanceof Namespace) {
             // Namespace only supports path
             return _.map(route.params, (schema, name) => {
-              const joiSchema = JoiToJSONSchema(schema);
+              const joiSchema = JoiToSwaggerSchema(schema);
               const param: Swagger.PathParameter = {
                 in: 'path',
                 name: name,
@@ -94,17 +122,20 @@ export class SwaggerGenerator {
           } else {
             return _.map(route.params, (paramDef, name) => {
               if (paramDef.in === "body") {
-                const joiSchema = JoiToJSONSchema(paramDef.def);
+                const joiSchemaMetadata = paramDef.def.describe();
+                const joiSchema = JoiToSwaggerSchema(paramDef.def);
                 const param: Swagger.Parameter = {
                   in: paramDef.in,
                   name: name,
                   description: '',
                   schema: joiSchema,
-                  required: true
+                  // current joi typing doesn't have type definition for flags
+                  // @see https://github.com/hapijs/joi/blob/v12/lib/types/any/index.js#L48-L64
+                  required: ((joiSchemaMetadata.flags || {}) as any).presence !== "optional",
                 };
                 return param;
               } else {
-                const joiSchema = JoiToJSONSchema(paramDef.def);
+                const joiSchema = JoiToSwaggerSchema(paramDef.def);
                 const param: Swagger.Parameter = Object.assign({
                   in: paramDef.in,
                   name: name,
@@ -120,11 +151,32 @@ export class SwaggerGenerator {
             });
           }
         }).map((param) => deepOmit(param, ["additionalProperties", "patterns"])) as any,
-        responses: {
-          "200": {
-            "description": "Success"
+        responses: (() => {
+          if (endRoute.responses) {
+            return _.mapValues(endRoute.responses, response => {
+              let schema = undefined;
+              if (response.schema) {
+                const reference = convertToReference(response.schema);
+                if (reference) {
+                  schema = reference;
+                } else {
+                  schema = JoiToSwaggerSchema(response.schema);
+                }
+              }
+
+              return {
+                description: response.desc,
+                schema: schema,
+              } as Swagger.Response;
+            })
+          } else {
+            return {
+              "200": {
+                description: "Success"
+              }
+            }
           }
-        },
+        })(),
         operationId: endRoute.operationId || this.routesToOperationId(corgiPath, endRoute.method),
       };
 
@@ -150,27 +202,30 @@ export class SwaggerGenerator {
       }
     });
 
-
     const swagger: Swagger.Spec = {
       swagger: "2.0",
-      info: info,
-      // externalDocs?: ExternalDocs;
+      info: {
+        title: info.title,
+        version: info.version,
+        description: info.description,
+        termsOfService: info.termsOfService,
+        contact: info.contact,
+        license: info.license,
+      },
       host: request.headers["Host"],
       basePath: `/${request.requestContext!.stage}/`,
       schemes: [
         request.headers["X-Forwarded-Proto"]
       ],
-      // consumes?: string[];
       produces: [
         "application/json; charset=utf-8",
       ],
       paths,
       tags: [],
-      // definitions?: {[definitionsName: string]: Schema };
-      // parameters?: {[parameterName: string]: BodyParameter|QueryParameter};
-      // responses?: {[responseName: string]: Response };
-      // security?: Array<{[securityDefinitionName: string]: string[]}>;
-      // securityDefinitions?: { [securityDefinitionName: string]: Security};
+      definitions: _.mapValues(info.definitions || {}, (joiSchema) => {
+        const res = JoiToSwaggerSchema(joiSchema);
+        return res;
+      }),
     };
 
     return swagger;
