@@ -7,7 +7,7 @@ import { Routes, Namespace } from './namespace';
 import { RootNamespace, StandardErrorResponseBody } from './root-namespace';
 import { RoutingContext } from './routing-context';
 import { ParameterInputType } from './parameter';
-import { Middleware } from './middleware';
+import { Middleware, MiddlewareConstructor } from './middleware';
 
 // ---- Router
 
@@ -46,6 +46,7 @@ export class Router {
   private flattenRoutes: Array<Routes>;
   private operationIdRouteMap: { [operationId: string]: Route } = {};
   private middlewares: Middleware[];
+  private middlewaresSymbolMap: { [name: string]: Middleware } = {};
 
   constructor(routes: Routes, options: { middlewares?: Middleware[] } = {}) {
     this.flattenRoutes = flattenRoutes([
@@ -66,10 +67,30 @@ export class Router {
         .value();
 
     this.middlewares = options.middlewares || [];
+
+    this.middlewaresSymbolMap = _.keyBy(this.middlewares, m => {
+      console.log(m.constructor);
+
+      return (m.constructor as MiddlewareConstructor<Middleware>).symbol;
+    });
+
+    // There should not duplicated "class" middleware.
+    if (_.keys(this.middlewaresSymbolMap).length !== this.middlewares.length) {
+      _.chain(this.middlewares)
+        .countBy(m => (m.constructor as MiddlewareConstructor<Middleware>).symbol)
+        .toPairs<number>()
+        .each(([name, count]) => {
+          console.log("XX : ", name, count);
+          if (count > 1) {
+            throw new Error(`${name} middleware mounted ${count} times. you can only put one`);
+          }
+        })
+        .value();
+    }
   }
 
-  findMiddleware<T extends Middleware>(middlewareClass: any): T | undefined {
-    return this.middlewares.find(middleware => middleware instanceof middlewareClass) as T | undefined;
+  findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
+    return this.middlewaresSymbolMap[middlewareClass.symbol] as T | undefined;
   }
 
   findRoute(operationId: string) {
