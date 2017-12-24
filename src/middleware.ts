@@ -3,19 +3,10 @@ import { Response } from './lambda-proxy';
 import { Route } from './route';
 
 export interface MiddlewareConstructor<MiddlewareClass extends Middleware> {
-  readonly symbol: symbol;
-  name: string;
   new(options: any): MiddlewareClass;
 }
 
-export abstract class Middleware<Metadata=undefined> {
-  public get symbol(): symbol {
-    if (!(this as any).constructor.__symbol) {
-      return (this as any).constructor.__symbol = Symbol();
-    }
-    return (this as any).constructor.__symbol;
-  }
-
+export class Middleware<Metadata=any> {
   constructor(options: {} = {}) {}
 
   // runs before the application, if it returns Promise<Response>, Routes are ignored and return the response
@@ -41,15 +32,3 @@ export interface MiddlewareAfterOptions<Metadata> {
   metadata?: Metadata;
   response: Response;
 }
-
-class ABC extends Middleware<any>{
-  constructor(a: { x: number }) {
-    super({});
-  }
-}
-
-function x<T extends Middleware<any>>(middlewareClass: MiddlewareConstructor<T>) {
-  return {} as T;
-}
-
-const res = x(ABC);

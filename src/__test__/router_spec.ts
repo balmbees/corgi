@@ -32,6 +32,49 @@ describe("Router", () => {
         ]);
       }).to.throw(Error, "route has duplicated operationId: \"getIndex\"");
     });
+
+    it ("should raise error if their are duplicated middleware", async () => {
+      expect(() => {
+        class TestMiddleware extends Middleware {};
+
+        const router = new Router([
+          Route.GET('/', { operationId: "getIndex" }, {}, async function() {
+            return {
+              statusCode: 200,
+              headers: { 'Content-Type': 'application/json; charset=utf-8' },
+              body: this.request.body!,
+            };
+          })
+        ], {
+          middlewares: [
+            new TestMiddleware(),
+            new TestMiddleware(),
+          ]
+        });
+      }).to.throw("Middleware<TestMiddleware> should be unique but not");
+    });
+  });
+
+  describe("#findMiddleware", () => {
+    it("should return middleware", () => {
+      class M1 extends Middleware {}
+      class M2 extends Middleware {}
+      class M3 extends Middleware {}
+
+      const router = new Router([
+        Route.GET('/', { operationId: "getIndex" }, {}, async function() {
+          return this.json({});
+        })
+      ], {
+        middlewares: [
+          new M1(), new M2(),
+        ],
+      });
+
+      expect(router.findMiddleware(M1)).to.be.instanceOf(M1);
+      expect(router.findMiddleware(M2)).to.be.instanceOf(M2);
+      expect(router.findMiddleware(M3)).to.be.eq(undefined);
+    });
   });
 
   describe("#handler", () => {
@@ -47,7 +90,7 @@ describe("Router", () => {
           })
         ], {
           middlewares: [
-            new (class TestMiddleware implements Middleware {
+            new (class TestMiddleware extends Middleware {
               async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
                 options.routingContext.request.body = "A";
               }
@@ -56,7 +99,7 @@ describe("Router", () => {
                 return options.response;
               }
             }),
-            new (class TestMiddleware implements Middleware {
+            new (class TestMiddleware extends Middleware {
               async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
                 options.routingContext.request.body += "B";
               }

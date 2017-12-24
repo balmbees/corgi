@@ -45,10 +45,11 @@ export interface SamplingRule {
   url_path?: string;
 }
 
-export class XRayMiddleware implements Middleware {
+export class XRayMiddleware extends Middleware {
   private segment: AWSXRaySegment | undefined;
 
   constructor(samplingRules?: SamplingRules) {
+    super();
     if (samplingRules) {
       AWSXRay.middleware.setSamplingRules(samplingRules);
     }

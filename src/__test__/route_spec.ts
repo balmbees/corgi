@@ -26,7 +26,7 @@ describe("Route", () => {
       expect(route.operationId).to.eq("getFollowers");
       expect(route.path).to.deep.eq('/followers');
       expect(route.method).to.deep.eq('GET');
-      expect(route.desc).to.deep.eq('List of users that following me');
+      expect(route.description).to.deep.eq('List of users that following me');
     });
   });
 });

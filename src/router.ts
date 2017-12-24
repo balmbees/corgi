@@ -46,7 +46,7 @@ export class Router {
   private flattenRoutes: Array<Routes>;
   private operationIdRouteMap: { [operationId: string]: Route } = {};
   private middlewares: Middleware[];
-  private middlewaresSymbolMap: { [name: string]: Middleware } = {};
+  private middlewareMap = new Map<Function, Middleware>();
 
   constructor(routes: Routes, options: { middlewares?: Middleware[] } = {}) {
     this.flattenRoutes = flattenRoutes([
@@ -68,29 +68,16 @@ export class Router {
 
     this.middlewares = options.middlewares || [];
 
-    this.middlewaresSymbolMap = _.keyBy(this.middlewares, m => {
-      console.log(m.constructor);
-
-      return (m.constructor as MiddlewareConstructor<Middleware>).symbol;
+    this.middlewares.forEach(middleware => {
+      if (this.middlewareMap.get(middleware.constructor)) {
+        throw new Error(`Middleware<${middleware.constructor.name}> should be unique but not.`);
+      }
+      this.middlewareMap.set(middleware.constructor, middleware);
     });
-
-    // There should not duplicated "class" middleware.
-    if (_.keys(this.middlewaresSymbolMap).length !== this.middlewares.length) {
-      _.chain(this.middlewares)
-        .countBy(m => (m.constructor as MiddlewareConstructor<Middleware>).symbol)
-        .toPairs<number>()
-        .each(([name, count]) => {
-          console.log("XX : ", name, count);
-          if (count > 1) {
-            throw new Error(`${name} middleware mounted ${count} times. you can only put one`);
-          }
-        })
-        .value();
-    }
   }
 
   findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
-    return this.middlewaresSymbolMap[middlewareClass.symbol] as T | undefined;
+    return this.middlewareMap.get(middlewareClass as Function) as T | undefined;
   }
 
   findRoute(operationId: string) {
@@ -207,7 +194,7 @@ export class Router {
               // Run before middlewares
               for (const middleware of router.middlewares) {
                 if (middleware.before) {
-                  const metadata = currentRoute.getMiddlewareMetadata(middleware.constructor.name) as any;
+                  const metadata = currentRoute.getMetadata(middleware.constructor as any);
                   const response = await middleware.before({ routingContext, currentRoute, metadata });
                   if (response) {
                     return response;
@@ -221,7 +208,7 @@ export class Router {
               // Run after middlewares
               for (const middleware of router.middlewares.slice().reverse()) {
                 if (middleware.after) {
-                  const metadata = currentRoute.getMiddlewareMetadata(middleware.constructor.name) as any;
+                  const metadata = currentRoute.getMetadata(middleware.constructor as any);
                   response = await middleware.after({ routingContext, currentRoute, metadata, response });
                 }
               }
