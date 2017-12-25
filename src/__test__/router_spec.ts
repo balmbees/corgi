@@ -6,6 +6,8 @@ import {
   Router,
   Parameter,
   Middleware,
+  MiddlewareBeforeOptions,
+  MiddlewareAfterOptions,
   Response,
 } from '../index';
 import * as Joi from 'joi';
@@ -17,11 +19,26 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe("Router", () => {
-  describe("#handler", () => {
-    describe("middlewares", () => {
-      it("should run middlewares one by one in order", async () => {
+  describe("#constructor", () => {
+    it("should raise error if there is duplicated operationId", () => {
+      expect(() => {
         const router = new Router([
-          Route.GET('/', '', {}, async function() {
+          Route.GET('/', { operationId: "getIndex" }, {}, async function () {
+            return this.json("");
+          }),
+          Route.GET('/wrong-path', { operationId: "getIndex" }, {}, async function () {
+            return this.json("");
+          })
+        ]);
+      }).to.throw(Error, "route has duplicated operationId: \"getIndex\"");
+    });
+
+    it ("should raise error if their are duplicated middleware", async () => {
+      expect(() => {
+        class TestMiddleware extends Middleware {};
+
+        const router = new Router([
+          Route.GET('/', { operationId: "getIndex" }, {}, async function() {
             return {
               statusCode: 200,
               headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -30,23 +47,67 @@ describe("Router", () => {
           })
         ], {
           middlewares: [
-            {
-              before: async function(routingContext: RoutingContext): Promise<Response | void> {
-                routingContext.request.body = "A";
-              },
-              after: async function(routingContext: RoutingContext, response: Response): Promise<Response> {
-                response.body += "C";
-                return response;
+            new TestMiddleware(),
+            new TestMiddleware(),
+          ]
+        });
+      }).to.throw("Middleware<TestMiddleware> should be unique but not");
+    });
+  });
+
+  describe("#findMiddleware", () => {
+    it("should return middleware", () => {
+      class M1 extends Middleware {}
+      class M2 extends Middleware {}
+      class M3 extends Middleware {}
+
+      const router = new Router([
+        Route.GET('/', { operationId: "getIndex" }, {}, async function() {
+          return this.json({});
+        })
+      ], {
+        middlewares: [
+          new M1(), new M2(),
+        ],
+      });
+
+      expect(router.findMiddleware(M1)).to.be.instanceOf(M1);
+      expect(router.findMiddleware(M2)).to.be.instanceOf(M2);
+      expect(router.findMiddleware(M3)).to.be.eq(undefined);
+    });
+  });
+
+  describe("#handler", () => {
+    describe("middlewares", () => {
+      it("should run middlewares one by one in order", async () => {
+        const router = new Router([
+          Route.GET('/', { operationId: "getIndex" }, {}, async function() {
+            return {
+              statusCode: 200,
+              headers: { 'Content-Type': 'application/json; charset=utf-8' },
+              body: this.request.body!,
+            };
+          })
+        ], {
+          middlewares: [
+            new (class TestMiddleware extends Middleware {
+              async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
+                options.routingContext.request.body = "A";
               }
-            }, {
-              before: async function(routingContext: RoutingContext): Promise<Response | void> {
-                routingContext.request.body += "B";
-              },
-              after: async function(routingContext: RoutingContext, response: Response): Promise<Response> {
-                response.body += "D";
-                return response;
+              async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
+                options.response.body += "C";
+                return options.response;
               }
-            }
+            }),
+            new (class TestMiddleware extends Middleware {
+              async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
+                options.routingContext.request.body += "B";
+              }
+              async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
+                options.response.body += "D";
+                return options.response;
+              }
+            }),
           ]
         });
 
@@ -75,7 +136,7 @@ describe("Router", () => {
 
     it("should raise timeout if it's really get delayed", async () => {
       const router = new Router([
-        Route.GET('/', '', {}, async function() {
+        Route.GET('/', { operationId: "getIndex" }, {}, async function() {
           await new Promise((resolve, reject) => {
             setTimeout(() => {
               resolve();

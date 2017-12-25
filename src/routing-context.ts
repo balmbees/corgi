@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import * as qs from 'qs';
 
 import { ParameterDefinitionMap } from './parameter';
+import { Router } from './router';
 
 //
 const DefaultJoiValidateOptions: Joi.ValidationOptions = {
@@ -16,7 +17,9 @@ const DefaultJoiValidateOptions: Joi.ValidationOptions = {
 export class RoutingContext {
   private validatedParams: { [key:string]: any };
   private normalizedHeaders: { [key: string]: string } | null;
+
   constructor(
+    public readonly router: Router,
     public readonly request: LambdaProxy.Event,
     public readonly requestId: string | undefined,
     private pathParams: { [key:string]: string }

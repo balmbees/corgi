@@ -1,4 +1,4 @@
-import { Middleware } from '../../middleware';
+import { Middleware, MiddlewareBeforeOptions, MiddlewareAfterOptions } from '../../middleware';
 import { RoutingContext } from '../../routing-context';
 import { Response } from '../../lambda-proxy';
 
@@ -45,18 +45,19 @@ export interface SamplingRule {
   url_path?: string;
 }
 
-export class XRayMiddleware implements Middleware {
+export class XRayMiddleware extends Middleware {
   private segment: AWSXRaySegment | undefined;
 
   constructor(samplingRules?: SamplingRules) {
+    super();
     if (samplingRules) {
       AWSXRay.middleware.setSamplingRules(samplingRules);
     }
   }
 
   // runs before the application, if it returns Promise<Response>, Routes are ignored and return the response
-  async before(routingContext: RoutingContext): Promise<Response | void> {
-    const vingleTraceId = routingContext.headers['x-vingle-trace-id']
+  async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
+    const vingleTraceId = options.routingContext.headers['x-vingle-trace-id']
     if (vingleTraceId) {
       const parentSeg = AWSXRay.resolveSegment(undefined);
       this.segment = parentSeg.addNewSubsegment("corgi-route") as AWSXRaySegment;
@@ -67,12 +68,12 @@ export class XRayMiddleware implements Middleware {
   }
 
   // runs after the application, should return response
-  async after(routingContext: RoutingContext, response: Response): Promise<Response> {
+  async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
     if (this.segment) {
       this.segment.close();
     }
     this.segment = undefined;
 
-    return response;
+    return options.response;
   }
 }

@@ -7,7 +7,7 @@ import { Routes, Namespace } from './namespace';
 import { RootNamespace, StandardErrorResponseBody } from './root-namespace';
 import { RoutingContext } from './routing-context';
 import { ParameterInputType } from './parameter';
-import { Middleware } from './middleware';
+import { Middleware, MiddlewareConstructor } from './middleware';
 
 // ---- Router
 
@@ -44,14 +44,44 @@ export function flattenRoute(parents: Array<Route | Namespace>, route: Route | N
 
 export class Router {
   private flattenRoutes: Array<Routes>;
+  private operationIdRouteMap: { [operationId: string]: Route } = {};
   private middlewares: Middleware[];
+  private middlewareMap = new Map<Function, Middleware>();
 
   constructor(routes: Routes, options: { middlewares?: Middleware[] } = {}) {
     this.flattenRoutes = flattenRoutes([
       new RootNamespace(routes)
     ]);
 
+    this.operationIdRouteMap =
+      _.chain(this.flattenRoutes)
+        .map(routes => _.last(routes) as Route)
+        .filter(route => !!route.operationId)
+        .groupBy(route => route.operationId)
+        .mapValues((routes: Route[], operationId: string) => {
+          if (routes.length > 1) {
+            throw new Error(`route has duplicated operationId: "${operationId}"`)
+          }
+          return routes[0];
+        })
+        .value();
+
     this.middlewares = options.middlewares || [];
+
+    this.middlewares.forEach(middleware => {
+      if (this.middlewareMap.get(middleware.constructor)) {
+        throw new Error(`Middleware<${middleware.constructor.name}> should be unique but not.`);
+      }
+      this.middlewareMap.set(middleware.constructor, middleware);
+    });
+  }
+
+  findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
+    return this.middlewareMap.get(middlewareClass as Function) as T | undefined;
+  }
+
+  findRoute(operationId: string) {
+    return this.operationIdRouteMap[operationId] as Route | undefined;
   }
 
   handler() {
@@ -121,7 +151,7 @@ export class Router {
             pathParams[key.name] = match[index + 1];
           });
 
-          const routingContext = new RoutingContext(event, requestId, pathParams);
+          const routingContext = new RoutingContext(this, event, requestId, pathParams);
           const router = this;
 
           const stepRoute = async function(currentRoute: Route | Namespace, nextRoutes: Routes) : Promise<LambdaProxy.Response> {
@@ -163,19 +193,22 @@ export class Router {
 
               // Run before middlewares
               for (const middleware of router.middlewares) {
-                if (middleware.before)
-                  await middleware.before(routingContext);
+                const metadata = currentRoute.getMetadata(middleware.constructor as any);
+                const response = await middleware.before({ routingContext, currentRoute, metadata });
+                if (response) {
+                  return response;
+                }
               }
 
               // Actual Handler
-              let res = await currentRoute.handler.call(routingContext);
+              let response = await currentRoute.handler.call(routingContext);
 
               // Run after middlewares
               for (const middleware of router.middlewares.slice().reverse()) {
-                if (middleware.after)
-                  res = await middleware.after(routingContext, res);
+                const metadata = currentRoute.getMetadata(middleware.constructor as any);
+                response = await middleware.after({ routingContext, currentRoute, metadata, response });
               }
-              return res;
+              return response;
             }
           }
 

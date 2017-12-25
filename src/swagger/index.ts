@@ -56,12 +56,12 @@ export class SwaggerRoute extends Namespace {
     super(path, {
       children: [
         Route.OPTIONS(
-          '/', 'CORS Preflight Endpoint for Swagger Documentation API', {},
+          '/', { desc: 'CORS Preflight Endpoint for Swagger Documentation API', operationId: 'optionSwagger' }, {},
           async function() {
             return this.json('', 204, CorsHeaders(this.headers.origin));
           }),
 
-        Route.GET('/', 'Swagger Documentation API', {},
+        Route.GET('/', { desc: 'Swagger Documentation API', operationId: 'getSwagger' }, {},
           async function() {
             const docGenerator = new SwaggerGenerator();
             const json = docGenerator.generateJSON(info, this.request, routes);
@@ -101,7 +101,7 @@ export class SwaggerGenerator {
         paths[swaggerPath] = {} as Swagger.Path;
       }
       const operation: Swagger.Operation = {
-        description: endRoute.desc,
+        description: endRoute.description,
         produces: [
           "application/json; charset=utf-8"
         ],
@@ -153,22 +153,24 @@ export class SwaggerGenerator {
         }).map((param) => deepOmit(param, ["additionalProperties", "patterns"])) as any,
         responses: (() => {
           if (endRoute.responses) {
-            return _.mapValues(endRoute.responses, response => {
-              let schema = undefined;
-              if (response.schema) {
-                const reference = convertToReference(response.schema);
-                if (reference) {
-                  schema = reference;
-                } else {
-                  schema = JoiToSwaggerSchema(response.schema);
+            return Array.from(endRoute.responses)
+              .reduce((obj, [statusCode, response]) => {
+                let schema: Swagger.Schema | undefined = undefined;
+                if (response.schema) {
+                  const reference = convertToReference(response.schema);
+                  if (reference) {
+                    schema = reference;
+                  } else {
+                    schema = JoiToSwaggerSchema(response.schema);
+                  }
                 }
-              }
 
-              return {
-                description: response.desc,
-                schema: schema,
-              } as Swagger.Response;
-            })
+                obj[statusCode] = {
+                  description: response.desc || "",
+                  schema: schema,
+                };
+                return obj;
+              }, {} as { [key: string]: Swagger.Response });
           } else {
             return {
               "200": {

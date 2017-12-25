@@ -24,6 +24,7 @@ describe("Calling complex API", () => {
           new Route({
             path: '/followers',
             method: 'GET',
+            operationId: "getFollowers",
             desc: 'List of users that following me',
             handler: async function() {
               return this.json({
@@ -35,7 +36,7 @@ describe("Calling complex API", () => {
             before: async function() {
             },
             children: [
-              Route.POST('/', '', {
+              Route.POST('/', { operationId: "follow" }, {
                 testId: Parameter.Query(Joi.number()),
                 update: Parameter.Body(
                   Joi.object({
@@ -52,7 +53,7 @@ describe("Calling complex API", () => {
                   update: this.params.update,
                 });
               }),
-              Route.DELETE('/', '', {}, async function() {
+              Route.DELETE('/', { operationId: "unfollow" }, {}, async function() {
                 const userId = this.params.userId as number;
                 return this.json({ userId: userId });
               }),
@@ -110,7 +111,7 @@ describe("Global Error Handling", () => {
         children: [
           new Namespace('/users/:userId', {
             children: [
-              Route.GET('/', '', {
+              Route.GET('/', { operationId: "getUser" }, {
                 testId: Parameter.Query(Joi.number()),
                 otherError: Parameter.Query(Joi.number()),
               }, async function() {
