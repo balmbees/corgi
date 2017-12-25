@@ -104,7 +104,6 @@ describe("SwaggerRoute", () => {
     const router = new Router(routes);
     const res = await router.resolve(mockRequest);
 
-    console.log(res.body);
     chai.expect(res.statusCode).to.eq(200);
 
     chai.expect(JSON.parse(res.body)).to.deep.eq({
