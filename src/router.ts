@@ -193,12 +193,10 @@ export class Router {
 
               // Run before middlewares
               for (const middleware of router.middlewares) {
-                if (middleware.before) {
-                  const metadata = currentRoute.getMetadata(middleware.constructor as any);
-                  const response = await middleware.before({ routingContext, currentRoute, metadata });
-                  if (response) {
-                    return response;
-                  }
+                const metadata = currentRoute.getMetadata(middleware.constructor as any);
+                const response = await middleware.before({ routingContext, currentRoute, metadata });
+                if (response) {
+                  return response;
                 }
               }
 
@@ -207,10 +205,8 @@ export class Router {
 
               // Run after middlewares
               for (const middleware of router.middlewares.slice().reverse()) {
-                if (middleware.after) {
-                  const metadata = currentRoute.getMetadata(middleware.constructor as any);
-                  response = await middleware.after({ routingContext, currentRoute, metadata, response });
-                }
+                const metadata = currentRoute.getMetadata(middleware.constructor as any);
+                response = await middleware.after({ routingContext, currentRoute, metadata, response });
               }
               return response;
             }

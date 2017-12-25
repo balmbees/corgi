@@ -66,6 +66,7 @@ export class Route {
       desc: options.desc,
       responses: options.responses,
       operationId: options.operationId,
+      metadata: options.metadata,
       params,
       handler
     });

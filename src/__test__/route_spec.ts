@@ -29,5 +29,29 @@ describe("Route", () => {
       expect(route.description).to.deep.eq('List of users that following me');
     });
   });
+
+  describe("#getMetadata", () => {
+    it("should get metadata by class of metadata", () => {
+      class A {}
+
+      const route =
+        new Route({
+          path: '/followers',
+          method: 'GET',
+          operationId: 'getFollowers',
+          desc: 'List of users that following me',
+          metadata: new Map([
+            [A, { x: 200 }],
+          ]),
+          handler: async function(this: RoutingContext) {
+            return this.json({
+              data: {}
+            })
+          }
+        });
+
+      expect(route.getMetadata(A as any)).to.deep.eq({ x: 200 });
+    });
+  });
 });
 
