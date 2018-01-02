@@ -34,7 +34,7 @@ export class RoutingContext {
         try {
           return decodeURIComponent(value);
         } catch (e) {
-          return decodeURIComponent(encodeURIComponent(value));
+          return value;
         }
       } else {
         return value;
