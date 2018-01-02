@@ -7,27 +7,27 @@ export interface Event {
   pathParameters?: EventPathParameters;
   stageVariables?: EventStageVariables;
   requestContext?: {
-    "accountId": string;
-    "resourceId": string;
-    "stage": string;
-    "requestId": string;
-    "identity": {
-      "cognitoIdentityPoolId": any;
-      "accountId": any;
-      "cognitoIdentityId": any;
-      "caller": any;
-      "apiKey": any;
-      "sourceIp": string,
-      "accessKey": any;
-      "cognitoAuthenticationType": any;
-      "cognitoAuthenticationProvider": any;
-      "userArn": any;
-      "userAgent": string;
-      "user": any;
+    accountId: string;
+    resourceId: string;
+    stage: string;
+    requestId: string;
+    identity: {
+      cognitoIdentityPoolId: string;
+      accountId: string;
+      cognitoIdentityId: string;
+      caller: string;
+      apiKey: string;
+      sourceIp: string,
+      accessKey: string;
+      cognitoAuthenticationType: string;
+      cognitoAuthenticationProvider: string;
+      userArn: string;
+      userAgent: string;
+      user: string;
     }
-    "resourcePath": string;
-    "httpMethod": string;
-    "apiId": string;
+    resourcePath: string;
+    httpMethod: string;
+    apiId: string;
   };
   body?: string;
 }
@@ -52,9 +52,7 @@ export interface EventStageVariables {
 // Response
 export interface Response {
   statusCode: number;
-  headers: {
-    'Content-Type': string
-  };
+  headers: { [key: string]: string };
   body: string;
 }
 
