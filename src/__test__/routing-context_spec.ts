@@ -65,6 +65,62 @@ describe("RoutingContext", () => {
           arrayParameter: [1, 2, 3, 4],
         })
       });
+
+      it("should parse and validate JsonBody params when path has % character", () => {
+        const context = new RoutingContext({} as any, {
+          path: "/api/33/followings/100%users",
+          httpMethod: 'POST',
+          body: JSON.stringify({
+            update: {
+              fieldA: 12345,
+              fieldB: 54321,
+              fieldC: {
+                c: 100,
+              }
+            }
+          }),
+          queryStringParameters: {
+            testId: "12345",
+            not_allowed_param: "xxx",
+            encodedParam: "100%users",
+            "arrayParameter[0]": "1",
+            "arrayParameter[1]": "2",
+            "arrayParameter[2]": "3",
+            "arrayParameter[3]": "4",
+          }
+        } as any, "request-id", {
+          userId: "33",
+          interest: "100%users",
+        });
+
+        context.validateAndUpdateParams({
+          testId: Parameter.Query(Joi.number()),
+          encodedParam: Parameter.Query(Joi.string()),
+          update: Parameter.Body(Joi.object({
+            fieldA: Joi.number(),
+            fieldC: Joi.object({
+              c: Joi.number()
+            })
+          })),
+          userId: Parameter.Path(Joi.number()),
+          interest: Parameter.Path(Joi.string().strict()),
+          arrayParameter: Parameter.Query(Joi.array().items(Joi.number().integer())),
+        });
+
+        expect(context.params).to.deep.eq({
+          testId: 12345,
+          encodedParam: "100%users",
+          update: {
+            fieldA: 12345,
+            fieldC: {
+              c: 100,
+            }
+          },
+          userId: 33,
+          interest: "100%users",
+          arrayParameter: [1, 2, 3, 4],
+        })
+      });
     });
 
     context("when body is null (which means empty request body)", () => {

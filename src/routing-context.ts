@@ -31,7 +31,11 @@ export class RoutingContext {
   private decodeURI(object: { [key: string]: any }) {
     return _.mapValues(object, (value, key) => {
       if (typeof value === 'string') {
-        return decodeURIComponent(value);
+        try {
+          return decodeURIComponent(value);
+        } catch (e) {
+          return value;
+        }
       } else {
         return value;
       }
