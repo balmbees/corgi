@@ -1,4 +1,4 @@
-import { Route, HttpMethod} from '../route';
+import { Route, JSONSchema, HttpMethod} from '../route';
 import { Routes, Namespace } from '../namespace';
 import * as LambdaProxy from '../lambda-proxy';
 import { flattenRoutes } from '../router';
@@ -30,9 +30,17 @@ function JoiToSwaggerSchema(joiSchema: Joi.Schema) {
   return deepOmit(JoiToJSONSchema(joiSchema), ["additionalProperties", "patterns"]) as any;
 }
 
+function asJoiSchema(object: any): Joi.Schema | undefined {
+  if ((object as Joi.Schema).isJoi) {
+    return object;
+  } else {
+    undefined;
+  }
+}
+
 export type SwaggerRouteOptions = (
   Swagger.Info &
-  { definitions?: { [definitionsName: string]: Joi.Schema } }
+  { definitions?: { [definitionsName: string]: Joi.Schema | JSONSchema } }
 );
 
 export class SwaggerRoute extends Namespace {
@@ -79,10 +87,11 @@ export class SwaggerGenerator {
     const paths: { [pathName: string]: Swagger.Path } = {};
 
     // Try to convert to reference, and if it fails return original scchema
-    const convertToReference = (schema: Joi.Schema) => {
+    const convertToReference = (schema: Joi.Schema | JSONSchema) => {
       if (info.definitions) {
         for (const name in info.definitions) {
           const def = info.definitions[name];
+          // Same "ADDRESS"
           if (def === schema) {
             return { "$ref": `#/definitions/${name}` };
           }
@@ -164,7 +173,13 @@ export class SwaggerGenerator {
                   if (reference) {
                     schema = reference;
                   } else {
-                    schema = JoiToSwaggerSchema(response.schema);
+                    if (asJoiSchema(response.schema)) {
+                      // Joi Schema
+                      schema = JoiToSwaggerSchema(response.schema as Joi.Schema);
+                    } else {
+                      // Raw JSON Schema, Good to go!
+                      schema = response.schema as Swagger.Schema;
+                    }
                   }
                 }
 
@@ -227,9 +242,12 @@ export class SwaggerGenerator {
       ],
       paths,
       tags: [],
-      definitions: _.mapValues(info.definitions || {}, (joiSchema) => {
-        const res = JoiToSwaggerSchema(joiSchema);
-        return res;
+      definitions: _.mapValues(info.definitions || {}, (schema) => {
+        if (asJoiSchema(schema)) {
+          return JoiToSwaggerSchema(schema as Joi.Schema);
+        } else {
+          return schema;
+        }
       }),
     };
 
