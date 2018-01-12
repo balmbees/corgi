@@ -121,8 +121,9 @@ export class SwaggerGenerator {
             });
           } else {
             return _.map(route.params, (paramDef, name) => {
+              const joiSchemaMetadata = paramDef.def.describe();
+
               if (paramDef.in === "body") {
-                const joiSchemaMetadata = paramDef.def.describe();
                 const joiSchema = JoiToSwaggerSchema(paramDef.def);
                 const param: Swagger.Parameter = {
                   in: paramDef.in,
@@ -144,6 +145,8 @@ export class SwaggerGenerator {
 
                 if (paramDef.in === 'path') {
                   param.required = true;
+                } else { // query param
+                  param.required = ((joiSchemaMetadata.flags || {}) as any).presence !== "optional"
                 }
 
                 return param;
