@@ -163,6 +163,7 @@ describe("SwaggerRoute", () => {
                       "name":"testerId",
                       "description":"",
                       "type":"number",
+                      "required": true
                   },
                   {
                       "in":"query",
@@ -171,7 +172,8 @@ describe("SwaggerRoute", () => {
                       "type":"array",
                       "items":{
                         "type":"number",
-                      }
+                      },
+                      "required": true
                   },
                   {
                       "in":"body",
