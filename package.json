@@ -1,6 +1,6 @@
 {
   "name": "vingle-corgi",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
@@ -43,9 +43,9 @@
     "@types/qs": "^6.5.0",
     "@types/swagger-schema-official": "2.0.5",
     "@types/underscore.string": "0.0.30",
+    "@vingle/joi-to-json-schema": "^3.2.0",
     "aws-xray-sdk-core": ">=1.1.6",
     "joi": "^13.0.2",
-    "joi-to-json-schema": "^3.2.0",
     "lodash": "^4.17.4",
     "path-to-regexp": "^1.7.0",
     "qs": "^6.5.0",

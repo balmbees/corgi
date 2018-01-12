@@ -125,12 +125,14 @@ describe("SwaggerRoute", () => {
                     "type": "string"
                   },
                 },
+                "required": ["id", "username"],
                 "type": "object"
               },
               "type": "array"
             }
           },
-          "type": "object"
+          "type": "object",
+          "required": ["data"],
         }
       },
       "host":"api.example.net",
@@ -177,9 +179,7 @@ describe("SwaggerRoute", () => {
                       "description":"",
                       "schema":{
                         "type":"object",
-                        "required":[
-                            "name"
-                        ],
+                        "required": [ "name", "tags", "test" ],
                         "properties":{
                             "name":{
                               "type":"string"
@@ -192,7 +192,8 @@ describe("SwaggerRoute", () => {
                                     "name":{
                                         "type":"string"
                                     }
-                                  }
+                                  },
+                                "required": ["name"]
                               }
                             },
                           "test": {
