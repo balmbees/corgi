@@ -174,13 +174,13 @@ describe("Router", () => {
         );
       });
 
-      // chai.expect(res).to.deep.eq({
-      //   statusCode: 500,
-      //   headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      //   body: JSON.stringify({
-      //     "error":{"id":"request-id","message":"Service timeout. {\"path\":\"/\",\"httpMethod\":\"GET\",\"queryStringParameters\":{},\"requestContext\":{\"requestId\":\"request-id\"}}"}
-      //   }),
-      // });
+      chai.expect(res).to.deep.eq({
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({
+          "error":{"id":"request-id","message":"Service timeout. {\"path\":\"/\",\"httpMethod\":\"GET\",\"queryStringParameters\":{}}"}
+        }),
+      });
     });
   });
 });

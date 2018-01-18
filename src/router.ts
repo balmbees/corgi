@@ -47,8 +47,9 @@ export class Router {
   private operationIdRouteMap: { [operationId: string]: Route } = {};
   private middlewares: Middleware[];
   private middlewareMap = new Map<Function, Middleware>();
+  private routeTimeout: number | undefined;
 
-  constructor(routes: Routes, options: { middlewares?: Middleware[] } = {}) {
+  constructor(routes: Routes, options: { timeout?: number, middlewares?: Middleware[] } = {}) {
     this.flattenRoutes = flattenRoutes([
       new RootNamespace(routes)
     ]);
@@ -74,6 +75,8 @@ export class Router {
       }
       this.middlewareMap.set(middleware.constructor, middleware);
     });
+
+    this.routeTimeout = options.timeout;
   }
 
   findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
@@ -87,25 +90,26 @@ export class Router {
   handler() {
     return (event: LambdaProxy.Event, context: LambdaProxy.Context) => {
       let timeoutHandle: NodeJS.Timer | null = null;
-
+      const timeout = this.routeTimeout || context.getRemainingTimeInMillis() * 0.9;
       Promise.race([
         this.resolve(event, context.awsRequestId),
         new Promise<LambdaProxy.Response>((resolve, reject) => {
           timeoutHandle = setTimeout(() => {
             const errorBody: StandardErrorResponseBody = {
               error: {
-                id: context.awsRequestId,
+                // If Xray is enabled, send out AMZN_TRACE_ID
+                id: (process.env._X_AMZN_TRACE_ID || context.awsRequestId),
                 message: `Service timeout. ${JSON.stringify(event)}`,
               }
             }
-            reject({
+            resolve({
               statusCode: 500,
               headers: {
                 'Content-Type': 'application/json; charset=utf-8',
               },
               body: JSON.stringify(errorBody),
             });
-          }, context.getRemainingTimeInMillis() - 10)
+          }, timeout)
         }),
       ]).then((response) => {
         if (timeoutHandle)
