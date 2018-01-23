@@ -98,5 +98,10 @@ export interface ResponseSchemaEntity {
 
 export interface ResponseSchema {
   desc?: string;
-  schema?: Joi.Schema;
+  schema?: Joi.Schema | JSONSchema;
 }
+
+/**
+ *  Actual JSON Schema in JSON representation
+ */
+export type JSONSchema = object;

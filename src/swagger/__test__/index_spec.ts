@@ -29,6 +29,62 @@ describe("SwaggerRoute", () => {
     }))
   });
 
+  const JSONSchema = {
+    "type": "object",
+    "properties": {
+      "checked": {
+        "type": "boolean",
+        "title": "The Checked Schema.",
+        "description": "An explanation about the purpose of this instance.",
+        "default": false,
+      },
+      "dimensions": {
+        "type": "object",
+        "properties": {
+          "width": {
+            "type": "integer",
+            "title": "The Width Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+          },
+          "height": {
+            "type": "integer",
+            "title": "The Height Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+          }
+        }
+      },
+      "id": {
+        "type": "integer",
+        "title": "The Id Schema.",
+        "description": "An explanation about the purpose of this instance.",
+        "default": 0,
+      },
+      "name": {
+        "type": "string",
+        "title": "The Name Schema.",
+        "description": "An explanation about the purpose of this instance.",
+        "default": "",
+      },
+      "price": {
+        "type": "number",
+        "title": "The Price Schema.",
+        "description": "An explanation about the purpose of this instance.",
+        "default": 0,
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "title": "The 0 Schema.",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+        }
+      }
+    }
+  }
+
   const _routes: Routes = [
     Route.GET('/api/:userId', { desc: 'a', operationId: 'GetApiUserId' }, {
       userId: Parameter.Path(Joi.number().integer()),
@@ -50,6 +106,27 @@ describe("SwaggerRoute", () => {
     Route.GET('/api/c', { desc: 'a', operationId: "GetApiC" }, {}, async function(this: RoutingContext) {
       return this.json({});
     }),
+    Route.GET(
+      '/api/users2',
+      {
+        desc: 'get all users',
+        operationId: "GetUsers2",
+        responses: {
+          [200]: {
+            desc: "Success",
+            schema: JSONSchema,
+          }
+        }
+      },
+      {},
+      async function (this: RoutingContext) {
+        return this.json({
+          data: [{
+            id: 100,
+            username: "abcd",
+          }]
+        });
+      }),
     Route.GET(
       '/api/users',
       {
@@ -79,6 +156,7 @@ describe("SwaggerRoute", () => {
         title: "TEST API",
         version: "1.0.0",
         definitions: {
+          JSONSchema: JSONSchema,
           PaginatedUsers: PaginatedUserArraySchema,
         }
       },
@@ -105,175 +183,8 @@ describe("SwaggerRoute", () => {
     const res = await router.resolve(mockRequest);
 
     chai.expect(res.statusCode).to.eq(200);
-
-    chai.expect(JSON.parse(res.body)).to.deep.eq({
-      "swagger":"2.0",
-      "info":{
-          "title":"TEST API",
-          "version":"1.0.0"
-      },
-      "definitions": {
-        "PaginatedUsers": {
-          "properties": {
-            "data": {
-              "items": {
-                "properties": {
-                  "id": {
-                    "type": "integer"
-                  },
-                  "username": {
-                    "type": "string"
-                  },
-                },
-                "required": ["id", "username"],
-                "type": "object"
-              },
-              "type": "array"
-            }
-          },
-          "type": "object",
-          "required": ["data"],
-        }
-      },
-      "host":"api.example.net",
-      "basePath":"/prod/",
-      "schemes":[
-          "https"
-      ],
-      "produces":[
-          "application/json; charset=utf-8"
-      ],
-      "paths":{
-          "/api/{userId}":{
-            "get":{
-                "description":"a",
-                "produces":[
-                  "application/json; charset=utf-8"
-                ],
-                "parameters":[
-                  {
-                      "in":"path",
-                      "name":"userId",
-                      "description":"",
-                      "type":"integer",
-                      "required": true
-                  },
-                  {
-                      "in":"query",
-                      "name":"testerId",
-                      "description":"",
-                      "type":"number",
-                      "required": true
-                  },
-                  {
-                      "in":"query",
-                      "name":"userIds",
-                      "description":"",
-                      "type":"array",
-                      "items":{
-                        "type":"number",
-                      },
-                      "required": true
-                  },
-                  {
-                      "in":"body",
-                      "name":"user",
-                      "description":"",
-                      "schema":{
-                        "type":"object",
-                        "required": [ "name", "tags", "test" ],
-                        "properties":{
-                            "name":{
-                              "type":"string"
-                            },
-                            "tags":{
-                              "type":"array",
-                              "items":{
-                                  "type":"object",
-                                  "properties":{
-                                    "name":{
-                                        "type":"string"
-                                    }
-                                  },
-                                "required": ["name"]
-                              }
-                            },
-                          "test": {
-                            "properties": {},
-                            "type": "object",
-                          },
-                        }
-                      },
-                      "required": true
-                  }
-                ],
-                "responses":{
-                  "200":{
-                      "description":"Success"
-                  }
-                },
-                "operationId":"GetApiUserId"
-            }
-          },
-          "/api/a":{
-            "post":{
-                "description":"a",
-                "produces":[
-                  "application/json; charset=utf-8"
-                ],
-                "parameters":[
-
-                ],
-                "responses":{
-                  "200":{
-                      "description":"Success"
-                  }
-                },
-                "operationId":"GetAPIa"
-            }
-          },
-          "/api/c":{
-            "get":{
-                "description":"a",
-                "produces":[
-                  "application/json; charset=utf-8"
-                ],
-                "parameters":[
-
-                ],
-                "responses":{
-                  "200":{
-                      "description":"Success"
-                  }
-                },
-                "operationId":"GetApiC"
-            }
-          },
-          "/api/users": {
-            "get": {
-              "description": "get all users",
-              "produces": [
-                "application/json; charset=utf-8"
-              ],
-              "parameters": [
-
-              ],
-              "responses": {
-                "200": {
-                  "description": "Success",
-                  "schema": {
-                    "$ref": "#/definitions/PaginatedUsers",
-                  }
-                }
-              },
-              "operationId": "GetUsers"
-            }
-          }
-      },
-      "tags":[
-
-      ]
-    });
+    console.log(res.body);
+    chai.expect(JSON.parse(res.body)).to.deep.eq({ "swagger": "2.0", "info": { "title": "TEST API", "version": "1.0.0" }, "host": "api.example.net", "basePath": "/prod/", "schemes": ["https"], "produces": ["application/json; charset=utf-8"], "paths": { "/api/{userId}": { "get": { "description": "a", "produces": ["application/json; charset=utf-8"], "parameters": [{ "in": "path", "name": "userId", "description": "", "type": "integer", "required": true }, { "in": "query", "name": "testerId", "description": "", "type": "number", "required": true }, { "in": "query", "name": "userIds", "description": "", "type": "array", "items": { "type": "number" }, "required": true }, { "in": "body", "name": "user", "description": "", "schema": { "type": "object", "properties": { "name": { "type": "string" }, "tags": { "type": "array", "items": { "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] } }, "test": { "type": "object", "properties": {} } }, "required": ["name", "tags", "test"] }, "required": true }], "responses": { "200": { "description": "Success" } }, "operationId": "GetApiUserId" } }, "/api/a": { "post": { "description": "a", "produces": ["application/json; charset=utf-8"], "parameters": [], "responses": { "200": { "description": "Success" } }, "operationId": "GetAPIa" } }, "/api/c": { "get": { "description": "a", "produces": ["application/json; charset=utf-8"], "parameters": [], "responses": { "200": { "description": "Success" } }, "operationId": "GetApiC" } }, "/api/users2": { "get": { "description": "get all users", "produces": ["application/json; charset=utf-8"], "parameters": [], "responses": { "200": { "description": "Success", "schema": { "$ref": "#/definitions/JSONSchema" } } }, "operationId": "GetUsers2" } }, "/api/users": { "get": { "description": "get all users", "produces": ["application/json; charset=utf-8"], "parameters": [], "responses": { "200": { "description": "Success", "schema": { "$ref": "#/definitions/PaginatedUsers" } } }, "operationId": "GetUsers" } } }, "tags": [], "definitions": { "JSONSchema": { "type": "object", "properties": { "checked": { "type": "boolean", "title": "The Checked Schema.", "description": "An explanation about the purpose of this instance.", "default": false }, "dimensions": { "type": "object", "properties": { "width": { "type": "integer", "title": "The Width Schema.", "description": "An explanation about the purpose of this instance.", "default": 0 }, "height": { "type": "integer", "title": "The Height Schema.", "description": "An explanation about the purpose of this instance.", "default": 0 } } }, "id": { "type": "integer", "title": "The Id Schema.", "description": "An explanation about the purpose of this instance.", "default": 0 }, "name": { "type": "string", "title": "The Name Schema.", "description": "An explanation about the purpose of this instance.", "default": "" }, "price": { "type": "number", "title": "The Price Schema.", "description": "An explanation about the purpose of this instance.", "default": 0 }, "tags": { "type": "array", "items": { "type": "string", "title": "The 0 Schema.", "description": "An explanation about the purpose of this instance.", "default": "" } } } }, "PaginatedUsers": { "type": "object", "properties": { "data": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "integer" }, "username": { "type": "string" } }, "required": ["id", "username"] } } }, "required": ["data"] } } });
 
     chai.expect(res.headers).to.include({
       'Access-Control-Allow-Origin': 'https://foo.bar',
