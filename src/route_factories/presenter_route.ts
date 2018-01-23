@@ -28,9 +28,9 @@ export class PresenterRouteFactory {
       path,
       method,
       desc: options.desc,
-      responses: {
+      responses: Object.assign(options.responses || {}, {
         200: presenter.outputJSONSchema,
-      },
+      }),
       metadata: options.metadata,
       params,
       handler: async function () {
