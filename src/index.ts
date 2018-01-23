@@ -7,3 +7,4 @@ export * from './lambda-proxy';
 export * from './parameter'
 export * from './middleware';
 export * from './middlewares';
+export * from "./route_factories";
