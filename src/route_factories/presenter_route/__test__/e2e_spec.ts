@@ -4,7 +4,6 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 import {
-  Entity,
   EntityPresenterFactory,
   Route,
   RoutingContext,
@@ -36,7 +35,7 @@ describe(PresenterRouteFactory.name, () => {
         name: string;
       }
 
-      const presenter = EntityPresenterFactory.create(TestModel, TestEntity, function(input: TestModel) {
+      const presenter = EntityPresenterFactory.create(TestEntity, function(input: TestModel) {
         const entity = new TestEntity();
         entity.id = input.id.toString();
         entity.name = input.name.toLowerCase();

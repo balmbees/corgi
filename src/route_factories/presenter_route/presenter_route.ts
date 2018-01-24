@@ -9,7 +9,6 @@ import {
   ParameterDefinitionMap,
 } from "../../parameter";
 
-import { Entity } from "./entity";
 import { Presenter } from "./presenter";
 
 export type PresenterRouteHandler<Input> = (this: RoutingContext) => Promise<Input>;
