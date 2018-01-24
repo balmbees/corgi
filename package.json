@@ -1,6 +1,6 @@
 {
   "name": "vingle-corgi",
-  "version": "1.7.4-beta.7",
+  "version": "1.7.4-beta.8",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
@@ -45,7 +45,7 @@
     "@types/underscore.string": "0.0.30",
     "@vingle/joi-to-json-schema": "^3.2.0",
     "aws-xray-sdk-core": ">=1.1.6",
-    "class-validator": "^0.8.0",
+    "class-validator": "^0.7.3",
     "class-validator-jsonschema": "^1.1.0",
     "joi": "^13.0.2",
     "lodash": "^4.17.4",
