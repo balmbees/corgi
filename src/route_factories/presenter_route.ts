@@ -37,8 +37,8 @@ export class PresenterRouteFactory {
     method: HttpMethod,
     options: RouteSimplifiedOptions,
     params: ParameterDefinitionMap,
-    handler: PresenterRouteHandler<Input>,
-    presenter: Presenter<Input, Output>
+    presenter: Presenter<Input, Output>,
+    handler: PresenterRouteHandler<Input>
   ): Route {
     return new Route({
       path,
@@ -57,5 +57,25 @@ export class PresenterRouteFactory {
         return this.json(presenter.present(res));
       },
     });
+  }
+
+  // Simplified Constructors
+  static GET<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+    return this.create(path, 'GET', options, params, presenter, handler)
+  }
+  static POST<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+    return this.create(path, 'POST', options, params, presenter, handler)
+  }
+  static PUT<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+    return this.create(path, 'PUT', options, params, presenter, handler)
+  }
+  static DELETE<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+    return this.create(path, 'DELETE', options, params, presenter, handler)
+  }
+  static OPTIONS<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+    return this.create(path, 'OPTIONS', options, params, presenter, handler)
+  }
+  static HEAD<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+    return this.create(path, 'HEAD', options, params, presenter, handler)
   }
 }
