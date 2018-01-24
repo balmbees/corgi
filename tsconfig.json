@@ -2,12 +2,18 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
-    "declaration": true,
     "noImplicitAny": true,
     "sourceMap": true,
     "outDir": "dst",
+    "strict": false,
     "strictNullChecks": true,
-    "strict": true
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": [
+      "dom",
+      "es2015",
+      "esnext.asynciterable"
+    ]
   },
   "exclude": [
     "**/__test__/"

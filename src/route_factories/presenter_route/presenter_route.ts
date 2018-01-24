@@ -1,44 +1,26 @@
-import { RoutingContext } from "../routing-context";
+import { RoutingContext } from "../../routing-context";
 import {
   HttpMethod,
   Route,
   RouteHandler,
   RouteSimplifiedOptions,
-} from "../route";
+} from "../../route";
 import {
   ParameterDefinitionMap,
-} from "../parameter";
+} from "../../parameter";
 
-export interface Presenter<Input, Output> {
-  readonly outputJSONSchema: any; // JSON Schema of return type;
-  readonly present: (input: Input) => Output;
-}
-
-import * as Joi from "joi";
-export class DataLayout<Input, Output> implements Presenter<Input, { data: Output }> {
-  public outputJSONSchema = Joi.object({
-    data: Joi.array().items(this.presenter.outputJSONSchema)
-  });
-
-  constructor(private presenter: Presenter<Input, Output>) { }
-
-  public present(input: Input) {
-    const output = this.presenter.present(input);
-    return {
-      data: output,
-    };
-  }
-}
+import { Entity } from "./entity";
+import { Presenter } from "./presenter";
 
 export type PresenterRouteHandler<Input> = (this: RoutingContext) => Promise<Input>;
 export class PresenterRouteFactory {
-  static create<Input, Output>(
+  static create<Entity, Output>(
     path: string,
     method: HttpMethod,
     options: RouteSimplifiedOptions,
     params: ParameterDefinitionMap,
-    presenter: Presenter<Input, Output>,
-    handler: PresenterRouteHandler<Input>
+    presenter: Presenter<Entity, Output>,
+    handler: PresenterRouteHandler<Entity>
   ): Route {
     return new Route({
       path,
@@ -47,13 +29,13 @@ export class PresenterRouteFactory {
       responses: Object.assign(options.responses || {}, {
         200: {
           desc: "Success",
-          schema: presenter.outputJSONSchema,
+          schema: presenter.outputJSONSchema(),
         },
       }),
       metadata: options.metadata,
       params,
       handler: async function () {
-        const res = (await (handler.call(this) as Promise<Input>));
+        const res = (await (handler.call(this) as Promise<Entity>));
         return this.json(presenter.present(res));
       },
     });
