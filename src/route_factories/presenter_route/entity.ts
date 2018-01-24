@@ -1,14 +1,26 @@
 import { Presenter } from "./presenter";
 
+import * as _ from "lodash";
+
 import * as ClassValidator from "class-validator";
 import * as ClassValidatorJSONSchema from "class-validator-jsonschema";
+
+function getPropType(target: any, property: string) {
+  return Reflect.getMetadata('design:type', target, property);
+}
 
 export class EntityPresenterFactory {
   private static __schemas: any;
   public static schemas() {
     if (!this.__schemas) {
       const metadatas = (ClassValidator.getFromContainer(ClassValidator.MetadataStorage) as any).validationMetadatas;
-      this.__schemas = ClassValidatorJSONSchema.validationMetadatasToSchemas(metadatas);
+      this.__schemas = ClassValidatorJSONSchema.validationMetadatasToSchemas(metadatas, {
+        additionalConverters: {
+          [ClassValidator.ValidationTypes.IS_ARRAY]: (meta) => {
+            throw new Error("EntityPresenterFactory doesn't support array yet sadly");
+          },
+        }
+      });
     }
     return this.__schemas;
   }
@@ -25,6 +37,11 @@ export class EntityPresenterFactory {
           if (!schema) {
             throw new Error(`${modelName} must be decorated with ClassValidator`);
           }
+          // Make sure there IS schema, and convert back to Reference
+          schema = {
+            "$ref": `#/definitions/${modelName}`
+          };
+
           this.outputJSONSchemaMap.set(modelName, schema);
         }
         return schema;
@@ -45,9 +62,13 @@ export class EntityPresenterFactory {
           if (!schema) {
             throw new Error(`${modelName} must be decorated with ClassValidator`);
           }
+          // Make sure there IS schema, and convert back to Reference
+          schema = {
+            "$ref": `#/definitions/${modelName}`
+          };
           schema = {
             "type": "array",
-            "items": schema
+            "items": schema,
           };
           this.outputJSONSchemaMap.set(storeName, schema);
         }

@@ -43,19 +43,7 @@ describe(PresenterRouteFactory.name, () => {
       });
 
       expect(presenter.outputJSONSchema()).to.be.deep.eq({
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          },
-        },
-        "required": [
-          "id",
-          "name",
-        ],
-        "type": "object",
+        "$ref": "#/definitions/TestEntity"
       });
       // Should return same object
       expect(presenter.outputJSONSchema()).to.be.eq(presenter.outputJSONSchema());

@@ -22,13 +22,79 @@ describe(EntityPresenterFactory.name, () => {
     }
   }
 
+  class TestAliasEntity {
+    @ClassValidator.IsString()
+    public aliasName: string;
+  }
+
+  class TestStatEntity {
+    @ClassValidator.IsNumber()
+    public count: number;
+  }
+
   class TestEntity {
     @ClassValidator.IsNumber()
     public id: string;
 
     @ClassValidator.IsString()
     public name: string;
+
+    @ClassValidator.ValidateNested()
+    public alias: TestAliasEntity;
+
+    // This is not supported yet
+    // @ClassValidator.IsArray()
+    // public stats: TestStatEntity[];
   }
+
+  describe("#schemas", () => {
+    it("should return", () => {
+      expect(EntityPresenterFactory.schemas()).to.be.deep.eq({
+        "TestAliasEntity": {
+          "properties": {
+            "aliasName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "aliasName"
+          ],
+          "type": "object"
+        },
+        "TestEntityArrayData": {
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/TestEntity" },
+            }
+          },
+          "required": [
+            "data"
+          ],
+          "type": "object"
+        },
+        "TestEntity": {
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "alias": {
+              "$ref": "#/definitions/TestAliasEntity"
+            },
+          },
+          "required": [
+            "id",
+            "name",
+            "alias",
+          ],
+          "type": "object"
+        }
+      })
+    });
+  });
 
   describe("#create", () => {
     let presenter = EntityPresenterFactory.create(TestEntity, function (input: TestModel) {
@@ -41,19 +107,7 @@ describe(EntityPresenterFactory.name, () => {
     it("should presenter singleton", async () => {
       // it should generate output Schema from object
       expect(presenter.outputJSONSchema()).to.be.deep.eq({
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          },
-        },
-        "required": [
-          "id",
-          "name",
-        ],
-        "type": "object",
+        "$ref": "#/definitions/TestEntity"
       });
 
       // Should return same object all the time, so that we can reuse in swagger docs
@@ -72,7 +126,6 @@ describe(EntityPresenterFactory.name, () => {
 
   describe("#createArray", () => {
     const presenter = EntityPresenterFactory.createArray(TestEntity, function (input: TestModel[]) {
-      console.log("Input : ", input);
       return input.map(model => {
         const entity = new TestEntity();
         entity.id = model.id.toString();
@@ -85,21 +138,7 @@ describe(EntityPresenterFactory.name, () => {
       // it should generate output Schema from object
       expect(presenter.outputJSONSchema()).to.be.deep.eq({
         type: "array",
-        items: {
-          "properties": {
-            "id": {
-              "type": "number"
-            },
-            "name": {
-              "type": "string"
-            },
-          },
-          "required": [
-            "id",
-            "name",
-          ],
-          "type": "object",
-        }
+        items: { "$ref": "#/definitions/TestEntity" },
       });
 
       // Should return same object all the time, so that we can reuse in swagger docs
