@@ -14,6 +14,22 @@ export interface Presenter<Input, Output> {
   readonly present: (input: Input) => Output;
 }
 
+import * as Joi from "joi";
+export class DataLayout<Input, Output> implements Presenter<Input, { data: Output }> {
+  public outputJSONSchema = Joi.object({
+    data: Joi.array().items(this.presenter.outputJSONSchema)
+  });
+
+  constructor(private presenter: Presenter<Input, Output>) { }
+
+  public present(input: Input) {
+    const output = this.presenter.present(input);
+    return {
+      data: output,
+    };
+  }
+}
+
 export type PresenterRouteHandler<Input> = (this: RoutingContext) => Promise<Input>;
 export class PresenterRouteFactory {
   static create<Input, Output>(
