@@ -43,10 +43,10 @@ describe(PresenterRouteFactory.name, () => {
           "GET", {
             desc: "test", operationId: "getAPI"
           }, {
-          }, async () => {
+          }, presenter
+          , async function() {
             return { id: 100, name: "ABCD" }
           },
-          presenter,
         )
       ]);
       const res = await router.resolve({

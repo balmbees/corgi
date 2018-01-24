@@ -60,22 +60,22 @@ export class PresenterRouteFactory {
   }
 
   // Simplified Constructors
-  static GET<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+  static GET<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, presenter: Presenter<Input, Output>, handler: PresenterRouteHandler<Input>) {
     return this.create(path, 'GET', options, params, presenter, handler)
   }
-  static POST<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+  static POST<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, presenter: Presenter<Input, Output>, handler: PresenterRouteHandler<Input>) {
     return this.create(path, 'POST', options, params, presenter, handler)
   }
-  static PUT<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+  static PUT<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, presenter: Presenter<Input, Output>, handler: PresenterRouteHandler<Input>) {
     return this.create(path, 'PUT', options, params, presenter, handler)
   }
-  static DELETE<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+  static DELETE<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, presenter: Presenter<Input, Output>, handler: PresenterRouteHandler<Input>) {
     return this.create(path, 'DELETE', options, params, presenter, handler)
   }
-  static OPTIONS<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+  static OPTIONS<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, presenter: Presenter<Input, Output>, handler: PresenterRouteHandler<Input>) {
     return this.create(path, 'OPTIONS', options, params, presenter, handler)
   }
-  static HEAD<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, handler: PresenterRouteHandler<Input>, presenter: Presenter<Input, Output>) {
+  static HEAD<Input, Output>(path: string, options: RouteSimplifiedOptions, params: ParameterDefinitionMap, presenter: Presenter<Input, Output>, handler: PresenterRouteHandler<Input>) {
     return this.create(path, 'HEAD', options, params, presenter, handler)
   }
 }
