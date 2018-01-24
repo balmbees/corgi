@@ -29,7 +29,10 @@ export class PresenterRouteFactory {
       method,
       desc: options.desc,
       responses: Object.assign(options.responses || {}, {
-        200: presenter.outputJSONSchema,
+        200: {
+          desc: "Success",
+          schema: presenter.outputJSONSchema,
+        },
       }),
       metadata: options.metadata,
       params,
