@@ -7,3 +7,7 @@ export * from './lambda-proxy';
 export * from './parameter'
 export * from './middleware';
 export * from './middlewares';
+export * from "./route_factories";
+
+import * as ClassValidator from "class-validator";
+export { ClassValidator };
