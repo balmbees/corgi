@@ -162,7 +162,7 @@ describe("Calling complex API", () => {
                 }
               }
             },
-            "operationId": "GetApiUserIdFollowers"
+            "operationId": "getFollowers"
           }
         }
       },

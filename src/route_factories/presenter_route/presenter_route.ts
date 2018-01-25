@@ -25,6 +25,7 @@ export class PresenterRouteFactory {
       path,
       method,
       desc: options.desc,
+      operationId: options.operationId,
       responses: Object.assign(options.responses || {}, {
         200: {
           desc: "Success",

@@ -48,20 +48,22 @@ describe(PresenterRouteFactory.name, () => {
       // Should return same object
       expect(presenter.outputJSONSchema()).to.be.eq(presenter.outputJSONSchema());
 
+      const route = PresenterRouteFactory.GET(
+        "/api", {
+          desc: "test", operationId: "getAPI"
+        }, {
+        }, presenter
+        , async function () {
+          const model = new TestModel();
+          model.id = 100;
+          model.name = "AbcD";
+          return model;
+        },
+      );
+      expect(route.operationId).to.be.eq("getAPI");
 
       const router = new Router([
-        PresenterRouteFactory.GET(
-          "/api", {
-            desc: "test", operationId: "getAPI"
-          }, {
-          }, presenter
-          , async function() {
-            const model = new TestModel();
-            model.id = 100;
-            model.name = "AbcD";
-            return model;
-          },
-        )
+        route,
       ]);
       const res = await router.resolve({
         path: "/api",
