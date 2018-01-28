@@ -2,9 +2,11 @@
 [![npm version](https://badge.fury.io/js/vingle-corgi.svg)](https://badge.fury.io/js/vingle-corgi)
 
 # Corgi
-Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration
+HTTP Web Application Framework for AWS Lambda - AWS API Gateway Proxy Integration
 
 <img width="500px" height="auto" src="https://scontent-hkg3-1.cdninstagram.com/t51.2885-15/e35/13735891_1160668067329731_1019397372_n.jpg" />
+
+## 
 
 ## Features
 1. Cascade Routing
@@ -17,14 +19,14 @@ Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration
 5. Swagger Document Generation  
     - [Swagger](http://swagger.io/) is API Documentation spec. Corgi support automatic swagger document generation. 
     - refer [example](src/__test__/swagger_spec.ts) 
+6. View  
+    - Named "Presenter". basically you return "model" from Route, and "presenter" defines how you convert this model into HTML serverable resource such as JSON
 
 Whole thing supports async/await for sure, written in typescript also
 
 ## TODO
 1. HTTP Body Parser 
     - Base64Encoding support
-2. View Framework
-    - should support Swagger Response schema generation 
 
 ## Why do i need an extra Framework for Lambda?
 
@@ -39,7 +41,7 @@ exports.myHandler = function(event, context, callback) {
 ```
 
 let's say you connected API Gateway, (using serverless maybe), 
-as Lambda Proxy. and wanna build some Restful API with that. 
+as Lambda Proxy. and built some Restful API with that. 
 
 ```js
 exports.myHandler = function(event, context, callback) {
@@ -77,7 +79,7 @@ exports.myHandler = function(event, context, callback) {
 ```
 
 Ok, fairly good, since it's on lambda and api gateway so everything is managed and scaled....etc. 
-but surely, it will be really messy soon 
+but also, you can clearly see this is at tipping point of going unmanagable.
 
 there are several frameworks that built for this, 
 (such as running express itself on lambda, eventhough which is what exactly AWS APIGateway is for) 
@@ -85,8 +87,9 @@ there are several frameworks that built for this,
 [aws-serverless-express](https://github.com/awslabs/aws-serverless-express) 
 [serverless-express](https://claudiajs.com/tutorials/serverless-express.html) 
 
-we did seriously considered about using this kinds of express wrapping, 
-but we thought we can do better by just write one for Lambda. 
+At Vingle, we did seriously considered about using this kinds of express wrapping,  
+but cleary those are really unefficient and not really reliable for production usage  
+and we thought we can do better. so just decided to make one
 
 inspired by [Grape](https://github.com/ruby-grape/grape) a lot, since we really liked it 
 
