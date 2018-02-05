@@ -114,10 +114,10 @@ describe(EntityPresenterFactory.name, () => {
       expect(presenter.outputJSONSchema()).to.be.eq(presenter.outputJSONSchema());
     });
 
-    it("should present", () => {
+    it("should present", async () => {
       const model = TestModel.create(1234, "XXYY");
 
-      expect(presenter.present(model)).to.deep.eq({
+      expect(await presenter.present(model)).to.deep.eq({
         id: "1234",
         name: "xxyy",
       });
@@ -145,13 +145,13 @@ describe(EntityPresenterFactory.name, () => {
       expect(presenter.outputJSONSchema()).to.be.eq(presenter.outputJSONSchema());
     });
 
-    it("should present", () => {
+    it("should present", async () => {
       const models = [
         TestModel.create(1234, "XXYY"),
         TestModel.create(4321, "YYXX"),
       ];
 
-      expect(presenter.present(models)).to.deep.eq([
+      expect(await presenter.present(models)).to.deep.eq([
         {
           id: "1234", name: "xxyy",
         }, {
