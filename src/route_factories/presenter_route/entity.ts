@@ -27,7 +27,7 @@ export class EntityPresenterFactory {
 
   private static outputJSONSchemaMap = new Map<any, any>();
 
-  public static create<Model, Entity>(outputClass: { new(): Entity }, presentMethod: (input: Model) => Entity) {
+  public static create<Model, Entity>(outputClass: { new(): Entity }, presentMethod: (input: Model) => Promise<Entity> | Entity) {
     const presenter: Presenter<Model, Entity> = {
       outputJSONSchema: () => {
         const modelName = outputClass.name;
@@ -51,7 +51,7 @@ export class EntityPresenterFactory {
     return presenter;
   }
 
-  public static createArray<Model, Entity>(outputClass: { new(): Entity }, presentMethod: (input: Model) => Entity[]) {
+  public static createArray<Model, Entity>(outputClass: { new(): Entity }, presentMethod: (input: Model) => Promise<Entity[]> | Entity[]) {
     const presenter: Presenter<Model, Entity[]> = {
       outputJSONSchema: () => {
         const modelName = outputClass.name;
