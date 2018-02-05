@@ -36,7 +36,7 @@ export class PresenterRouteFactory {
       params,
       handler: async function () {
         const res = (await (handler.call(this) as Promise<Entity>));
-        return this.json(presenter.present(res));
+        return this.json(await presenter.present(res));
       },
     });
   }

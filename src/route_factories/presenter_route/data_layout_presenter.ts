@@ -17,8 +17,8 @@ export class DataLayoutPresenter<Input, Output> implements Presenter<Input, { da
 
   constructor(private presenter: Presenter<Input, Output>) {}
 
-  public present(input: Input) {
-    const output = this.presenter.present(input);
+  public async present(input: Input) {
+    const output = await this.presenter.present(input);
     return {
       data: output,
     };
