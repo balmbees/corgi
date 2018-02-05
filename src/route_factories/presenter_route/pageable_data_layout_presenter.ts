@@ -1,7 +1,8 @@
 import { Presenter } from "./presenter";
 
 export interface PagingEntity {
-  after: string;
+  before?: string;
+  after?: string;
 }
 
 export interface PaginatedInput<DataInput> {
@@ -16,34 +17,20 @@ export interface PaginatedOutput<DataOutput> {
 
 // tslint:disable-next-line
 export class PageableDataLayoutPresenter<DataInput, DataOutput> implements Presenter<PaginatedInput<DataInput>, PaginatedOutput<DataOutput>> {
-  public static schemas() {
-    return this._schemas;
-  }
-
-  private static _schemas: any = { // tslint:disable-line
-    PagingEntity: {
-      type: "object",
-      required: [
-        "after",
-      ],
-      properties: {
-        after: {
-          type: "string",
-        },
-      },
-    },
-  };
-
   private _outputJSONSchema = { // tslint:disable-line
     type: "object",
-    required: [
-      "data",
-      "paging",
-    ],
     properties: {
       data: this.presenter.outputJSONSchema(),
       paging: {
-        $ref: "#/definitions/PagingEntity",
+        type: "object",
+        properties: {
+          before: {
+            type: "string",
+          },
+          after: {
+            type: "string",
+          },
+        },
       },
     },
   };
