@@ -16,7 +16,7 @@ import {
 } from '../../../index';
 import * as Joi from 'joi';
 
-import * as ClassValidator from "class-validator";
+import { ClassValidator } from "../class_validator";
 import * as ClassValidatorJSONSchema from "class-validator-jsonschema";
 
 describe(PresenterRouteFactory.name, () => {

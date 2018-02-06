@@ -18,7 +18,7 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
-import * as ClassValidator from "class-validator";
+import { ClassValidator } from "../../route_factories/presenter_route/class_validator";
 import * as ClassValidatorJSONSchema from "class-validator-jsonschema";
 
 class TestAliasEntity {
@@ -54,6 +54,10 @@ const arrayPresenter = EntityPresenterFactory.createArray(TestEntity, (input: nu
 const dataArrayPresenter = new DataLayoutPresenter(arrayPresenter);
 
 describe("Calling complex API", () => {
+  beforeEach(() => {
+    (EntityPresenterFactory as any).__schemas = undefined;
+  });
+
   const routes: Routes = [
     new Namespace('/api/:userId', {
       params: {

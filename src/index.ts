@@ -9,5 +9,4 @@ export * from './middleware';
 export * from './middlewares';
 export * from "./route_factories";
 
-import * as ClassValidator from "class-validator";
-export { ClassValidator };
+export { ClassValidator } from "./route_factories/presenter_route/class_validator";
