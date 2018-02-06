@@ -1,7 +1,5 @@
 import { Presenter } from "./presenter";
 
-import * as _ from "lodash";
-
 import { ClassValidator, ClassValidatorJSONSchema } from "./class_validator";
 
 function getPropType(target: any, property: string) {

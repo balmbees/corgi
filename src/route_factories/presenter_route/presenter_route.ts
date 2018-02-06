@@ -2,7 +2,6 @@ import { RoutingContext } from "../../routing-context";
 import {
   HttpMethod,
   Route,
-  RouteHandler,
   RouteSimplifiedOptions,
 } from "../../route";
 import {

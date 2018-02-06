@@ -1,13 +1,9 @@
 import {
   DataLayoutPresenter,
   EntityPresenterFactory,
-  Route,
-  RoutingContext,
   Namespace,
   Routes,
   Router,
-  Parameter,
-  Presenter,
   PresenterRouteFactory,
   SwaggerRoute,
 } from '../../index';
@@ -19,7 +15,6 @@ import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
 import { ClassValidator } from "../../route_factories/presenter_route/class_validator";
-import * as ClassValidatorJSONSchema from "class-validator-jsonschema";
 
 class TestAliasEntity {
   @ClassValidator.IsString()
