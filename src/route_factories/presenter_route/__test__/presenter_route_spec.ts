@@ -5,19 +5,11 @@ const expect = chai.expect;
 
 import {
   EntityPresenterFactory,
-  Route,
-  RoutingContext,
-  Namespace,
-  Routes,
   Router,
-  Parameter,
-  Presenter,
   PresenterRouteFactory,
 } from '../../../index';
-import * as Joi from 'joi';
 
-import * as ClassValidator from "class-validator";
-import * as ClassValidatorJSONSchema from "class-validator-jsonschema";
+import { ClassValidator } from "../class_validator";
 
 describe(PresenterRouteFactory.name, () => {
   describe("#create", () => {

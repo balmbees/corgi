@@ -3,11 +3,9 @@ import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-import { EntityPresenterFactory, } from '../../../index';
+import { EntityPresenterFactory } from '../../../index';
 
-import * as Joi from 'joi';
-import * as ClassValidator from "class-validator";
-import * as ClassValidatorJSONSchema from "class-validator-jsonschema";
+import { ClassValidator } from "../class_validator";
 
 describe(EntityPresenterFactory.name, () => {
   class TestModel {
@@ -42,10 +40,13 @@ describe(EntityPresenterFactory.name, () => {
     @ClassValidator.ValidateNested()
     public alias: TestAliasEntity;
 
-    // This is not supported yet
-    // @ClassValidator.IsArray()
-    // public stats: TestStatEntity[];
+    @ClassValidator.Validate(ClassValidator.ValidateEntityArray, [TestStatEntity])
+    public stats: TestStatEntity[];
   }
+
+  beforeEach(() => {
+    (EntityPresenterFactory as any).__schemas = undefined;
+  });
 
   describe("#schemas", () => {
     it("should return", () => {
@@ -61,18 +62,6 @@ describe(EntityPresenterFactory.name, () => {
           ],
           "type": "object"
         },
-        "TestEntityArrayData": {
-          "properties": {
-            "data": {
-              "type": "array",
-              "items": { "$ref": "#/definitions/TestEntity" },
-            }
-          },
-          "required": [
-            "data"
-          ],
-          "type": "object"
-        },
         "TestEntity": {
           "properties": {
             "id": {
@@ -84,11 +73,29 @@ describe(EntityPresenterFactory.name, () => {
             "alias": {
               "$ref": "#/definitions/TestAliasEntity"
             },
+            "stats": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TestStatEntity"
+              }
+            }
           },
           "required": [
             "id",
             "name",
             "alias",
+            "stats",
+          ],
+          "type": "object"
+        },
+        "TestStatEntity": {
+          "properties": {
+            "count": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "count"
           ],
           "type": "object"
         }

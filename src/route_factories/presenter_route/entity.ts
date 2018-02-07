@@ -1,9 +1,6 @@
 import { Presenter } from "./presenter";
 
-import * as _ from "lodash";
-
-import * as ClassValidator from "class-validator";
-import * as ClassValidatorJSONSchema from "class-validator-jsonschema";
+import { ClassValidator, ClassValidatorJSONSchema } from "./class_validator";
 
 function getPropType(target: any, property: string) {
   return Reflect.getMetadata('design:type', target, property);
@@ -14,13 +11,50 @@ export class EntityPresenterFactory {
   public static schemas() {
     if (!this.__schemas) {
       const metadatas = (ClassValidator.getFromContainer(ClassValidator.MetadataStorage) as any).validationMetadatas;
-      this.__schemas = ClassValidatorJSONSchema.validationMetadatasToSchemas(metadatas, {
+
+      const wiringRequiredSchemas: any[] = [];
+      const schemas = ClassValidatorJSONSchema.validationMetadatasToSchemas(metadatas, {
         additionalConverters: {
-          [ClassValidator.ValidationTypes.IS_ARRAY]: (meta) => {
-            throw new Error("EntityPresenterFactory doesn't support array yet sadly");
+          [ClassValidator.ValidationTypes.CUSTOM_VALIDATION]: (meta) => {
+            if (meta.constraintCls === ClassValidator.ValidateEntityArray) {
+              const [ elementClass ] = meta.constraints;
+
+              if (!elementClass) {
+                throw new Error("ValidateNestedElement requires elementClass parameter");
+              }
+
+              console.log(elementClass, Object.prototype.toString.call(elementClass));
+
+              const schema = {
+                type: "array",
+              };
+
+              wiringRequiredSchemas.push(schema);
+
+              return Object.defineProperty(schema, "__elementClass", {
+                value: elementClass,
+              });
+            } else {
+              throw new Error("EntityPresenterFactory doesn't support custom validator");
+            }
           },
         }
       });
+
+      wiringRequiredSchemas.forEach((schema) => {
+        const elementModelName = schema.__elementClass.name;
+        const elementSchema = schemas[elementModelName];
+
+        if (!elementSchema) {
+          throw new Error(`${elementModelName} must be decorated with ClassValidator`);
+        }
+
+        schema.items = {
+          "$ref": `#/definitions/${elementModelName}`,
+        };
+      });
+
+      this.__schemas = schemas;
     }
     return this.__schemas;
   }

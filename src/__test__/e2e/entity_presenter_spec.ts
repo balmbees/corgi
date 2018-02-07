@@ -1,13 +1,9 @@
 import {
   DataLayoutPresenter,
   EntityPresenterFactory,
-  Route,
-  RoutingContext,
   Namespace,
   Routes,
   Router,
-  Parameter,
-  Presenter,
   PresenterRouteFactory,
   SwaggerRoute,
 } from '../../index';
@@ -18,8 +14,7 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
-import * as ClassValidator from "class-validator";
-import * as ClassValidatorJSONSchema from "class-validator-jsonschema";
+import { ClassValidator } from "../../route_factories/presenter_route/class_validator";
 
 class TestAliasEntity {
   @ClassValidator.IsString()
@@ -54,6 +49,10 @@ const arrayPresenter = EntityPresenterFactory.createArray(TestEntity, (input: nu
 const dataArrayPresenter = new DataLayoutPresenter(arrayPresenter);
 
 describe("Calling complex API", () => {
+  beforeEach(() => {
+    (EntityPresenterFactory as any).__schemas = undefined;
+  });
+
   const routes: Routes = [
     new Namespace('/api/:userId', {
       params: {

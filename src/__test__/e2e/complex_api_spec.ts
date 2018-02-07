@@ -1,6 +1,5 @@
 import {
   Route,
-  RoutingContext,
   Namespace,
   Routes,
   Router,
