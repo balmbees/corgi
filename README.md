@@ -20,15 +20,14 @@ HTTP Web Application Framework for AWS Lambda - AWS API Gateway Proxy Integratio
     - [Swagger](http://swagger.io/) is API Documentation spec. Corgi support automatic swagger document generation. 
     - refer [example](src/__test__/swagger_spec.ts) 
 6. View  
-    - Named "Presenter". basically you return "model" from Route, and "presenter" defines how you convert this model into HTML serverable resource such as JSON
-
-Whole thing supports async/await for sure, written in typescript also
+    - Named "Presenter". basically, you return "model" from Route, and "presenter" defines how you convert this model into HTTP resource such as JSON  
+The whole thing supports async/await!, written in typescript from scratch also
 
 ## TODO
 1. HTTP Body Parser 
     - Base64Encoding support
 
-## Why do i need an extra Framework for Lambda?
+## Why do I need an extra Framework for Lambda?
 
 So simple lambda handler looks like this 
 
@@ -78,20 +77,18 @@ exports.myHandler = function(event, context, callback) {
 }
 ```
 
-Ok, fairly good, since it's on lambda and api gateway so everything is managed and scaled....etc. 
-but also, you can clearly see this is at tipping point of going unmanagable.
+Ok, fairly good, since it's on lambda and APIGateway so everything is managed and scaled....etc. 
+but also you can clearly see that this is at the tipping point of going unmanageable.
 
 there are several frameworks that built for this, 
-(such as running express itself on lambda, eventhough which is what exactly AWS APIGateway is for) 
+(such as running express itself on lambda, even though which is what exactly AWS APIGateway is for) 
 [lambda-req](https://www.npmjs.com/package/lambda-req) 
 [aws-serverless-express](https://github.com/awslabs/aws-serverless-express) 
 [serverless-express](https://claudiajs.com/tutorials/serverless-express.html) 
 
-At Vingle, we did seriously considered about using this kinds of express wrapping,  
-but cleary those are really unefficient and not really reliable for production usage  
-and we thought we can do better. so just decided to make one
-
-inspired by [Grape](https://github.com/ruby-grape/grape) a lot, since we really liked it 
+At Vingle, we did seriously consider about using these kinds of express wrapping.
+But clearly those are really inefficient and not really reliable for production usage and, most of all, we thought we can do better. so just decided to make one
+Inspired by [Grape](https://github.com/ruby-grape/grape) a lot, since we really liked it 
 
 ## Corgi Example
 
