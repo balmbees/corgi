@@ -1,7 +1,7 @@
 import { RoutingContext } from '../routing-context';
 import { Parameter } from '../parameter';
 import * as Joi from 'joi';
-
+import * as qs from "qs";
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
@@ -36,6 +36,65 @@ describe("RoutingContext", () => {
           userId: "33",
           interest: "%ED%94%BD%EC%8B%9C",
         });
+
+        context.validateAndUpdateParams({
+          testId: Parameter.Query(Joi.number()),
+          encodedParam: Parameter.Query(Joi.string()),
+          update: Parameter.Body(Joi.object({
+            fieldA: Joi.number(),
+            fieldC: Joi.object({
+              c: Joi.number()
+            })
+          })),
+          userId: Parameter.Path(Joi.number()),
+          interest: Parameter.Path(Joi.string().strict()),
+          arrayParameter: Parameter.Query(Joi.array().items(Joi.number().integer())),
+        });
+
+        expect(context.params).to.deep.eq({
+          testId: 12345,
+          encodedParam: "픽시",
+          update: {
+            fieldA: 12345,
+            fieldC: {
+              c: 100,
+            }
+          },
+          userId: 33,
+          interest: "픽시",
+          arrayParameter: [1, 2, 3, 4],
+        })
+      });
+
+      it("should parse and validate application/x-www-form-urlencoded params", () => {
+        const context = new RoutingContext({} as any, {
+          path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
+          httpMethod: 'POST',
+          body: qs.stringify({
+            update: {
+              fieldA: 12345,
+              fieldB: 54321,
+              fieldC: {
+                c: 100,
+              }
+            }
+          }),
+          headers: {
+            'Content-Type': "application/x-www-form-urlencoded",
+          },
+          queryStringParameters: {
+            testId: "12345",
+            not_allowed_param: "xxx",
+            encodedParam: "%ED%94%BD%EC%8B%9C",
+            "arrayParameter[0]": "1",
+            "arrayParameter[1]": "2",
+            "arrayParameter[2]": "3",
+            "arrayParameter[3]": "4",
+          }
+        } as any, "request-id", {
+            userId: "33",
+            interest: "%ED%94%BD%EC%8B%9C",
+          });
 
         context.validateAndUpdateParams({
           testId: Parameter.Query(Joi.number()),

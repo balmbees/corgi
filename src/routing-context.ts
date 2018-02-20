@@ -92,10 +92,24 @@ export class RoutingContext {
   }
 
   // Body Parser
-  get bodyJSON(): any {
-    // TODO Check Header Content-Type
-    // API Gateway define body as null if request body is empty
-    return this.request.body ? JSON.parse(this.request.body) : {};
+  get bodyJSON(): object | string | undefined {
+    switch (this.headers["content-type"]) {
+      case "application/x-www-form-urlencoded": {
+        if (this.request.body) {
+          return qs.parse(this.request.body);
+        } else {
+          return undefined;
+        }
+      }
+      case "text": {
+        return this.request.body;
+      }
+      case "application/json":
+      default: {
+        // default is json
+        return this.request.body ? JSON.parse(this.request.body) : {};
+      }
+    }
   }
 
   // Response Helpers
