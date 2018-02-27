@@ -24,8 +24,6 @@ export class EntityPresenterFactory {
                   throw new Error("ValidateNestedElement requires elementClass parameter");
                 }
 
-                console.log(elementClass, Object.prototype.toString.call(elementClass));
-
                 const schema = {
                   type: "array",
                 };
