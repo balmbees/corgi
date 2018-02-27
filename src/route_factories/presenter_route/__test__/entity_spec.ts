@@ -5,7 +5,7 @@ const expect = chai.expect;
 
 import { EntityPresenterFactory } from '../../../index';
 
-import { ClassValidator } from "../class_validator";
+import { TestEntity } from "../../../__test__/entity";
 
 describe(EntityPresenterFactory.name, () => {
   class TestModel {
@@ -19,34 +19,6 @@ describe(EntityPresenterFactory.name, () => {
       return model;
     }
   }
-
-  class TestAliasEntity {
-    @ClassValidator.IsString()
-    public aliasName: string;
-  }
-
-  class TestStatEntity {
-    @ClassValidator.IsNumber()
-    public count: number;
-  }
-
-  class TestEntity {
-    @ClassValidator.IsNumber()
-    public id: string;
-
-    @ClassValidator.IsString()
-    public name: string;
-
-    @ClassValidator.ValidateNested()
-    public alias: TestAliasEntity;
-
-    @ClassValidator.Validate(ClassValidator.ValidateEntityArray, [TestStatEntity])
-    public stats: TestStatEntity[];
-  }
-
-  beforeEach(() => {
-    (EntityPresenterFactory as any).__schemas = undefined;
-  });
 
   describe("#schemas", () => {
     it("should return", () => {
@@ -82,9 +54,7 @@ describe(EntityPresenterFactory.name, () => {
           },
           "required": [
             "id",
-            "name",
-            "alias",
-            "stats",
+            "name"
           ],
           "type": "object"
         },

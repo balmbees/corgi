@@ -14,23 +14,7 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
-import { ClassValidator } from "../../route_factories/presenter_route/class_validator";
-
-class TestAliasEntity {
-  @ClassValidator.IsString()
-  public aliasName: string;
-}
-
-class TestEntity {
-  @ClassValidator.IsNumber()
-  public id: string;
-
-  @ClassValidator.IsString()
-  public name: string;
-
-  @ClassValidator.ValidateNested()
-  public alias: TestAliasEntity;
-}
+import { TestEntity, TestAliasEntity, TestStatEntity } from "../entity";
 
 const arrayPresenter = EntityPresenterFactory.createArray(TestEntity, (input: number[]) => {
   return input.map(i => {
@@ -49,10 +33,6 @@ const arrayPresenter = EntityPresenterFactory.createArray(TestEntity, (input: nu
 const dataArrayPresenter = new DataLayoutPresenter(arrayPresenter);
 
 describe("Calling complex API", () => {
-  beforeEach(() => {
-    (EntityPresenterFactory as any).__schemas = undefined;
-  });
-
   const routes: Routes = [
     new Namespace('/api/:userId', {
       params: {
@@ -190,12 +170,17 @@ describe("Calling complex API", () => {
             },
             "alias": {
               "$ref": "#/definitions/TestAliasEntity"
+            },
+            "stats": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TestStatEntity"
+              }
             }
           },
           "required": [
             "id",
-            "name",
-            "alias"
+            "name"
           ],
           "type": "object"
         },
@@ -210,6 +195,15 @@ describe("Calling complex API", () => {
             },
           },
           "required": ["data"],
+        },
+        "TestStatEntity": {
+          "properties": {
+            "count": {
+              "type": "number"
+            }
+          },
+          "required": ["count"],
+          "type": "object"
         }
       }
     })
