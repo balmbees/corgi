@@ -16,26 +16,34 @@ export class EntityPresenterFactory {
       const schemas = ClassValidatorJSONSchema.validationMetadatasToSchemas(metadatas, {
         additionalConverters: {
           [ClassValidator.ValidationTypes.CUSTOM_VALIDATION]: (meta) => {
-            if (meta.constraintCls === ClassValidator.ValidateEntityArray) {
-              const [ elementClass ] = meta.constraints;
+            switch (meta.constraintCls) {
+              case ClassValidator.ValidateEntityArray: {
+                const [ elementClass ] = meta.constraints;
 
-              if (!elementClass) {
-                throw new Error("ValidateNestedElement requires elementClass parameter");
+                if (!elementClass) {
+                  throw new Error("ValidateNestedElement requires elementClass parameter");
+                }
+
+                console.log(elementClass, Object.prototype.toString.call(elementClass));
+
+                const schema = {
+                  type: "array",
+                };
+
+                wiringRequiredSchemas.push(schema);
+
+                return Object.defineProperty(schema, "__elementClass", {
+                  value: elementClass,
+                });
               }
-
-              console.log(elementClass, Object.prototype.toString.call(elementClass));
-
-              const schema = {
-                type: "array",
-              };
-
-              wiringRequiredSchemas.push(schema);
-
-              return Object.defineProperty(schema, "__elementClass", {
-                value: elementClass,
-              });
-            } else {
-              throw new Error("EntityPresenterFactory doesn't support custom validator");
+              case ClassValidator.IsNullable: {
+                return {
+                  nullable: true,
+                };
+              }
+              default: {
+                throw new Error("EntityPresenterFactory doesn't support custom validator");
+              }
             }
           },
         }

@@ -40,7 +40,8 @@ describe(EntityPresenterFactory.name, () => {
               "type": "number"
             },
             "name": {
-              "type": "string"
+              "type": "string",
+              "nullable": true
             },
             "alias": {
               "$ref": "#/definitions/TestAliasEntity"
