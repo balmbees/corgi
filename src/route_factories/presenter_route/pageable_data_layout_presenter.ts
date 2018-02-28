@@ -1,8 +1,8 @@
 import { Presenter } from "./presenter";
 
 export interface PagingEntity {
-  before?: string | null;
-  after?: string | null;
+  before?: string;
+  after?: string;
 }
 
 export interface PaginatedInput<DataInput> {
@@ -26,11 +26,9 @@ export class PageableDataLayoutPresenter<DataInput, DataOutput> implements Prese
         properties: {
           before: {
             type: "string",
-            description: "This field is nullable. Value can be null"
           },
           after: {
             type: "string",
-            description: "This field is nullable. Value can be null"
           },
         },
       },
