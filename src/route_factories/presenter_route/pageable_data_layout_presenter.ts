@@ -6,7 +6,7 @@ export interface PagingEntity {
 }
 
 export interface PaginatedInput<DataInput> {
-  value: DataInput;
+  data: DataInput;
   paging: PagingEntity;
 }
 
@@ -44,7 +44,7 @@ export class PageableDataLayoutPresenter<DataInput, DataOutput> implements Prese
   }
 
   public async present(input: PaginatedInput<DataInput>) {
-    const dataOutput = await this.presenter.present(input.value);
+    const dataOutput = await this.presenter.present(input.data);
 
     return {
       data: dataOutput,

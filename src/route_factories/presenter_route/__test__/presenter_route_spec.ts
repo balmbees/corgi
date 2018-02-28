@@ -9,19 +9,11 @@ import {
   PresenterRouteFactory,
 } from '../../../index';
 
-import { ClassValidator } from "../class_validator";
+import { TestEntity } from "../../../__test__/entity";
 
 describe(PresenterRouteFactory.name, () => {
   describe("#create", () => {
     it("should create route that using given presenter", async () => {
-      class TestEntity {
-        @ClassValidator.IsNumber()
-        public id: string;
-
-        @ClassValidator.IsString()
-        public name: string;
-      }
-
       class TestModel {
         id: number;
         name: string;
