@@ -36,7 +36,10 @@ export class EntityPresenterFactory {
               }
               case ClassValidator.IsNullable: {
                 return {
-                  nullable: true,
+                  // Currently Swagger Spec 2.0 does not support `nullable` attribute
+                  // `nullable` can be used with OpenAPI Specification Version 3, or later only
+                  // nullable: true,
+                  description: "This field is nullable, value can be null.",
                 };
               }
               default: {

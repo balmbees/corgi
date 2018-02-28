@@ -167,7 +167,7 @@ describe("Calling complex API", () => {
             },
             "name": {
               "type": "string",
-              "nullable": true
+              "description": "This field is nullable, value can be null."
             },
             "alias": {
               "$ref": "#/definitions/TestAliasEntity"
