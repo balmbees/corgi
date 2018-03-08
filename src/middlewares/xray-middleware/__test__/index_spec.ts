@@ -8,12 +8,12 @@ import { XRayMiddleware } from "../index";
 
 describe(XRayMiddleware.name, () => {
   describe("Constructor", () => {
-    it("should be construted", () => {
+    it("should be constructed", () => {
       const middleware = new XRayMiddleware();
       expect(middleware).to.be.instanceOf(XRayMiddleware);
     });
 
-    it("should be construted", () => {
+    it("should be constructed", () => {
       const middleware = new XRayMiddleware({
         default: {
           fixed_target: 2,
