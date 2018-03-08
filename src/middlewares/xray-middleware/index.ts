@@ -63,6 +63,7 @@ export class XRayMiddleware extends Middleware {
       const parentSeg = AWSXRay.resolveSegment(undefined);
       this.segment = parentSeg.addNewSubsegment("corgi-route") as AWSXRaySegment;
       this.segment.addAnnotation("vingle_trace_id", vingleTraceId);
+      this.segment.addAnnotation("operation_id", options.currentRoute.operationId || "");
     } else {
       this.segment = undefined;
     }
