@@ -1,6 +1,7 @@
 import { Middleware, MiddlewareBeforeOptions, MiddlewareAfterOptions } from '../../middleware';
 import { RoutingContext } from '../../routing-context';
-import { Response } from '../../lambda-proxy';
+import { Response, Event as LambdaProxyEvent } from '../../lambda-proxy';
+import * as http from 'http';
 
 const AWSXRay = require("aws-xray-sdk-core");
 interface AWSXRaySegment {
@@ -23,7 +24,7 @@ export interface SamplingRule {
    */
   fixed_target: number;
   /**
-   * except first (n) requets, how much requetss will be sampled (0 ~ 1)
+   * except first (n) requests, how much requests will be sampled (0 ~ 1)
    */
   rate: number;
 
@@ -32,7 +33,7 @@ export interface SamplingRule {
    */
   description?: string;
   /**
-   * Service Name filter. check segement's service name
+   * Service Name filter. check segment's service name
    */
   service_name?: string;
   /**
@@ -47,7 +48,6 @@ export interface SamplingRule {
 
 export class XRayMiddleware extends Middleware {
   private segment: AWSXRaySegment | undefined;
-
   constructor(samplingRules?: SamplingRules) {
     super();
     if (samplingRules) {
@@ -57,11 +57,13 @@ export class XRayMiddleware extends Middleware {
 
   // runs before the application, if it returns Promise<Response>, Routes are ignored and return the response
   async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
+    AWSXRay.middleware.IncomingRequestData(this.getIncomingRequestData(options.routingContext.request));
     const vingleTraceId = options.routingContext.headers['x-vingle-trace-id']
     if (vingleTraceId) {
       const parentSeg = AWSXRay.resolveSegment(undefined);
       this.segment = parentSeg.addNewSubsegment("corgi-route") as AWSXRaySegment;
       this.segment.addAnnotation("vingle_trace_id", vingleTraceId);
+      this.segment.addAnnotation("operation_id", options.currentRoute.operationId || "");
     } else {
       this.segment = undefined;
     }
@@ -75,5 +77,16 @@ export class XRayMiddleware extends Middleware {
     this.segment = undefined;
 
     return options.response;
+  }
+
+  private getIncomingRequestData(event: LambdaProxyEvent): http.IncomingMessage {
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/13909
+    // @ts-ignore: http.IncomingMessage is a type, not a class in Typescript
+    const msg: http.IncomingMessage = new http.IncomingMessage();
+
+    msg.method = event.httpMethod;
+    msg.url = event.path;
+    msg.headers = event.headers;
+    return msg;
   }
 }
