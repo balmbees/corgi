@@ -4,6 +4,8 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 import { XRayMiddleware } from "../index";
+import { RoutingContext } from '../../../routing-context';
+import { Route } from '../../../route';
 
 
 describe(XRayMiddleware.name, () => {
@@ -22,6 +24,24 @@ describe(XRayMiddleware.name, () => {
         version: 1,
       });
       expect(middleware).to.be.instanceOf(XRayMiddleware);
+    });
+  });
+
+  describe("before", () => {
+    it("should execute before", async () => {
+      const middleware = new XRayMiddleware();
+      await middleware.before({
+        routingContext: new RoutingContext({} as any, {} as any, "", {}),
+        currentRoute: new Route({
+          path: '/foo',
+          method: 'GET',
+          operationId: "gotFoo",
+          desc: 'foo',
+          handler: async function () {
+            return this.json({});
+          },
+        }),
+      });
     });
   });
 });
