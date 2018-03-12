@@ -57,12 +57,13 @@ export class XRayMiddleware extends Middleware {
 
   // runs before the application, if it returns Promise<Response>, Routes are ignored and return the response
   async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
-    AWSXRay.middleware.IncomingRequestData(this.getIncomingRequestData(options.routingContext.request));
     const vingleTraceId = options.routingContext.headers['x-vingle-trace-id']
     if (vingleTraceId) {
       const parentSeg = AWSXRay.resolveSegment(undefined);
       this.segment = parentSeg.addNewSubsegment("corgi-route") as AWSXRaySegment;
       this.segment.addAnnotation("vingle_trace_id", vingleTraceId);
+      this.segment.addAnnotation("path", options.routingContext.request.path);
+      this.segment.addAnnotation("method", options.routingContext.request.httpMethod);
       this.segment.addAnnotation("operation_id", options.currentRoute.operationId || "");
     } else {
       this.segment = undefined;
@@ -77,16 +78,5 @@ export class XRayMiddleware extends Middleware {
     this.segment = undefined;
 
     return options.response;
-  }
-
-  private getIncomingRequestData(event: LambdaProxyEvent): http.IncomingMessage {
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/13909
-    // @ts-ignore: http.IncomingMessage is a type, not a class in Typescript
-    const msg: http.IncomingMessage = new http.IncomingMessage();
-
-    msg.method = event.httpMethod;
-    msg.url = event.path;
-    msg.headers = event.headers;
-    return msg;
   }
 }
