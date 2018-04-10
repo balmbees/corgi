@@ -19,6 +19,10 @@ export interface PaginatedOutput<DataOutput> {
 export class PageableDataLayoutPresenter<DataInput, DataOutput> implements Presenter<PaginatedInput<DataInput>, PaginatedOutput<DataOutput>> {
   private _outputJSONSchema = { // tslint:disable-line
     type: "object",
+    required: [
+      "data",
+      "paging",
+    ],
     properties: {
       data: this.presenter.outputJSONSchema(),
       paging: {
