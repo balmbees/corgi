@@ -34,11 +34,11 @@
     "chai-as-promised": "^7.1.1",
     "mocha": "^3.4.2",
     "publish": "^0.6.0",
-    "typescript": "^2.4.2"
+    "typescript": "^2.8.3"
   },
   "dependencies": {
     "@types/joi": "^13.0.2",
-    "@types/lodash": "^4.14.65",
+    "@types/lodash": "^4.14.109",
     "@types/node": "^7.0.27",
     "@types/qs": "^6.5.0",
     "@types/swagger-schema-official": "2.0.5",
@@ -48,7 +48,7 @@
     "class-validator": "^0.7.3",
     "class-validator-jsonschema": "^1.1.0",
     "joi": "^13.0.2",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.10",
     "path-to-regexp": "^1.7.0",
     "qs": "^6.5.0",
     "swagger-schema-official": "2.0.0-bab6bed",
