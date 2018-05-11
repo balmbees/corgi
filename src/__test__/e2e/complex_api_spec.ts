@@ -76,7 +76,7 @@ describe("Calling complex API", () => {
         testId: "12345",
         not_allowed_param: "xxx",
       }
-    } as any);
+    } as any, { timeout: 10000 });
 
     chai.expect(res).to.deep.eq({
       statusCode: 200,
@@ -133,7 +133,7 @@ describe("Global Error Handling", () => {
       httpMethod: 'GET',
       queryStringParameters: {
       }
-    } as any);
+    } as any, { timeout: 10000 });
 
     chai.expect(res).to.deep.eq({
       statusCode: 422,

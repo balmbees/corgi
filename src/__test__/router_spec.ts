@@ -9,6 +9,7 @@ import {
   MiddlewareBeforeOptions,
   MiddlewareAfterOptions,
   Response,
+  TimeoutError,
 } from '../index';
 import * as Joi from 'joi';
 
@@ -118,7 +119,7 @@ describe("Router", () => {
           httpMethod: 'GET',
           queryStringParameters: {
           },
-        } as any, "request-id");
+        } as any, { requestId: "request-id", timeout: 10000 });
 
         expect(res.body).to.eq("ABDC");
 
@@ -128,7 +129,7 @@ describe("Router", () => {
           httpMethod: 'GET',
           queryStringParameters: {
           },
-        } as any, "request-id");
+        } as any, { requestId: "request-id", timeout: 10000 });
 
         expect(res.body).to.eq("ABDC");
       });
@@ -136,14 +137,26 @@ describe("Router", () => {
 
     it("should raise timeout if it's really get delayed", async () => {
       const router = new Router([
-        Route.GET('/', { operationId: "getIndex" }, {}, async function() {
-          await new Promise((resolve, reject) => {
-            setTimeout(() => {
-              resolve();
-            }, 200);
-          });
+        new Namespace('/', {
+          async exceptionHandler(error: Error) {
+            if (error instanceof TimeoutError) {
+              return this.json({
+                error: "Timeout",
+                operationId: error.route.operationId,
+              }, 500);
+            }
+          },
+          children: [
+            Route.GET('', { operationId: "getIndex" }, {}, async function() {
+              await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  resolve();
+                }, 200);
+              });
 
-          return this.json({});
+              return this.json({});
+            })
+          ]
         })
       ]);
       const handler = router.handler();
@@ -178,7 +191,8 @@ describe("Router", () => {
         statusCode: 500,
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify({
-          "error":{"id":"request-id","message":"Service timeout. {\"path\":\"/\",\"httpMethod\":\"GET\",\"queryStringParameters\":{}}"}
+          error: "Timeout",
+          operationId: "getIndex",
         }),
       });
     });

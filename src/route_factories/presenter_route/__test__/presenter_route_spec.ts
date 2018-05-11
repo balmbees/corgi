@@ -52,7 +52,7 @@ describe(PresenterRouteFactory.name, () => {
       const res = await router.resolve({
         path: "/api",
         httpMethod: 'GET',
-      } as any);
+      } as any, { timeout: 10000 });
 
       chai.expect(res).to.deep.eq({
         statusCode: 200,
