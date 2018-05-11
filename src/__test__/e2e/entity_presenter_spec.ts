@@ -74,7 +74,7 @@ describe("Calling complex API", () => {
     const res = await router.resolve({
       path: "/api/33/followers",
       httpMethod: 'GET',
-    } as any);
+    } as any, { timeout: 10000 });
 
     chai.expect(res).to.deep.eq({
       statusCode: 200,
@@ -99,7 +99,7 @@ describe("Calling complex API", () => {
       requestContext: {
         stage: "test"
       }
-    } as any);
+    } as any, { timeout: 10000 });
 
     chai.expect(res["statusCode"]).to.eq(200);
     // This thing must be validated by https://editor.swagger.io

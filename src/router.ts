@@ -8,6 +8,7 @@ import { RootNamespace, StandardErrorResponseBody } from './root-namespace';
 import { RoutingContext } from './routing-context';
 import { ParameterInputType } from './parameter';
 import { Middleware, MiddlewareConstructor } from './middleware';
+import { TimeoutError } from '.';
 
 // ---- Router
 
@@ -79,6 +80,13 @@ export class Router {
     this.routeTimeout = options.timeout;
   }
 
+  /**
+   *
+   * Timeout 을 error의 일종으로 처리할지
+   * Error를 지금처럼 ExceptionHandler로 처리할지 Middleware에서 처리할수 있게 만들지
+   * Timeout
+   *
+   */
   findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
     return this.middlewareMap.get(middlewareClass as Function) as T | undefined;
   }
@@ -89,36 +97,14 @@ export class Router {
 
   handler() {
     return (event: LambdaProxy.Event, context: LambdaProxy.Context) => {
-      let timeoutHandle: NodeJS.Timer | null = null;
-      const timeout = this.routeTimeout || context.getRemainingTimeInMillis() * 0.9;
-      Promise.race([
-        this.resolve(event, context.awsRequestId),
-        new Promise<LambdaProxy.Response>((resolve, reject) => {
-          timeoutHandle = setTimeout(() => {
-            const errorBody: StandardErrorResponseBody = {
-              error: {
-                // If Xray is enabled, send out AMZN_TRACE_ID
-                id: (process.env._X_AMZN_TRACE_ID || context.awsRequestId),
-                message: `Service timeout. ${JSON.stringify(event)}`,
-              }
-            }
-            resolve({
-              statusCode: 500,
-              headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-              },
-              body: JSON.stringify(errorBody),
-            });
-          }, timeout)
-        }),
-      ]).then((response) => {
-        if (timeoutHandle)
-          clearTimeout(timeoutHandle);
+      this.resolve(
+        event, {
+          requestId: context.awsRequestId,
+          timeout: context.getRemainingTimeInMillis() * 0.9,
+        }
+      ).then((response) => {
         context.succeed(response);
       }, (error) => {
-        if (timeoutHandle)
-          clearTimeout(timeoutHandle);
-
         const converted = Object.getOwnPropertyNames(error)
           .reduce((hash, key) => {
             hash[key] = error[key];
@@ -136,7 +122,7 @@ export class Router {
     };
   }
 
-  async resolve(event: LambdaProxy.Event, requestId?: string): Promise<LambdaProxy.Response> {
+  async resolve(event: LambdaProxy.Event, options: { timeout: number, requestId?: string }): Promise<LambdaProxy.Response> {
     for (const flattenRoute of this.flattenRoutes) {
       const endRoute = (flattenRoute[flattenRoute.length - 1] as Route);
       const method = endRoute.method;
@@ -155,7 +141,7 @@ export class Router {
             pathParams[key.name] = match[index + 1];
           });
 
-          const routingContext = new RoutingContext(this, event, requestId, pathParams);
+          const routingContext = new RoutingContext(this, event, options.requestId, pathParams);
           const router = this;
 
           const stepRoute = async function(currentRoute: Route | Namespace, nextRoutes: Routes) : Promise<LambdaProxy.Response> {
@@ -205,7 +191,27 @@ export class Router {
               }
 
               // Actual Handler
-              let response = await currentRoute.handler.call(routingContext);
+              let timeoutHandle: NodeJS.Timer | undefined;
+              const cleanTimeout = () => {
+                if (timeoutHandle) {
+                  clearTimeout(timeoutHandle);
+                }
+              };
+
+              let response = await Promise.race([
+                currentRoute.handler.call(routingContext),
+                new Promise((resolve, reject) => {
+                  timeoutHandle = setTimeout(() => {
+                    reject(new TimeoutError(currentRoute));
+                  }, router.routeTimeout || options.timeout);
+                })
+              ]).then((res) => {
+                cleanTimeout();
+                return Promise.resolve(res);
+              }, (error) => {
+                cleanTimeout();
+                return Promise.reject(error);
+              })
 
               // Run after middlewares
               for (const middleware of router.middlewares.slice().reverse()) {
