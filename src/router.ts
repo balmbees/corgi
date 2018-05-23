@@ -97,25 +97,21 @@ export class Router {
 
   handler() {
     return (event: LambdaProxy.Event, context: LambdaProxy.Context) => {
+      const requestId = context.awsRequestId;
+      const timeout = context.getRemainingTimeInMillis() * 0.9;
       this.resolve(
-        event, {
-          requestId: context.awsRequestId,
-          timeout: context.getRemainingTimeInMillis() * 0.9,
-        }
+        event, { requestId, timeout }
       ).then((response) => {
         context.succeed(response);
       }, (error) => {
-        const converted = Object.getOwnPropertyNames(error)
-          .reduce((hash, key) => {
-            hash[key] = error[key];
-            return hash;
-          }, {} as { [key: string]: any });
-
         context.succeed({
           statusCode: 500,
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({
-            "error": { "message": `${JSON.stringify(converted)}` }
+            error: {
+              id: requestId,
+              message: error.toString(),
+            }
           }),
         });
       });
