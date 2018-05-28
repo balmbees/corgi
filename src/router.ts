@@ -80,13 +80,6 @@ export class Router {
     this.routeTimeout = options.timeout;
   }
 
-  /**
-   *
-   * Timeout 을 error의 일종으로 처리할지
-   * Error를 지금처럼 ExceptionHandler로 처리할지 Middleware에서 처리할수 있게 만들지
-   * Timeout
-   *
-   */
   findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
     return this.middlewareMap.get(middlewareClass as Function) as T | undefined;
   }
@@ -140,12 +133,11 @@ export class Router {
           const routingContext = new RoutingContext(this, event, options.requestId, pathParams);
           const router = this;
 
-          const stepRoute = async function(currentRoute: Route | Namespace, nextRoutes: Routes) : Promise<LambdaProxy.Response> {
-            if (currentRoute instanceof Namespace) {
-              const namespace = currentRoute;
 
-              // Middleware, Or Just Next
-              try {
+          const runRoute = async (namespaces: Namespace[], route: Route) => {
+            try {
+              // Run Parent Namespaces
+              for (const namespace of namespaces) {
                 // Parameter Validation
                 const params = _.mapValues(namespace.params, (schema, name) => {
                   return {
@@ -159,34 +151,11 @@ export class Router {
                 if (namespace.before) {
                   await namespace.before.call(routingContext);
                 }
-                return await stepRoute(nextRoutes[0], nextRoutes.slice(1));
-              } catch (e) {
-                if (namespace.exceptionHandler) {
-                  const res = await namespace.exceptionHandler.call(routingContext, e);
-                  if (!res) {
-                    // Failed to handle error
-                    throw e; // Just rethrow to parent handler
-                  } else {
-                    return res;
-                  }
-                } else {
-                  throw e; // Just rethrow to parent handler
-                }
-              }
-            } else {
-              // Parameter Validation
-              routingContext.validateAndUpdateParams(currentRoute.params || {});
-
-              // Run before middlewares
-              for (const middleware of router.middlewares) {
-                const metadata = currentRoute.getMetadata(middleware.constructor as any);
-                const response = await middleware.before({ routingContext, currentRoute, metadata });
-                if (response) {
-                  return response;
-                }
               }
 
-              // Actual Handler
+              // Run Route
+              routingContext.validateAndUpdateParams(route.params || {});
+
               let timeoutHandle: NodeJS.Timer | undefined;
               const cleanTimeout = () => {
                 if (timeoutHandle) {
@@ -194,11 +163,11 @@ export class Router {
                 }
               };
 
-              let response = await Promise.race([
-                currentRoute.handler.call(routingContext),
+              return await Promise.race([
+                route.handler.call(routingContext),
                 new Promise((resolve, reject) => {
                   timeoutHandle = setTimeout(() => {
-                    reject(new TimeoutError(currentRoute));
+                    reject(new TimeoutError(route));
                   }, router.routeTimeout || options.timeout);
                 })
               ]).then((res) => {
@@ -208,17 +177,64 @@ export class Router {
                 cleanTimeout();
                 return Promise.reject(error);
               })
-
-              // Run after middlewares
-              for (const middleware of router.middlewares.slice().reverse()) {
-                const metadata = currentRoute.getMetadata(middleware.constructor as any);
-                response = await middleware.after({ routingContext, currentRoute, metadata, response });
+            } catch (e) {
+              for (const namespace of namespaces) {
+                if (namespace.exceptionHandler) {
+                  const res = await namespace.exceptionHandler.call(routingContext, e);
+                  if (res) {
+                    return res;
+                  } else {
+                    // Pass it to next error handler
+                  }
+                }
               }
-              return response;
+            }
+          }
+          const runMiddlewaresBefore = async (currentRoute: Route) => {
+            for (const middleware of router.middlewares) {
+              const metadata = currentRoute.getMetadata(middleware.constructor as any);
+              const response = await middleware.before({ routingContext, currentRoute, metadata });
+              if (response) {
+                return response;
+              }
+            }
+          }
+          const runMiddlewaresAfter = async (currentRoute: Route, currentRouteResponse: LambdaProxy.Response) => {
+            // Run after middlewares
+            for (const middleware of router.middlewares.slice().reverse()) {
+              const metadata = currentRoute.getMetadata(middleware.constructor as any);
+              currentRouteResponse = await middleware.after({ routingContext, currentRoute, metadata, response: currentRouteResponse });
+            }
+            return currentRouteResponse;
+          }
+
+          const stepRoute = async function(
+            prevRoutes: Array<Namespace>,
+            currentRoute: Route | Namespace,
+            nextRoutes: Routes
+          ) : Promise<LambdaProxy.Response> {
+            if (currentRoute instanceof Namespace) {
+              const namespace = currentRoute;
+
+              return await stepRoute(
+                new Array(namespace, ...prevRoutes),
+                nextRoutes[0],
+                nextRoutes.slice(1)
+              );
+            } else {
+              // Middleware Before
+              const middlewareBeforeRes = await runMiddlewaresBefore(currentRoute);
+              if (middlewareBeforeRes) { return middlewareBeforeRes }
+
+              // Run actual Route
+              const response = await runRoute(prevRoutes, currentRoute);
+
+              // Middlewares After
+              return await runMiddlewaresAfter(currentRoute, response);
             }
           }
 
-          const res = await stepRoute(flattenRoute[0], flattenRoute.slice(1));
+          const res = await stepRoute([], flattenRoute[0], flattenRoute.slice(1));
           return res;
         }
       }
