@@ -89,11 +89,71 @@ describe("Calling complex API", () => {
   });
 });
 
+describe("Calling complex API", () => {
+  it("should pass paramseters to child namespaces", async () => {
+    const befores: any[] = [];
+    const routes: Routes = [
+      new Namespace('/a/:a', {
+        params: {
+          a: Joi.number()
+        },
+        async before() {
+          befores.push({ a: this.params.a });
+          this.params.foo = { a: this.params.a };
+        },
+        children: [
+          new Namespace('/b/:b', {
+            params: {
+              b: Joi.number(),
+            },
+            async before() {
+              befores.push({ a: this.params.a, b: this.params.b });
+              this.params.bar = { a: this.params.a, b: this.params.b };
+            },
+            children: [
+              Route.GET('/', { operationId: "get" }, {}, async function () {
+                return this.json([
+                  this.params.foo,
+                  this.params.bar,
+                ]);
+              }),
+            ]
+          })
+        ]
+      })
+    ];
+
+    const router = new Router(routes);
+    const res = await router.resolve({
+      path: "/a/10/b/20",
+      httpMethod: 'GET'
+    } as any, { timeout: 10000 });
+
+    expect(res.statusCode).to.be.eq(200);
+    expect(befores).to.deep.eq([
+      {
+        "a": 10,
+      }, {
+        "a": 10,
+        "b": 20,
+      }
+    ]);
+    expect(JSON.parse(res.body)).to.be.deep.eq([
+      {
+        "a": 10,
+      }, {
+        "a": 10,
+        "b": 20,
+      }
+    ]);
+  });
+});
+
 describe("Global Error Handling", () => {
   it("should fail, and handled by parent namespace error handler", async () => {
     const routes: Routes = [
       new Namespace('/api', {
-        exceptionHandler: async function(error: any) {
+        async exceptionHandler(error: any) {
           if (error.name == 'ValidationError') {
             const validationError = error as Joi.ValidationError;
             return this.json(

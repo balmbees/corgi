@@ -137,7 +137,8 @@ export class Router {
           const runRoute = async (namespaces: Namespace[], route: Route) => {
             try {
               // Run Parent Namespaces
-              for (const namespace of namespaces) {
+              // This is for parameter and before, so Top -> Bottom
+              for (const namespace of namespaces.slice().reverse()) {
                 // Parameter Validation
                 const params = _.mapValues(namespace.params, (schema, name) => {
                   return {
@@ -178,6 +179,7 @@ export class Router {
                 return Promise.reject(error);
               })
             } catch (e) {
+              // This is exception handler, so Bottom -> Top.
               for (const namespace of namespaces) {
                 if (namespace.exceptionHandler) {
                   const res = await namespace.exceptionHandler.call(routingContext, e);
