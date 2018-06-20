@@ -1,32 +1,41 @@
 import { Namespace, Routes } from './namespace';
+import { StandardErrorResponseBody } from "./error_response";
 
-//  ErrorResponse
-
-//  http://jsonapi.org/format/#error-objects
-export interface StandardErrorResponseBody {
-  error: {
-    id?: string;
-    message: string;
-    summary?: string;
-    errors?: Array<{
-      source: string;
-      reason: string;
-    }>
+export class StandardError extends Error {
+  constructor(
+    public readonly statusCode: number,
+    public readonly options: {
+      code: string,
+      message: string,
+      metadata?: object,
+    }
+  ) {
+    super()
   }
 }
 
 export class RootNamespace extends Namespace {
   constructor(children: Routes) {
     super('', {
-      exceptionHandler: async function(error: Error) {
-        const body: StandardErrorResponseBody = {
-          error: {
-            id: this.requestId,
-            summary: 'Ooops something went wrong',
-            message: `${error.name} : ${error.message}`,
-          }
-        };
-        return this.json(body, 500);
+      async exceptionHandler(error: Error) {
+        if (error instanceof StandardError) {
+          return this.json({
+            error: {
+              id: this.requestId,
+              code: error.options.code,
+              message: error.options.message,
+              metadata: error.options.metadata,
+            }
+          } as StandardErrorResponseBody, error.statusCode);
+        } else {
+          return this.json({
+            error: {
+              id: this.requestId,
+              code: error.name,
+              message: error.message,
+            }
+          } as StandardErrorResponseBody, 500);
+        }
       },
       children
     })
