@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as LambdaProxy from './lambda-proxy';
 import { Route } from './route';
 import { Routes, Namespace } from './namespace';
-import { RootNamespace, StandardErrorResponseBody } from './root-namespace';
+import { RootNamespace } from './root-namespace';
 import { RoutingContext } from './routing-context';
 import { ParameterInputType } from './parameter';
 import { Middleware, MiddlewareConstructor } from './middleware';

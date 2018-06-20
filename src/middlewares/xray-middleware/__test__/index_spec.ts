@@ -1,12 +1,8 @@
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
-chai.use(chaiAsPromised);
-const expect = chai.expect;
+import { expect } from "chai";
 
 import { XRayMiddleware } from "../index";
 import { RoutingContext } from '../../../routing-context';
 import { Route } from '../../../route';
-
 
 describe(XRayMiddleware.name, () => {
   describe("Constructor", () => {

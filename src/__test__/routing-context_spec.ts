@@ -1,11 +1,9 @@
+import { expect } from "chai";
+
 import { RoutingContext } from '../routing-context';
 import { Parameter } from '../parameter';
 import * as Joi from 'joi';
 import * as qs from "qs";
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe("RoutingContext", () => {
   describe("#validateAndUpdateParams", () => {

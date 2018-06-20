@@ -1,7 +1,4 @@
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
-chai.use(chaiAsPromised);
-const expect = chai.expect;
+import { expect } from "chai";
 
 import {
   EntityPresenterFactory,
@@ -54,7 +51,7 @@ describe(PresenterRouteFactory.name, () => {
         httpMethod: 'GET',
       } as any, { timeout: 10000 });
 
-      chai.expect(res).to.deep.eq({
+      expect(res).to.deep.eq({
         statusCode: 200,
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify({ id: "100", name: "abcd" })

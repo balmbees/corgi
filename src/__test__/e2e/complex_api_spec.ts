@@ -1,3 +1,5 @@
+import { expect } from "chai";
+
 import {
   Route,
   Namespace,
@@ -6,11 +8,6 @@ import {
   Parameter,
 } from '../../index';
 import * as Joi from 'joi';
-
-
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
-chai.use(chaiAsPromised);
 
 describe("Calling complex API", () => {
   it("should exist", async () => {
@@ -78,7 +75,7 @@ describe("Calling complex API", () => {
       }
     } as any, { timeout: 10000 });
 
-    chai.expect(res).to.deep.eq({
+    expect(res).to.deep.eq({
       statusCode: 200,
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({
@@ -135,7 +132,7 @@ describe("Global Error Handling", () => {
       }
     } as any, { timeout: 10000 });
 
-    chai.expect(res).to.deep.eq({
+    expect(res).to.deep.eq({
       statusCode: 422,
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({ errors: [ '"testId" is required', '"otherError" is required' ] }),

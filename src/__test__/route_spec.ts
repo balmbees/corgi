@@ -1,11 +1,7 @@
+import { expect } from "chai";
+
 import { Route } from '../route';
 import { RoutingContext } from '../routing-context';
-import * as Joi from 'joi';
-
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe("Route", () => {
   describe("#constructor", () => {

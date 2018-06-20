@@ -1,4 +1,5 @@
 export * from './namespace';
+export * from './root-namespace';
 export * from './route';
 export * from './router';
 export * from './routing-context';

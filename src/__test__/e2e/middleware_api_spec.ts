@@ -1,19 +1,14 @@
+import { expect } from "chai";
+
 import {
   Response,
   Route,
   Namespace,
-  Routes,
   Router,
-  Parameter,
   Middleware,
   MiddlewareAfterOptions,
 } from '../../index';
 import * as Joi from 'joi';
-
-
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
-chai.use(chaiAsPromised);
 
 describe("Calling complex middleware connected API", () => {
   it("should run middleware after exception handler", async () => {
@@ -65,7 +60,7 @@ describe("Calling complex middleware connected API", () => {
       httpMethod: 'GET'
     } as any, { timeout: 10000 });
 
-    chai.expect(res).to.deep.eq({
+    expect(res).to.deep.eq({
       statusCode: 500,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
