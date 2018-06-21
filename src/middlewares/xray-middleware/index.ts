@@ -1,7 +1,5 @@
 import { Middleware, MiddlewareBeforeOptions, MiddlewareAfterOptions } from '../../middleware';
-import { RoutingContext } from '../../routing-context';
-import { Response, Event as LambdaProxyEvent } from '../../lambda-proxy';
-import * as http from 'http';
+import { Response } from '../../lambda-proxy';
 
 const AWSXRay = require("aws-xray-sdk-core");
 interface AWSXRaySegment {

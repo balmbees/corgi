@@ -9,6 +9,7 @@
     "strictNullChecks": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "noUnusedLocals": true,
     "lib": [
       "dom",
       "es2015",

@@ -1,3 +1,5 @@
+import { expect } from "chai";
+
 import {
   DataLayoutPresenter,
   EntityPresenterFactory,
@@ -9,12 +11,7 @@ import {
 } from '../../index';
 import * as Joi from 'joi';
 
-
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
-chai.use(chaiAsPromised);
-
-import { TestEntity, TestAliasEntity, TestStatEntity } from "../entity";
+import { TestEntity, TestAliasEntity } from "../entity";
 
 const arrayPresenter = EntityPresenterFactory.createArray(TestEntity, (input: number[]) => {
   return input.map(i => {
@@ -76,7 +73,7 @@ describe("Calling complex API", () => {
       httpMethod: 'GET',
     } as any, { timeout: 10000 });
 
-    chai.expect(res).to.deep.eq({
+    expect(res).to.deep.eq({
       statusCode: 200,
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({
@@ -101,9 +98,9 @@ describe("Calling complex API", () => {
       }
     } as any, { timeout: 10000 });
 
-    chai.expect(res["statusCode"]).to.eq(200);
+    expect(res["statusCode"]).to.eq(200);
     // This thing must be validated by https://editor.swagger.io
-    chai.expect(JSON.parse(res["body"])).to.deep.eq({
+    expect(JSON.parse(res["body"])).to.deep.eq({
       "swagger": "2.0",
       "info": {
         "title": "InterestService",

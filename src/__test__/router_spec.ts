@@ -1,29 +1,21 @@
+import { expect } from "chai";
+
 import {
   Route,
-  RoutingContext,
   Namespace,
-  Routes,
   Router,
-  Parameter,
   Middleware,
   MiddlewareBeforeOptions,
   MiddlewareAfterOptions,
   Response,
   TimeoutError,
 } from '../index';
-import * as Joi from 'joi';
-
-
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe("Router", () => {
   describe("#constructor", () => {
     it("should raise error if there is duplicated operationId", () => {
       expect(() => {
-        const router = new Router([
+        new Router([
           Route.GET('/', { operationId: "getIndex" }, {}, async function () {
             return this.json("");
           }),
@@ -38,7 +30,7 @@ describe("Router", () => {
       expect(() => {
         class TestMiddleware extends Middleware {};
 
-        const router = new Router([
+        new Router([
           Route.GET('/', { operationId: "getIndex" }, {}, async function() {
             return {
               statusCode: 200,
@@ -187,7 +179,7 @@ describe("Router", () => {
         );
       });
 
-      chai.expect(res).to.deep.eq({
+      expect(res).to.deep.eq({
         statusCode: 500,
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify({

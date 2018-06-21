@@ -1,6 +1,6 @@
 {
   "name": "vingle-corgi",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
@@ -28,13 +28,11 @@
   "homepage": "https://github.com/balmbees/corgi#readme",
   "devDependencies": {
     "@types/chai": "^4.0.0",
-    "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "^2.2.41",
     "chai": "^4.0.1",
-    "chai-as-promised": "^7.1.1",
     "mocha": "^3.4.2",
     "publish": "^0.6.0",
-    "typescript": "^2.8.3"
+    "typescript": "^2.9.2"
   },
   "dependencies": {
     "@types/joi": "^13.0.2",

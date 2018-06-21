@@ -2,10 +2,6 @@ import { Presenter } from "./presenter";
 
 import { ClassValidator, ClassValidatorJSONSchema } from "./class_validator";
 
-function getPropType(target: any, property: string) {
-  return Reflect.getMetadata('design:type', target, property);
-}
-
 export class EntityPresenterFactory {
   private static __schemas: any;
   public static schemas() {
