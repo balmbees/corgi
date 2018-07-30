@@ -174,6 +174,12 @@ describe("Calling complex API", () => {
               "items": {
                 "$ref": "#/definitions/TestStatEntity"
               }
+            },
+            "names": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           "required": [

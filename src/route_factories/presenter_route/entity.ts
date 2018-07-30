@@ -30,6 +30,23 @@ export class EntityPresenterFactory {
                   value: elementClass,
                 });
               }
+              case ClassValidator.ValidatePrimitiveArray: {
+                const [ elementClass ] = meta.constraints;
+
+                return {
+                  type: "array",
+                  items: {
+                    type: (() => {
+                      switch (elementClass) {
+                        case Boolean: return "boolean";
+                        case String: return "string";
+                        case Number: return "number";
+                        default: return {}; // equal as any
+                      }
+                    })(),
+                  },
+                };
+              }
               case ClassValidator.IsNullable: {
                 return {
                   // Currently Swagger Spec 2.0 does not support `nullable` attribute

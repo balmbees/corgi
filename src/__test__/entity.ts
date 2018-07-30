@@ -25,4 +25,8 @@ export class TestEntity {
   @ClassValidator.IsOptional()
   @ClassValidator.Validate(ClassValidator.ValidateEntityArray, [TestStatEntity])
   public stats: TestStatEntity[];
+
+  @ClassValidator.IsOptional()
+  @ClassValidator.Validate(ClassValidator.ValidatePrimitiveArray, [String])
+  public names: string[];
 }
