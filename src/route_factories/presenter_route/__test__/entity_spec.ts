@@ -48,6 +48,12 @@ describe(EntityPresenterFactory.name, () => {
               "items": {
                 "$ref": "#/definitions/TestStatEntity"
               }
+            },
+            "names": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           "required": [
