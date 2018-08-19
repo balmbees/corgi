@@ -93,21 +93,25 @@ export class RoutingContext {
 
   // Body Parser
   get bodyJSON(): object | string | undefined {
+    const body = this.request.isBase64Encoded ?
+      Buffer.from(this.request.body as string, "base64").toString("utf8") :
+      this.request.body;
+
     switch (this.headers["content-type"]) {
       case "application/x-www-form-urlencoded": {
-        if (this.request.body) {
-          return qs.parse(this.request.body);
+        if (body) {
+          return qs.parse(body);
         } else {
           return undefined;
         }
       }
       case "text": {
-        return this.request.body;
+        return body;
       }
       case "application/json":
       default: {
         // default is json
-        return this.request.body ? JSON.parse(this.request.body) : {};
+        return body ? JSON.parse(body) : {};
       }
     }
   }
