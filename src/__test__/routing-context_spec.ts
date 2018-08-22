@@ -205,45 +205,6 @@ describe("RoutingContext", () => {
         });
       });
     });
-
-    context("when body is base64Encoded", () => {
-      it("should parse and validate JsonBody params", () => {
-        const body = JSON.stringify({
-          update: {
-            foo: {
-              bar: "baz",
-            },
-          },
-        });
-
-        const context = new RoutingContext({} as any, {
-          path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
-          httpMethod: "POST",
-          body: Buffer.from(body, "utf8").toString("base64"),
-          isBase64Encoded: true,
-          queryStringParameters: null,
-        } as any, "request-id", {
-          userId: "33",
-          interest: "%ED%94%BD%EC%8B%9C",
-        });
-
-        context.validateAndUpdateParams({
-          update: Parameter.Body(Joi.object({
-            foo: Joi.object({
-              bar: Joi.string().required(),
-            }),
-          }).optional()),
-        });
-
-        expect(context.params).to.deep.eq({
-          update: {
-            foo: {
-              bar: "baz",
-            },
-          },
-        });
-      });
-    });
   });
 
   describe("#normalizeHeaders", () => {
@@ -308,6 +269,39 @@ describe("RoutingContext", () => {
         'host': 'www.vingle.net',
       });
       expect(callCount).to.be.eq(1);
+    });
+  });
+
+  describe("#bodyJSON", () => {
+    context("when body is base64Encoded", () => {
+      it("should return parsed body", () => {
+        const body = JSON.stringify({
+          update: {
+            foo: {
+              bar: "baz",
+            },
+          },
+        });
+
+        const context = new RoutingContext({} as any, {
+          path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
+          httpMethod: "POST",
+          body: Buffer.from(body, "utf8").toString("base64"),
+          isBase64Encoded: true,
+          queryStringParameters: null,
+        } as any, "request-id", {
+          userId: "33",
+          interest: "%ED%94%BD%EC%8B%9C",
+        });
+
+        expect(context.bodyJSON).to.deep.eq({
+          update: {
+            foo: {
+              bar: "baz",
+            },
+          },
+        });
+      });
     });
   });
 });
