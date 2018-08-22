@@ -271,5 +271,38 @@ describe("RoutingContext", () => {
       expect(callCount).to.be.eq(1);
     });
   });
+
+  describe("#bodyJSON", () => {
+    context("when body is base64Encoded", () => {
+      it("should return parsed body", () => {
+        const body = JSON.stringify({
+          update: {
+            foo: {
+              bar: "baz",
+            },
+          },
+        });
+
+        const context = new RoutingContext({} as any, {
+          path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
+          httpMethod: "POST",
+          body: Buffer.from(body, "utf8").toString("base64"),
+          isBase64Encoded: true,
+          queryStringParameters: null,
+        } as any, "request-id", {
+          userId: "33",
+          interest: "%ED%94%BD%EC%8B%9C",
+        });
+
+        expect(context.bodyJSON).to.deep.eq({
+          update: {
+            foo: {
+              bar: "baz",
+            },
+          },
+        });
+      });
+    });
+  });
 });
 

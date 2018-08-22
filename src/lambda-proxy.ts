@@ -29,6 +29,7 @@ export interface Event {
     httpMethod: string;
     apiId: string;
   };
+  isBase64Encoded?: boolean;
   body?: string;
 }
 
