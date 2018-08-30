@@ -20,15 +20,12 @@ export class EntityPresenterFactory {
                   throw new Error("ValidateNestedElement requires elementClass parameter");
                 }
 
-                const schema = {
+                return {
                   type: "array",
+                  items: {
+                    "$ref": `#/definitions/${elementClass.name}`
+                  },
                 };
-
-                wiringRequiredSchemas.push(schema);
-
-                return Object.defineProperty(schema, "__elementClass", {
-                  value: elementClass,
-                });
               }
               case ClassValidator.ValidatePrimitiveArray: {
                 const [ elementClass ] = meta.constraints;
