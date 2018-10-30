@@ -34,37 +34,36 @@ describe("RootNamespace", () => {
 
         it("should handler general error and build json response, with encrpyted message", async () => {
           const res = await subject();
-          expect(
-            rootNamespace.errorFormatter.decryptErrorMetadata(JSON.parse(res["body"]).error.metadata)
-          ).to.be.deep.eq({
-            "message": "TEST ERROR",
-            "name": "Error",
-            "stack": [
-              "Error: TEST ERROR",
-              "    at RoutingContext.<anonymous> (/Users/lea/Works/corgi/dst/__test__/root-namespace_spec.js:26:35)",
-              "    at Generator.next (<anonymous>)",
-              "    at /Users/lea/Works/corgi/dst/__test__/root-namespace_spec.js:7:71",
-              "    at new WrappedPromise (/Users/lea/Works/corgi/node_modules/async-listener/es6-wrapped-promise.js:13:18)",
-              "    at __awaiter (/Users/lea/Works/corgi/dst/__test__/root-namespace_spec.js:3:12)",
-              "    at RoutingContext.<anonymous> (/Users/lea/Works/corgi/dst/__test__/root-namespace_spec.js:25:32)",
-              "    at Router.<anonymous> (/Users/lea/Works/corgi/dst/router.js:148:51)",
-              "    at Generator.next (<anonymous>)",
-              "    at /Users/lea/Works/corgi/dst/router.js:7:71",
-              "    at new WrappedPromise (/Users/lea/Works/corgi/node_modules/async-listener/es6-wrapped-promise.js:13:18)",
-              "    at __awaiter (/Users/lea/Works/corgi/dst/router.js:3:12)",
-              "    at runRoute (/Users/lea/Works/corgi/dst/router.js:121:65)",
-              "    at /Users/lea/Works/corgi/dst/router.js:207:60",
-              "    at Generator.next (<anonymous>)",
-              "    at fulfilled (/Users/lea/Works/corgi/dst/router.js:4:58)",
-              "    at propagateAslWrapper (/Users/lea/Works/corgi/node_modules/async-listener/index.js:502:23)",
-              "    at /Users/lea/Works/corgi/node_modules/async-listener/glue.js:188:31",
-              "    at /Users/lea/Works/corgi/node_modules/async-listener/index.js:539:70",
-              "    at /Users/lea/Works/corgi/node_modules/async-listener/glue.js:188:31",
-              "    at <anonymous>",
-              "    at process._tickCallback (internal/process/next_tick.js:188:7)",
-            ]
-          });
+          const decrypted = rootNamespace.errorFormatter.decryptErrorMetadata(JSON.parse(res["body"]).error.metadata);
+
+          expect(decrypted.message).to.be.eq("TEST ERROR");
+          expect(decrypted.name).to.be.eq("Error");
+
+          expect(decrypted.stack[0]).to.be.eq("Error: TEST ERROR");
+          // Since Stack keep changes depends on CI env, check only the first line
+          // "    at RoutingContext.<anonymous> (/Users/lea/Works/corgi/dst/__test__/root-namespace_spec.js:26:35)",
+          // "    at Generator.next (<anonymous>)",
+          // "    at /Users/lea/Works/corgi/dst/__test__/root-namespace_spec.js:7:71",
+          // "    at new WrappedPromise (/Users/lea/Works/corgi/node_modules/async-listener/es6-wrapped-promise.js:13:18)",
+          // "    at __awaiter (/Users/lea/Works/corgi/dst/__test__/root-namespace_spec.js:3:12)",
+          // "    at RoutingContext.<anonymous> (/Users/lea/Works/corgi/dst/__test__/root-namespace_spec.js:25:32)",
+          // "    at Router.<anonymous> (/Users/lea/Works/corgi/dst/router.js:148:51)",
+          // "    at Generator.next (<anonymous>)",
+          // "    at /Users/lea/Works/corgi/dst/router.js:7:71",
+          // "    at new WrappedPromise (/Users/lea/Works/corgi/node_modules/async-listener/es6-wrapped-promise.js:13:18)",
+          // "    at __awaiter (/Users/lea/Works/corgi/dst/router.js:3:12)",
+          // "    at runRoute (/Users/lea/Works/corgi/dst/router.js:121:65)",
+          // "    at /Users/lea/Works/corgi/dst/router.js:207:60",
+          // "    at Generator.next (<anonymous>)",
+          // "    at fulfilled (/Users/lea/Works/corgi/dst/router.js:4:58)",
+          // "    at propagateAslWrapper (/Users/lea/Works/corgi/node_modules/async-listener/index.js:502:23)",
+          // "    at /Users/lea/Works/corgi/node_modules/async-listener/glue.js:188:31",
+          // "    at /Users/lea/Works/corgi/node_modules/async-listener/index.js:539:70",
+          // "    at /Users/lea/Works/corgi/node_modules/async-listener/glue.js:188:31",
+          // "    at <anonymous>",
+          // "    at process._tickCallback (internal/process/next_tick.js:188:7)",
           expect(res.statusCode).to.be.eq(500);
+
         });
       });
 
