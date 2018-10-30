@@ -34,9 +34,7 @@ const CipherAlgorithm = "aes-256-ctr";
 
 export class ErrorResponseFormatter {
   // If Password is provided, it will show detailed information (encrypted)
-  constructor(private password: string | undefined) {
-    console.log("ErrorResponseFormatter : ", password);
-  }
+  constructor(private password: string | undefined) {}
 
   public format(error: Error) {
     if (error instanceof StandardError) {
@@ -51,7 +49,6 @@ export class ErrorResponseFormatter {
         code: error.name,
         message: error.message,
         metadata: (() => {
-          console.log("Password : ", this.password);
           if (this.password) {
             const cipher = crypto.createCipher(CipherAlgorithm, this.password)
             return [
