@@ -29,7 +29,8 @@ describe("RootNamespace", () => {
 
       context("with CORGI_ERROR_PASSSWORD", () => {
         beforeEach(() => {
-          process.env.CORGI_ERROR_PASSSWORD = "password";
+          // Must be 16 letters.
+          process.env.CORGI_ERROR_PASSSWORD = "9vApxLk5G3PAsJrM";
         });
 
         it("should handler general error and build json response, with encrpyted message", async () => {

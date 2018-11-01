@@ -30,7 +30,6 @@ export interface StandardErrorResponseBody {
 }
 
 import * as crypto from "crypto";
-const CipherAlgorithm = "aes-256-ctr";
 
 export class ErrorResponseFormatter {
   // If Password is provided, it will show detailed information (encrypted)
@@ -48,30 +47,38 @@ export class ErrorResponseFormatter {
       return {
         code: error.name,
         message: error.message,
-        metadata: (() => {
-          if (this.password) {
-            const cipher = crypto.createCipher(CipherAlgorithm, this.password)
-            return [
-              cipher.update(JSON.stringify({
-                name: error.name,
-                message: error.message,
-                stack: (error.stack || "").split("\n"),
-              }), 'utf8', 'hex'),
-              cipher.final('hex')
-            ].join("");
-          } else {
-            // Otherwise don't show metadata for security
-            return undefined;
-          }
-        })(),
+        metadata: this.encryptErrorMetadata(error),
       };
     }
   }
 
+  private static readonly CipherAlgorithm = "aes-128-cbc";
+
+  public encryptErrorMetadata(error: Error) {
+    if (this.password) {
+      const iv = new Buffer(crypto.randomBytes(8)).toString("hex");
+      const cipher = crypto.createCipheriv(ErrorResponseFormatter.CipherAlgorithm, this.password, iv);
+      cipher.setEncoding("hex");
+      cipher.write(JSON.stringify({
+        name: error.name,
+        message: error.message,
+        stack: (error.stack || "").split("\n"),
+      }));
+      cipher.end();
+      const cipherText = cipher.read();
+
+      return cipherText + "$" + iv;
+    } else {
+      // Otherwise don't show metadata for security
+      return undefined;
+    }
+  }
+
   public decryptErrorMetadata(message: string) {
-    const decipher = crypto.createDecipher(CipherAlgorithm, this.password);
+    const [decipherText, iv] = message.split("$");
+    const decipher = crypto.createDecipheriv(ErrorResponseFormatter.CipherAlgorithm, this.password, iv);
     const payload = JSON.parse([
-      decipher.update(message, 'hex', 'utf8'),
+      decipher.update(decipherText, 'hex', 'utf8'),
       decipher.final('utf8'),
     ].join(""));
     return payload;
