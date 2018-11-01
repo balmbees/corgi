@@ -1,43 +1,37 @@
 import { Namespace, Routes } from './namespace';
-import { StandardErrorResponseBody } from "./error_response";
-
-export class StandardError extends Error {
-  constructor(
-    public readonly statusCode: number,
-    public readonly options: {
-      code: string,
-      message: string,
-      metadata?: object,
-    }
-  ) {
-    super()
-  }
-}
+import {
+  StandardError, StandardErrorResponseBody,
+  ErrorResponseFormatter,
+} from "./error_response";
 
 export class RootNamespace extends Namespace {
+  public readonly errorFormatter: ErrorResponseFormatter;
+
   constructor(children: Routes) {
+    const errorFormatter = new ErrorResponseFormatter(process.env.CORGI_ERROR_PASSSWORD);
+
     super('', {
       async exceptionHandler(error: Error) {
         if (error instanceof StandardError) {
           return this.json({
             error: {
               id: this.requestId,
-              code: error.options.code,
-              message: error.options.message,
-              metadata: error.options.metadata,
+              ...errorFormatter.format(error),
             }
           } as StandardErrorResponseBody, error.statusCode);
         } else {
+          // For Non-Standard error,
           return this.json({
             error: {
               id: this.requestId,
-              code: error.name,
-              message: error.message,
+              ...errorFormatter.format(error),
             }
           } as StandardErrorResponseBody, 500);
         }
       },
       children
-    })
+    });
+
+    this.errorFormatter = errorFormatter;
   }
 }
