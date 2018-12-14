@@ -1,2 +1,5 @@
 dst/__test__
 .npm
+.idea
+.code
+
