@@ -162,20 +162,16 @@ describe("Router", () => {
             },
           } as any,
           {
-            succeed: function(result?: Object) {
-              this.done(undefined, result);
-            },
-            fail: function(error: Error) {
-              this.done(error);
-            },
-            done: function(error: Error | null, result?: Response) {
-              resolve(error || result);
-            },
             getRemainingTimeInMillis: function() {
               return 100;
             },
             awsRequestId: "request-id",
-          } as any
+          } as any,
+          (e, res) => {
+            if (e) { return reject(e); }
+
+            resolve(res);
+          },
         );
       });
 
