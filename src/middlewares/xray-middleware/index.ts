@@ -1,7 +1,7 @@
 import { Middleware, MiddlewareBeforeOptions, MiddlewareAfterOptions } from '../../middleware';
 import { Response } from '../../lambda-proxy';
 
-const AWSXRay = require("aws-xray-sdk-core");
+let AWSXRay: any;
 interface AWSXRaySegment {
   addAnnotation(name: string, value: string): void;
   close(error?: Error): void;
@@ -47,6 +47,13 @@ export interface SamplingRule {
 export class XRayMiddleware extends Middleware {
   private segment: AWSXRaySegment | undefined;
   constructor(samplingRules?: SamplingRules) {
+    // Lazily load X-Ray SDK to reduce cold-start performance impact
+    // that came from module loading (approx. 100ms in 512MByte Lambda runtime)
+    // if x-ray middleware was not used
+    if (!AWSXRay) {
+      AWSXRay = require("aws-xray-sdk-core");
+    }
+
     super();
     if (samplingRules) {
       AWSXRay.middleware.setSamplingRules(samplingRules);
