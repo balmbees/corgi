@@ -89,15 +89,17 @@ export class Router {
   }
 
   public handler() {
-    return (event: LambdaProxy.Event, context: LambdaProxy.Context) => {
+    return (event: LambdaProxy.Event, context: LambdaProxy.Context, done: (e: Error | null, res?: LambdaProxy.Response) => void) => {
+      context.callbackWaitsForEmptyEventLoop = false;
+
       const requestId = context.awsRequestId;
       const timeout = context.getRemainingTimeInMillis() * 0.9;
       this.resolve(
         event, { requestId, timeout }
       ).then((response) => {
-        context.succeed(response);
+        done(null, response);
       }, (error) => {
-        context.succeed({
+        done(null, {
           statusCode: 500,
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
           body: JSON.stringify({

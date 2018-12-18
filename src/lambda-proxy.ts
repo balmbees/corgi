@@ -68,11 +68,9 @@ export interface Context {
     logStreamName: string;
     identity?: CognitoIdentity;
     clientContext?: ClientContext;
+    callbackWaitsForEmptyEventLoop?: boolean;
 
     // Functions
-    succeed(result?: Object): void;
-    fail(error: Error): void;
-    done(error: Error | null, result?: Response): void; // result must be JSON.stringifyable
     getRemainingTimeInMillis(): number;
 }
 
