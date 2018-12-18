@@ -80,15 +80,15 @@ export class Router {
     this.routeTimeout = options.timeout;
   }
 
-  findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
+  public findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
     return this.middlewareMap.get(middlewareClass as Function) as T | undefined;
   }
 
-  findRoute(operationId: string) {
+  public findRoute(operationId: string) {
     return this.operationIdRouteMap[operationId] as Route | undefined;
   }
 
-  handler() {
+  public handler() {
     return (event: LambdaProxy.Event, context: LambdaProxy.Context, done: (e: Error | null, res?: LambdaProxy.Response) => void) => {
       context.callbackWaitsForEmptyEventLoop = false;
 
@@ -133,113 +133,43 @@ export class Router {
           });
 
           const routingContext = new RoutingContext(this, event, options.requestId, pathParams);
-          const router = this;
 
-
-          const runRoute = async (namespaces: Namespace[], route: Route) => {
-            try {
-              // Run Parent Namespaces
-              // This is for parameter and before, so Top -> Bottom
-              for (const namespace of namespaces.slice().reverse()) {
-                // Parameter Validation
-                const params = _.mapValues(namespace.params, (schema, name) => {
-                  return {
-                    in: 'path' as ParameterInputType,
-                    def: schema,
-                  }
-                });
-                routingContext.validateAndUpdateParams(params);
-
-                // Before Hook
-                if (namespace.before) {
-                  await namespace.before.call(routingContext);
-                }
-              }
-
-              // Run Route
-              routingContext.validateAndUpdateParams(route.params || {});
-
-              let timeoutHandle: NodeJS.Timer | undefined;
-              const cleanTimeout = () => {
-                if (timeoutHandle) {
-                  clearTimeout(timeoutHandle);
-                }
-              };
-
-              return await Promise.race([
-                route.handler.call(routingContext),
-                new Promise((resolve, reject) => {
-                  timeoutHandle = setTimeout(() => {
-                    reject(new TimeoutError(route));
-                  }, router.routeTimeout || options.timeout);
-                })
-              ]).then((res) => {
-                cleanTimeout();
-                return Promise.resolve(res);
-              }, (error) => {
-                cleanTimeout();
-                return Promise.reject(error);
-              })
-            } catch (e) {
-              // This is exception handler, so Bottom -> Top.
-              for (const namespace of namespaces) {
-                if (namespace.exceptionHandler) {
-                  const res = await namespace.exceptionHandler.call(routingContext, e);
-                  if (res) {
-                    return res;
-                  } else {
-                    // Pass it to next error handler
-                  }
-                }
-              }
-            }
-          }
-          const runMiddlewaresBefore = async (currentRoute: Route) => {
-            for (const middleware of router.middlewares) {
-              const metadata = currentRoute.getMetadata(middleware.constructor as any);
-              const response = await middleware.before({ routingContext, currentRoute, metadata });
-              if (response) {
-                return response;
-              }
-            }
-          }
-          const runMiddlewaresAfter = async (currentRoute: Route, currentRouteResponse: LambdaProxy.Response) => {
-            // Run after middlewares
-            for (const middleware of router.middlewares.slice().reverse()) {
-              const metadata = currentRoute.getMetadata(middleware.constructor as any);
-              currentRouteResponse = await middleware.after({ routingContext, currentRoute, metadata, response: currentRouteResponse });
-            }
-            return currentRouteResponse;
-          }
-
-          const stepRoute = async function(
-            prevRoutes: Array<Namespace>,
-            currentRoute: Route | Namespace,
-            nextRoutes: Routes
-          ) : Promise<LambdaProxy.Response> {
+          const prevRoutes: Array<Namespace> = [];
+          for (const currentRoute of flattenRoute) {
             if (currentRoute instanceof Namespace) {
-              const namespace = currentRoute;
-
-              return await stepRoute(
-                new Array(namespace, ...prevRoutes),
-                nextRoutes[0],
-                nextRoutes.slice(1)
-              );
+              prevRoutes.splice(0, 0, currentRoute);
             } else {
               // Middleware Before
-              const middlewareBeforeRes = await runMiddlewaresBefore(currentRoute);
-              if (middlewareBeforeRes) { return middlewareBeforeRes }
+              const before = await (async () => {
+                for (const middleware of this.middlewares) {
+                  const metadata = currentRoute.getMetadata(middleware.constructor as any);
+                  const response = await middleware.before({ routingContext, currentRoute, metadata });
+                  if (response) {
+                    return response;
+                  }
+                }
+                return undefined;
+              })();
+              if (before) {
+                return before;
+              }
 
               // Run actual Route
-              const response = await runRoute(prevRoutes, currentRoute);
+              const response = await this.runRoute(
+                routingContext, prevRoutes, currentRoute, options.timeout
+              );
 
               // Middlewares After
-              return await runMiddlewaresAfter(currentRoute, response);
+              return await (async (currentRouteResponse: LambdaProxy.Response) => {
+                // Run after middlewares
+                for (const middleware of this.middlewares.slice().reverse()) {
+                  const metadata = currentRoute.getMetadata(middleware.constructor as any);
+                  currentRouteResponse = await middleware.after({ routingContext, currentRoute, metadata, response: currentRouteResponse });
+                }
+                return currentRouteResponse;
+              })(response);
             }
           }
-
-          const res = await stepRoute([], flattenRoute[0], flattenRoute.slice(1));
-          return res;
         }
       }
     }
@@ -252,5 +182,69 @@ export class Router {
       },
       body: JSON.stringify({ error: 'Not Found' }),
     };
+  }
+
+  private async runRoute(
+    routingContext: RoutingContext,
+    namespaces: Namespace[],
+    route: Route,
+    timeout: number
+  ) {
+    try {
+      // Run Parent Namespaces
+      // This is for parameter and before, so Top -> Bottom
+      for (const namespace of namespaces.slice().reverse()) {
+        // Parameter Validation
+        const params = _.mapValues(namespace.params, (schema, name) => {
+          return {
+            in: 'path' as ParameterInputType,
+            def: schema,
+          }
+        });
+        routingContext.validateAndUpdateParams(params);
+
+        // Before Hook
+        if (namespace.before) {
+          await namespace.before.call(routingContext);
+        }
+      }
+
+      // Run Route
+      routingContext.validateAndUpdateParams(route.params || {});
+
+      let timeoutHandle: NodeJS.Timer | undefined;
+      const cleanTimeout = () => {
+        if (timeoutHandle) {
+          clearTimeout(timeoutHandle);
+        }
+      };
+
+      return await Promise.race([
+        route.handler.call(routingContext),
+        new Promise((resolve, reject) => {
+          timeoutHandle = setTimeout(() => {
+            reject(new TimeoutError(route));
+          }, this.routeTimeout || timeout);
+        })
+      ]).then((res) => {
+        cleanTimeout();
+        return Promise.resolve(res);
+      }, (error) => {
+        cleanTimeout();
+        return Promise.reject(error);
+      })
+    } catch (e) {
+      // This is exception handler, so Bottom -> Top.
+      for (const namespace of namespaces) {
+        if (namespace.exceptionHandler) {
+          const res = await namespace.exceptionHandler.call(routingContext, e);
+          if (res) {
+            return res;
+          } else {
+            // Pass it to next error handler
+          }
+        }
+      }
+    }
   }
 }
