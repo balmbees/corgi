@@ -2,11 +2,7 @@
 [![npm version](https://badge.fury.io/js/vingle-corgi.svg)](https://badge.fury.io/js/vingle-corgi)
 
 # Corgi
-HTTP Web Application Framework for AWS Lambda - AWS API Gateway Proxy Integration
-
-<img width="500px" height="auto" src="https://scontent-hkg3-1.cdninstagram.com/t51.2885-15/e35/13735891_1160668067329731_1019397372_n.jpg" />
-
-## 
+Lightweight HTTP Framework for AWS Lambda
 
 ## Features
 1. Cascade Routing
@@ -18,7 +14,7 @@ HTTP Web Application Framework for AWS Lambda - AWS API Gateway Proxy Integratio
     - refer [example](src/__test__/e2e/complex_api.ts)
 5. Swagger Document Generation  
     - [Swagger](http://swagger.io/) is API Documentation spec. Corgi support automatic swagger document generation. 
-    - refer [example](src/__test__/swagger_spec.ts) 
+    - refer [example](src/swagger/__test__/index_spec.ts#L148) 
 6. View  
     - Named "Presenter". basically, you return "model" from Route, and "presenter" defines how you convert this model into HTTP resource such as JSON  
 The whole thing supports async/await!, written in typescript from scratch also
