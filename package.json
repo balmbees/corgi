@@ -1,6 +1,6 @@
 {
   "name": "vingle-corgi",
-  "version": "1.23.0",
+  "version": "1.25.0",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
@@ -33,7 +33,7 @@
     "@types/mocha": "^2.2.41",
     "chai": "^4.0.1",
     "mocha": "^3.4.2",
-    "np": "^3.0.4",
+    "np": "^3.1.0",
     "tslint": "^5.12.1",
     "typescript": "^2.9.2"
   },
