@@ -3,6 +3,7 @@ node_js:
 - '6'
 before_install: npm install npm@$(cat package.json | jq -r '.engines.npm') -g
 script:
+- npm run lint
 - npm run test
 deploy:
   provider: npm
