@@ -1,8 +1,8 @@
 import { expect } from "chai";
 
+import { Route } from "../../../route";
+import { RoutingContext } from "../../../routing-context";
 import { XRayMiddleware } from "../index";
-import { RoutingContext } from '../../../routing-context';
-import { Route } from '../../../route';
 
 describe(XRayMiddleware.name, () => {
   describe("Constructor", () => {
@@ -29,11 +29,11 @@ describe(XRayMiddleware.name, () => {
       await middleware.before({
         routingContext: new RoutingContext({} as any, {} as any, "", {}),
         currentRoute: new Route({
-          path: '/foo',
-          method: 'GET',
+          path: "/foo",
+          method: "GET",
           operationId: "gotFoo",
-          desc: 'foo',
-          handler: async function () {
+          desc: "foo",
+          async handler() {
             return this.json({});
           },
         }),

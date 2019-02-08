@@ -1,9 +1,9 @@
 import { expect } from "chai";
 
-import { Route } from '../route';
-import { Router } from '../router';
 import { StandardError } from "../error_response";
-import { RootNamespace } from '../root-namespace';
+import { RootNamespace } from "../root-namespace";
+import { Route } from "../route";
+import { Router } from "../router";
 
 class CustomError extends Error {
 
@@ -15,15 +15,15 @@ describe("RootNamespace", () => {
       let rootNamespace: RootNamespace;
       const subject = async () => {
         rootNamespace = new RootNamespace([
-          Route.GET('/test', { operationId: "test" }, {}, async function () {
+          Route.GET("/test", { operationId: "test" }, {}, async function() {
             throw new CustomError("TEST ERROR");
           })
         ]);
 
         const router = new Router([rootNamespace]);
         return await router.resolve({
-          path: '/test',
-          httpMethod: 'GET',
+          path: "/test",
+          httpMethod: "GET",
         } as any, { requestId: "request-id", timeout: 10000 });
       };
 
@@ -35,12 +35,13 @@ describe("RootNamespace", () => {
 
         it("should handler general error and build json response, with encrpyted message", async () => {
           const res = await subject();
-          const decrypted = rootNamespace.errorFormatter.decryptErrorMetadata(JSON.parse(res["body"]).error.metadata);
+          const decrypted = rootNamespace.errorFormatter.decryptErrorMetadata(JSON.parse(res.body).error.metadata);
 
           expect(decrypted.message).to.be.eq("TEST ERROR");
           expect(decrypted.name).to.be.eq("Error");
 
           expect(decrypted.stack[0]).to.be.eq("Error: TEST ERROR");
+          // tslint:disable
           // Since Stack keep changes depends on CI env, check only the first line
           // "    at RoutingContext.<anonymous> (/Users/lea/Works/corgi/dst/__test__/root-namespace_spec.js:26:35)",
           // "    at Generator.next (<anonymous>)",
@@ -63,6 +64,7 @@ describe("RootNamespace", () => {
           // "    at /Users/lea/Works/corgi/node_modules/async-listener/glue.js:188:31",
           // "    at <anonymous>",
           // "    at process._tickCallback (internal/process/next_tick.js:188:7)",
+          // tslint:enable
           expect(res.statusCode).to.be.eq(500);
 
         });
@@ -76,11 +78,11 @@ describe("RootNamespace", () => {
         it("should handler general error and build json response", async () => {
           const res = await subject();
 
-          expect(JSON.parse(res["body"])).to.deep.eq({
-            'error': {
-              'id': 'request-id',
-              'code': 'Error',
-              'message': 'TEST ERROR'
+          expect(JSON.parse(res.body)).to.deep.eq({
+            error: {
+              id: "request-id",
+              code: "Error",
+              message: "TEST ERROR"
             }
           });
           expect(res.statusCode).to.be.eq(500);
@@ -91,7 +93,7 @@ describe("RootNamespace", () => {
     context("with standard error", () => {
       it("should handler general error and build json response", async () => {
         const rootNamespace = new RootNamespace([
-          Route.GET('/test', { operationId: "test" }, {}, async function() {
+          Route.GET("/test", { operationId: "test" }, {}, async function() {
             throw new StandardError(422, {
               code: "INVALID_REQUEST", message: "this request is invalid", metadata: { test: 1 }
             });
@@ -100,17 +102,17 @@ describe("RootNamespace", () => {
 
         const router = new Router([rootNamespace]);
         const res = await router.resolve({
-          path: '/test',
-          httpMethod: 'GET',
+          path: "/test",
+          httpMethod: "GET",
         } as any, { requestId: "request-id", timeout: 10000 });
 
-        expect(JSON.parse(res["body"])).to.deep.eq({
-          'error':{
-            'id': 'request-id',
-            'code': 'INVALID_REQUEST',
-            'message': 'this request is invalid',
-            'metadata': {
-              'test': 1,
+        expect(JSON.parse(res.body)).to.deep.eq({
+          error: {
+            id: "request-id",
+            code: "INVALID_REQUEST",
+            message: "this request is invalid",
+            metadata: {
+              test: 1,
             },
           }
         });
@@ -119,4 +121,3 @@ describe("RootNamespace", () => {
     });
   });
 });
-

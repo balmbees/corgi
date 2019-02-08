@@ -1,7 +1,8 @@
 import { Presenter } from "./presenter";
 
 export class DataLayoutPresenter<Input, Output> implements Presenter<Input, { data: Output }> {
-  private _outputJSONSchema = {
+  // tslint:disable-next-line:variable-name
+  private __outputJSONSchema = {
     type: "object",
     required: [
       "data",
@@ -9,13 +10,13 @@ export class DataLayoutPresenter<Input, Output> implements Presenter<Input, { da
     properties: {
       data: this.presenter.outputJSONSchema(),
     },
-  }
-
-  public outputJSONSchema() {
-    return this._outputJSONSchema;
-  }
+  };
 
   constructor(private presenter: Presenter<Input, Output>) {}
+
+  public outputJSONSchema() {
+    return this.__outputJSONSchema;
+  }
 
   public async present(input: Input) {
     const output = await this.presenter.present(input);

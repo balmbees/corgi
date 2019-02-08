@@ -1,84 +1,84 @@
 import { expect } from "chai";
 
-import { EntityPresenterFactory } from '../../../index';
+import { EntityPresenterFactory } from "../../../index";
 
 import { TestEntity } from "../../../__test__/entity";
 
 describe(EntityPresenterFactory.name, () => {
   class TestModel {
-    id: number;
-    name: string;
 
-    static create(id: number, name: string) {
+    public static create(id: number, name: string) {
       const model = new this();
       model.id = id;
       model.name = name;
       return model;
     }
+    public id: number;
+    public name: string;
   }
 
   describe("#schemas", () => {
     it("should return", () => {
       expect(EntityPresenterFactory.schemas()).to.be.deep.eq({
-        "TestAliasEntity": {
-          "properties": {
-            "aliasName": {
-              "type": "string"
+        TestAliasEntity: {
+          properties: {
+            aliasName: {
+              type: "string"
             }
           },
-          "required": [
+          required: [
             "aliasName"
           ],
-          "type": "object"
+          type: "object"
         },
-        "TestEntity": {
-          "properties": {
-            "id": {
-              "type": "number"
+        TestEntity: {
+          properties: {
+            id: {
+              type: "number"
             },
-            "name": {
-              "type": "string",
-              "description": "This field is nullable, value can be null."
+            name: {
+              type: "string",
+              description: "This field is nullable, value can be null."
             },
-            "alias": {
-              "$ref": "#/definitions/TestAliasEntity"
+            alias: {
+              $ref: "#/definitions/TestAliasEntity"
             },
-            "stats": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/TestStatEntity"
+            stats: {
+              type: "array",
+              items: {
+                $ref: "#/definitions/TestStatEntity"
               }
             },
-            "names": {
-              "type": "array",
-              "items": {
-                "type": "string"
+            names: {
+              type: "array",
+              items: {
+                type: "string"
               }
             }
           },
-          "required": [
+          required: [
             "id",
             "name"
           ],
-          "type": "object"
+          type: "object"
         },
-        "TestStatEntity": {
-          "properties": {
-            "count": {
-              "type": "number"
+        TestStatEntity: {
+          properties: {
+            count: {
+              type: "number"
             }
           },
-          "required": [
+          required: [
             "count"
           ],
-          "type": "object"
+          type: "object"
         }
-      })
+      });
     });
   });
 
   describe("#create", () => {
-    let presenter = EntityPresenterFactory.create(TestEntity, function (input: TestModel) {
+    const presenter = EntityPresenterFactory.create(TestEntity, function(input: TestModel) {
       const entity = new TestEntity();
       entity.id = input.id.toString();
       entity.name = input.name.toLowerCase();
@@ -88,7 +88,7 @@ describe(EntityPresenterFactory.name, () => {
     it("should presenter singleton", async () => {
       // it should generate output Schema from object
       expect(presenter.outputJSONSchema()).to.be.deep.eq({
-        "$ref": "#/definitions/TestEntity"
+        $ref: "#/definitions/TestEntity"
       });
 
       // Should return same object all the time, so that we can reuse in swagger docs
@@ -106,7 +106,7 @@ describe(EntityPresenterFactory.name, () => {
   });
 
   describe("#createArray", () => {
-    const presenter = EntityPresenterFactory.createArray(TestEntity, function (input: TestModel[]) {
+    const presenter = EntityPresenterFactory.createArray(TestEntity, function(input: TestModel[]) {
       return input.map(model => {
         const entity = new TestEntity();
         entity.id = model.id.toString();
@@ -119,7 +119,7 @@ describe(EntityPresenterFactory.name, () => {
       // it should generate output Schema from object
       expect(presenter.outputJSONSchema()).to.be.deep.eq({
         type: "array",
-        items: { "$ref": "#/definitions/TestEntity" },
+        items: { $ref: "#/definitions/TestEntity" },
       });
 
       // Should return same object all the time, so that we can reuse in swagger docs

@@ -1,40 +1,40 @@
 import { expect } from "chai";
 
 import {
-  Route,
-  Namespace,
-  Router,
   Middleware,
-  MiddlewareBeforeOptions,
   MiddlewareAfterOptions,
+  MiddlewareBeforeOptions,
+  Namespace,
   Response,
+  Route,
+  Router,
   TimeoutError,
-} from '../index';
+} from "../index";
 
 describe("Router", () => {
   describe("#constructor", () => {
     it("should raise error if there is duplicated operationId", () => {
       expect(() => {
-        new Router([
-          Route.GET('/', { operationId: "getIndex" }, {}, async function () {
+        return new Router([
+          Route.GET("/", { operationId: "getIndex" }, {}, async function() {
             return this.json("");
           }),
-          Route.GET('/wrong-path', { operationId: "getIndex" }, {}, async function () {
+          Route.GET("/wrong-path", { operationId: "getIndex" }, {}, async function() {
             return this.json("");
           })
         ]);
-      }).to.throw(Error, "route has duplicated operationId: \"getIndex\"");
+      }).to.throw(Error, "2 Routes has duplicated operationId: \"getIndex\"");
     });
 
     it ("should raise error if their are duplicated middleware", async () => {
       expect(() => {
-        class TestMiddleware extends Middleware {};
+        class TestMiddleware extends Middleware {}
 
-        new Router([
-          Route.GET('/', { operationId: "getIndex" }, {}, async function() {
+        return new Router([
+          Route.GET("/", { operationId: "getIndex" }, {}, async function() {
             return {
               statusCode: 200,
-              headers: { 'Content-Type': 'application/json; charset=utf-8' },
+              headers: { "Content-Type": "application/json; charset=utf-8" },
               body: this.request.body!,
             };
           })
@@ -55,7 +55,7 @@ describe("Router", () => {
       class M3 extends Middleware {}
 
       const router = new Router([
-        Route.GET('/', { operationId: "getIndex" }, {}, async function() {
+        Route.GET("/", { operationId: "getIndex" }, {}, async function() {
           return this.json({});
         })
       ], {
@@ -74,41 +74,41 @@ describe("Router", () => {
     describe("middlewares", () => {
       it("should run middlewares one by one in order", async () => {
         const router = new Router([
-          Route.GET('/', { operationId: "getIndex" }, {}, async function() {
+          Route.GET("/", { operationId: "getIndex" }, {}, async function() {
             return {
               statusCode: 200,
-              headers: { 'Content-Type': 'application/json; charset=utf-8' },
+              headers: { "Content-Type": "application/json; charset=utf-8" },
               body: this.request.body!,
             };
           })
         ], {
           middlewares: [
             new (class TestMiddleware extends Middleware {
-              async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
+              public async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
                 options.routingContext.request.body = "A";
               }
-              async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
+              public async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
                 options.response.body += "C";
                 return options.response;
               }
-            }),
+            })(),
             new (class TestMiddleware extends Middleware {
-              async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
+              public async before(options: MiddlewareBeforeOptions<undefined>): Promise<Response | void> {
                 options.routingContext.request.body += "B";
               }
-              async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
+              public async after(options: MiddlewareAfterOptions<undefined>): Promise<Response> {
                 options.response.body += "D";
                 return options.response;
               }
-            }),
+            })(),
           ]
         });
 
         let res;
 
         res = await router.resolve({
-          path: '/',
-          httpMethod: 'GET',
+          path: "/",
+          httpMethod: "GET",
           queryStringParameters: {
           },
         } as any, { requestId: "request-id", timeout: 10000 });
@@ -117,8 +117,8 @@ describe("Router", () => {
 
         // should preserve middleware order
         res = await router.resolve({
-          path: '/',
-          httpMethod: 'GET',
+          path: "/",
+          httpMethod: "GET",
           queryStringParameters: {
           },
         } as any, { requestId: "request-id", timeout: 10000 });
@@ -129,7 +129,7 @@ describe("Router", () => {
 
     it("should raise timeout if it's really get delayed", async () => {
       const router = new Router([
-        new Namespace('/', {
+        new Namespace("/", {
           async exceptionHandler(error: Error) {
             if (error instanceof TimeoutError) {
               return this.json({
@@ -139,7 +139,7 @@ describe("Router", () => {
             }
           },
           children: [
-            Route.GET('', { operationId: "getIndex" }, {}, async function() {
+            Route.GET("", { operationId: "getIndex" }, {}, async function() {
               await new Promise((resolve, reject) => {
                 setTimeout(() => {
                   resolve();
@@ -156,28 +156,30 @@ describe("Router", () => {
       const res = await new Promise((resolve, reject) => {
         handler(
           {
-            path: '/',
-            httpMethod: 'GET',
+            path: "/",
+            httpMethod: "GET",
             queryStringParameters: {
             },
           } as any,
           {
-            getRemainingTimeInMillis: function() {
+            getRemainingTimeInMillis() {
               return 100;
             },
             awsRequestId: "request-id",
           } as any,
-          (e, res) => {
-            if (e) { return reject(e); }
-
-            resolve(res);
+          (e, r) => {
+            if (e) {
+              reject(e);
+            } else {
+              resolve(r);
+            }
           },
         );
       });
 
       expect(res).to.deep.eq({
         statusCode: 500,
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        headers: { "Content-Type": "application/json; charset=utf-8" },
         body: JSON.stringify({
           error: "Timeout",
           operationId: "getIndex",

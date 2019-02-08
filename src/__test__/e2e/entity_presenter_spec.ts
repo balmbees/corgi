@@ -1,17 +1,17 @@
 import { expect } from "chai";
 
+import * as Joi from "joi";
 import {
   DataLayoutPresenter,
   EntityPresenterFactory,
   Namespace,
-  Routes,
-  Router,
   PresenterRouteFactory,
+  Router,
+  Routes,
   SwaggerRoute,
-} from '../../index';
-import * as Joi from 'joi';
+} from "../../index";
 
-import { TestEntity, TestAliasEntity } from "../entity";
+import { TestAliasEntity, TestEntity } from "../entity";
 
 const arrayPresenter = EntityPresenterFactory.createArray(TestEntity, (input: number[]) => {
   return input.map(i => {
@@ -26,23 +26,22 @@ const arrayPresenter = EntityPresenterFactory.createArray(TestEntity, (input: nu
   });
 });
 
-
 const dataArrayPresenter = new DataLayoutPresenter(arrayPresenter);
 
 describe("Calling complex API", () => {
   const routes: Routes = [
-    new Namespace('/api/:userId', {
+    new Namespace("/api/:userId", {
       params: {
         userId: Joi.number()
       },
       children: [
         PresenterRouteFactory.GET(
-          '/followers', {
+          "/followers", {
             operationId: "getFollowers",
-            desc: 'List of users that following me',
+            desc: "List of users that following me",
           }, {}
           , dataArrayPresenter
-          , async function () {
+          , async function() {
             return [1, 2];
           }
         ),
@@ -70,16 +69,16 @@ describe("Calling complex API", () => {
   it("should work with presenter (Wrapped with data)", async () => {
     const res = await router.resolve({
       path: "/api/33/followers",
-      httpMethod: 'GET',
+      httpMethod: "GET",
     } as any, { timeout: 10000 });
 
     expect(res).to.deep.eq({
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
-        "data": [
-          { "id": "1", "name": "11", "alias": { "aliasName": "111" } },
-          { "id": "2", "name": "22", "alias": { "aliasName": "222" } }
+        data: [
+          { id: "1", name: "11", alias: { aliasName: "111" } },
+          { id: "2", name: "22", alias: { aliasName: "222" } }
         ]
       }),
     });
@@ -88,9 +87,9 @@ describe("Calling complex API", () => {
   it("should work swaggerResponses", async () => {
     const res = await router.resolve({
       path: "/swagger",
-      httpMethod: 'GET',
+      httpMethod: "GET",
       headers: {
-        Host: "local.me",
+        "Host": "local.me",
         "X-Forwarded-Proto": "http"
       },
       requestContext: {
@@ -98,118 +97,118 @@ describe("Calling complex API", () => {
       }
     } as any, { timeout: 10000 });
 
-    expect(res["statusCode"]).to.eq(200);
+    expect(res.statusCode).to.eq(200);
     // This thing must be validated by https://editor.swagger.io
-    expect(JSON.parse(res["body"])).to.deep.eq({
-      "swagger": "2.0",
-      "info": {
-        "title": "InterestService",
-        "version": "1.0.0"
+    expect(JSON.parse(res.body)).to.deep.eq({
+      swagger: "2.0",
+      info: {
+        title: "InterestService",
+        version: "1.0.0"
       },
-      "host": "local.me",
-      "basePath": "/test/",
-      "schemes": [
+      host: "local.me",
+      basePath: "/test/",
+      schemes: [
         "http"
       ],
-      "produces": [
+      produces: [
         "application/json; charset=utf-8"
       ],
-      "paths": {
+      paths: {
         "/api/{userId}/followers": {
-          "get": {
-            "description": "List of users that following me",
-            "produces": [
+          get: {
+            description: "List of users that following me",
+            produces: [
               "application/json; charset=utf-8"
             ],
-            "parameters": [
+            parameters: [
               {
-                "in": "path",
-                "name": "userId",
-                "description": "",
-                "type": "number",
-                "required": true
+                in: "path",
+                name: "userId",
+                description: "",
+                type: "number",
+                required: true
               }
             ],
-            "responses": {
-              "200": {
-                "description": "Success",
-                "schema": {
-                  "$ref": "#/definitions/TestEntityArrayData"
+            responses: {
+              200: {
+                description: "Success",
+                schema: {
+                  $ref: "#/definitions/TestEntityArrayData"
                 }
               }
             },
-            "operationId": "getFollowers"
+            operationId: "getFollowers"
           }
         }
       },
-      "tags": [
+      tags: [
 
       ],
-      "definitions": {
-        "TestAliasEntity": {
-          "properties": {
-            "aliasName": {
-              "type": "string"
+      definitions: {
+        TestAliasEntity: {
+          properties: {
+            aliasName: {
+              type: "string"
             }
           },
-          "required": [
+          required: [
             "aliasName"
           ],
-          "type": "object"
+          type: "object"
         },
-        "TestEntity": {
-          "properties": {
-            "id": {
-              "type": "number"
+        TestEntity: {
+          properties: {
+            id: {
+              type: "number"
             },
-            "name": {
-              "type": "string",
-              "description": "This field is nullable, value can be null."
+            name: {
+              type: "string",
+              description: "This field is nullable, value can be null."
             },
-            "alias": {
-              "$ref": "#/definitions/TestAliasEntity"
+            alias: {
+              $ref: "#/definitions/TestAliasEntity"
             },
-            "stats": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/TestStatEntity"
+            stats: {
+              type: "array",
+              items: {
+                $ref: "#/definitions/TestStatEntity"
               }
             },
-            "names": {
-              "type": "array",
-              "items": {
-                "type": "string"
+            names: {
+              type: "array",
+              items: {
+                type: "string"
               }
             }
           },
-          "required": [
+          required: [
             "id",
             "name"
           ],
-          "type": "object"
+          type: "object"
         },
-        "TestEntityArrayData": {
-          "type": "object",
-          "properties": {
-            "data": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/TestEntity"
+        TestEntityArrayData: {
+          type: "object",
+          properties: {
+            data: {
+              type: "array",
+              items: {
+                $ref: "#/definitions/TestEntity"
               },
             },
           },
-          "required": ["data"],
+          required: ["data"],
         },
-        "TestStatEntity": {
-          "properties": {
-            "count": {
-              "type": "number"
+        TestStatEntity: {
+          properties: {
+            count: {
+              type: "number"
             }
           },
-          "required": ["count"],
-          "type": "object"
+          required: ["count"],
+          type: "object"
         }
       }
-    })
+    });
   });
 });

@@ -2,9 +2,9 @@ import { expect } from "chai";
 
 import {
   EntityPresenterFactory,
-  Router,
   PresenterRouteFactory,
-} from '../../../index';
+  Router,
+} from "../../../index";
 
 import { TestEntity } from "../../../__test__/entity";
 
@@ -12,8 +12,8 @@ describe(PresenterRouteFactory.name, () => {
   describe("#create", () => {
     it("should create route that using given presenter", async () => {
       class TestModel {
-        id: number;
-        name: string;
+        public id: number;
+        public name: string;
       }
 
       const presenter = EntityPresenterFactory.create(TestEntity, function(input: TestModel) {
@@ -24,7 +24,7 @@ describe(PresenterRouteFactory.name, () => {
       });
 
       expect(presenter.outputJSONSchema()).to.be.deep.eq({
-        "$ref": "#/definitions/TestEntity"
+        $ref: "#/definitions/TestEntity"
       });
       // Should return same object
       expect(presenter.outputJSONSchema()).to.be.eq(presenter.outputJSONSchema());
@@ -34,7 +34,7 @@ describe(PresenterRouteFactory.name, () => {
           desc: "test", operationId: "getAPI"
         }, {
         }, presenter
-        , async function () {
+        , async function() {
           const model = new TestModel();
           model.id = 100;
           model.name = "AbcD";
@@ -48,12 +48,12 @@ describe(PresenterRouteFactory.name, () => {
       ]);
       const res = await router.resolve({
         path: "/api",
-        httpMethod: 'GET',
+        httpMethod: "GET",
       } as any, { timeout: 10000 });
 
       expect(res).to.deep.eq({
         statusCode: 200,
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        headers: { "Content-Type": "application/json; charset=utf-8" },
         body: JSON.stringify({ id: "100", name: "abcd" })
       });
     });

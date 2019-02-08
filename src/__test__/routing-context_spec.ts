@@ -1,9 +1,9 @@
 import { expect } from "chai";
 
-import { RoutingContext } from '../routing-context';
-import { Parameter } from '../parameter';
-import * as Joi from 'joi';
+import * as Joi from "joi";
 import * as qs from "qs";
+import { Parameter } from "../parameter";
+import { RoutingContext } from "../routing-context";
 
 describe("RoutingContext", () => {
   describe("#validateAndUpdateParams", () => {
@@ -11,7 +11,7 @@ describe("RoutingContext", () => {
       it("should parse and validate JsonBody params", () => {
         const context = new RoutingContext({} as any, {
           path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
-          httpMethod: 'POST',
+          httpMethod: "POST",
           body: JSON.stringify({
             update: {
               fieldA: 12345,
@@ -22,9 +22,9 @@ describe("RoutingContext", () => {
             }
           }),
           queryStringParameters: {
-            testId: "12345",
-            not_allowed_param: "xxx",
-            encodedParam: "%ED%94%BD%EC%8B%9C",
+            "testId": "12345",
+            "not_allowed_param": "xxx",
+            "encodedParam": "%ED%94%BD%EC%8B%9C",
             "arrayParameter[0]": "1",
             "arrayParameter[1]": "2",
             "arrayParameter[2]": "3",
@@ -61,13 +61,13 @@ describe("RoutingContext", () => {
           userId: 33,
           interest: "픽시",
           arrayParameter: [1, 2, 3, 4],
-        })
+        });
       });
 
       it("should parse and validate application/x-www-form-urlencoded params", () => {
         const context = new RoutingContext({} as any, {
           path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
-          httpMethod: 'POST',
+          httpMethod: "POST",
           body: qs.stringify({
             update: {
               fieldA: 12345,
@@ -78,12 +78,12 @@ describe("RoutingContext", () => {
             }
           }),
           headers: {
-            'Content-Type': "application/x-www-form-urlencoded",
+            "Content-Type": "application/x-www-form-urlencoded",
           },
           queryStringParameters: {
-            testId: "12345",
-            not_allowed_param: "xxx",
-            encodedParam: "%ED%94%BD%EC%8B%9C",
+            "testId": "12345",
+            "not_allowed_param": "xxx",
+            "encodedParam": "%ED%94%BD%EC%8B%9C",
             "arrayParameter[0]": "1",
             "arrayParameter[1]": "2",
             "arrayParameter[2]": "3",
@@ -120,13 +120,13 @@ describe("RoutingContext", () => {
           userId: 33,
           interest: "픽시",
           arrayParameter: [1, 2, 3, 4],
-        })
+        });
       });
 
       it("should parse and validate JsonBody params when path has % character", () => {
         const context = new RoutingContext({} as any, {
           path: "/api/33/followings/100%users",
-          httpMethod: 'POST',
+          httpMethod: "POST",
           body: JSON.stringify({
             update: {
               fieldA: 12345,
@@ -137,9 +137,9 @@ describe("RoutingContext", () => {
             }
           }),
           queryStringParameters: {
-            testId: "12345",
-            not_allowed_param: "xxx",
-            encodedParam: "100%users",
+            "testId": "12345",
+            "not_allowed_param": "xxx",
+            "encodedParam": "100%users",
             "arrayParameter[0]": "1",
             "arrayParameter[1]": "2",
             "arrayParameter[2]": "3",
@@ -176,7 +176,7 @@ describe("RoutingContext", () => {
           userId: 33,
           interest: "100%users",
           arrayParameter: [1, 2, 3, 4],
-        })
+        });
       });
     });
 
@@ -184,7 +184,7 @@ describe("RoutingContext", () => {
       it("should parse and validate JsonBody params", () => {
         const context = new RoutingContext({} as any, {
           path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
-          httpMethod: 'POST',
+          httpMethod: "POST",
           body: null,
           queryStringParameters: null,
         } as any, "request-id", {
@@ -211,43 +211,42 @@ describe("RoutingContext", () => {
     it("should normalize headers", () => {
       const context = new RoutingContext({} as any, {
         path: "/api/33/followings",
-        httpMethod: 'POST',
-        body: JSON.stringify({ foo: 'bar' }),
+        httpMethod: "POST",
+        body: JSON.stringify({ foo: "bar" }),
         headers: {
-          'origin': 'https://bar.baz',
-          'User-Agent': 'Googlebot/1.0',
+          "origin": "https://bar.baz",
+          "User-Agent": "Googlebot/1.0",
         },
         queryStringParameters: null,
       } as any, "request-id", {});
 
       expect(context.headers).to.be.deep.eq({
-        'origin': 'https://bar.baz',
-        'user-agent': 'Googlebot/1.0',
+        "origin": "https://bar.baz",
+        "user-agent": "Googlebot/1.0",
       });
     });
 
     it("should be called lazily / should be cached", () => {
       const context = new RoutingContext({} as any, {
         path: "/api/wow/awesome",
-        httpMethod: 'POST',
-        body: JSON.stringify({ such: 'value' }),
+        httpMethod: "POST",
+        body: JSON.stringify({ such: "value" }),
         headers: {
-          'ETag': 'abcdef',
-          'Host': 'www.vingle.net',
+          ETag: "abcdef",
+          Host: "www.vingle.net",
         },
         queryStringParameters: null,
       } as any, "request-id", {});
-
 
       // HACK: setup trap for testing call count
       let callCount = 0;
       // backup original function reference
       const fn = (context as any).normalizeHeaders;
 
-      const noop = (() => {}) as any;
+      const noop = (() => undefined) as any;
 
       // decorate target method to trap method calls
-      (context as any).normalizeHeaders = function () {
+      (context as any).normalizeHeaders = function() {
         callCount++;
         return fn.apply(context, arguments);
       };
@@ -265,8 +264,8 @@ describe("RoutingContext", () => {
       expect(callCount).to.be.eq(1);
 
       expect(context.headers).to.be.deep.eq({
-        'etag': 'abcdef',
-        'host': 'www.vingle.net',
+        etag: "abcdef",
+        host: "www.vingle.net",
       });
       expect(callCount).to.be.eq(1);
     });
@@ -305,4 +304,3 @@ describe("RoutingContext", () => {
     });
   });
 });
-

@@ -3,7 +3,6 @@ import { Presenter } from "./presenter";
 import { ClassValidator, ClassValidatorJSONSchema } from "./class_validator";
 
 export class EntityPresenterFactory {
-  private static __schemas: any;
   public static schemas() {
     if (!this.__schemas) {
       const metadatas = (ClassValidator.getFromContainer(ClassValidator.MetadataStorage) as any).validationMetadatas;
@@ -23,7 +22,7 @@ export class EntityPresenterFactory {
                 return {
                   type: "array",
                   items: {
-                    "$ref": `#/definitions/${elementClass.name}`
+                    $ref: `#/definitions/${elementClass.name}`
                   },
                 };
               }
@@ -69,7 +68,7 @@ export class EntityPresenterFactory {
         }
 
         schema.items = {
-          "$ref": `#/definitions/${elementModelName}`,
+          $ref: `#/definitions/${elementModelName}`,
         };
       });
 
@@ -78,9 +77,9 @@ export class EntityPresenterFactory {
     return this.__schemas;
   }
 
-  private static outputJSONSchemaMap = new Map<any, any>();
-
-  public static create<Model, Entity>(outputClass: { new(): Entity }, presentMethod: (input: Model) => Promise<Entity> | Entity) {
+  public static create<Model, Entity>(
+    outputClass: new() => Entity, presentMethod: (input: Model) => Promise<Entity> | Entity
+  ) {
     const presenter: Presenter<Model, Entity> = {
       outputJSONSchema: () => {
         const modelName = outputClass.name;
@@ -92,7 +91,7 @@ export class EntityPresenterFactory {
           }
           // Make sure there IS schema, and convert back to Reference
           schema = {
-            "$ref": `#/definitions/${modelName}`
+            $ref: `#/definitions/${modelName}`
           };
 
           this.outputJSONSchemaMap.set(modelName, schema);
@@ -104,7 +103,9 @@ export class EntityPresenterFactory {
     return presenter;
   }
 
-  public static createArray<Model, Entity>(outputClass: { new(): Entity }, presentMethod: (input: Model) => Promise<Entity[]> | Entity[]) {
+  public static createArray<Model, Entity>(
+    outputClass: new() => Entity, presentMethod: (input: Model) => Promise<Entity[]> | Entity[]
+  ) {
     const presenter: Presenter<Model, Entity[]> = {
       outputJSONSchema: () => {
         const modelName = outputClass.name;
@@ -117,11 +118,11 @@ export class EntityPresenterFactory {
           }
           // Make sure there IS schema, and convert back to Reference
           schema = {
-            "$ref": `#/definitions/${modelName}`
+            $ref: `#/definitions/${modelName}`
           };
           schema = {
-            "type": "array",
-            "items": schema,
+            type: "array",
+            items: schema,
           };
           this.outputJSONSchemaMap.set(storeName, schema);
         }
@@ -131,4 +132,8 @@ export class EntityPresenterFactory {
     };
     return presenter;
   }
+  // tslint:disable-next-line:variable-name
+  private static __schemas: any;
+
+  private static outputJSONSchemaMap = new Map<any, any>();
 }

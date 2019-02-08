@@ -1,42 +1,42 @@
-import * as pathToRegexp from 'path-to-regexp';
-import * as _ from 'lodash';
+import * as _ from "lodash";
+import * as pathToRegexp from "path-to-regexp";
 
-import * as LambdaProxy from './lambda-proxy';
-import { Route } from './route';
-import { Routes, Namespace } from './namespace';
-import { RootNamespace } from './root-namespace';
-import { RoutingContext } from './routing-context';
-import { ParameterInputType } from './parameter';
-import { Middleware, MiddlewareConstructor } from './middleware';
-import { TimeoutError } from '.';
+import { TimeoutError } from ".";
+import * as LambdaProxy from "./lambda-proxy";
+import { Middleware, MiddlewareConstructor } from "./middleware";
+import { Namespace, Routes } from "./namespace";
+import { ParameterInputType } from "./parameter";
+import { RootNamespace } from "./root-namespace";
+import { Route } from "./route";
+import { RoutingContext } from "./routing-context";
 
 // ---- Router
 
 export function flattenRoutes(routes: Routes) {
-  let flattenRoutes: Array<Routes> = [];
+  let flattenedRoutes: Routes[] = [];
   routes.forEach(route => {
-    flattenRoutes = [...flattenRoutes, ...flattenRoute([], route)];
+    flattenedRoutes = [...flattenedRoutes, ...flattenRoute([], route)];
   });
-  return flattenRoutes;
+  return flattenedRoutes;
 }
 
-export function flattenRoute(parents: Array<Route | Namespace>, route: Route | Namespace): Array<Routes> {
+export function flattenRoute(parents: Array<Route | Namespace>, route: Route | Namespace): Routes[] {
   if (route instanceof Route) {
     return [
       [
         ...parents,
         route
       ]
-    ]
+    ];
   } else {
-    let routes: Array<Routes> = [];
+    let routes: Routes[] = [];
 
     route.children.forEach((childRoute) => {
       const childRoutes = flattenRoute([...parents, route], childRoute);
       routes = [
         ...routes,
         ...childRoutes,
-      ]
+      ];
     });
 
     return routes;
@@ -44,52 +44,60 @@ export function flattenRoute(parents: Array<Route | Namespace>, route: Route | N
 }
 
 export class Router {
-  private flattenRoutes: Array<Routes>;
-  private operationIdRouteMap: { [operationId: string]: Route } = {};
+  private flattenRoutes: Routes[];
+  // operationId - Route Map
+  private operations: Map<string, Route>;
   private middlewares: Middleware[];
-  private middlewareMap = new Map<Function, Middleware>();
+  private middlewareMap = new Map<MiddlewareConstructor<any>, Middleware>();
   private routeTimeout: number | undefined;
 
-  constructor(routes: Routes, options: { timeout?: number, middlewares?: Middleware[] } = {}) {
-    this.flattenRoutes = flattenRoutes([
-      new RootNamespace(routes)
-    ]);
+  constructor(
+    routes: Routes,
+    options: { timeout?: number, middlewares?: Middleware[] } = {}
+  ) {
+    this.flattenRoutes = flattenRoutes([new RootNamespace(routes)]);
 
-    this.operationIdRouteMap =
+    this.operations = new Map(
       _.chain(this.flattenRoutes)
-        .map(routes => _.last(routes) as Route)
-        .filter(route => !!route.operationId)
-        .groupBy(route => route.operationId)
-        .mapValues((routes: Route[], operationId: string) => {
-          if (routes.length > 1) {
-            throw new Error(`route has duplicated operationId: "${operationId}"`)
+        .map(routesList => _.last(routesList) as Route)
+        .filter(operation => !!operation.operationId)
+        .groupBy(operation => operation.operationId)
+        .mapValues((operations: Route[], operationId: string) => {
+          if (operations.length > 1) {
+            throw new Error(`${operations.length} Routes has duplicated operationId: "${operationId}"`);
           }
-          return routes[0];
+          return operations[0];
         })
-        .value();
+        .toPairs()
+        .value()
+    );
 
     this.middlewares = options.middlewares || [];
 
     this.middlewares.forEach(middleware => {
-      if (this.middlewareMap.get(middleware.constructor)) {
+      if (this.middlewareMap.get(middleware.constructor as any)) {
         throw new Error(`Middleware<${middleware.constructor.name}> should be unique but not.`);
       }
-      this.middlewareMap.set(middleware.constructor, middleware);
+      this.middlewareMap.set(middleware.constructor as any, middleware);
     });
 
     this.routeTimeout = options.timeout;
   }
 
   public findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
-    return this.middlewareMap.get(middlewareClass as Function) as T | undefined;
+    return this.middlewareMap.get(middlewareClass) as T | undefined;
   }
 
   public findRoute(operationId: string) {
-    return this.operationIdRouteMap[operationId] as Route | undefined;
+    return this.operations.get(operationId);
   }
 
   public handler() {
-    return (event: LambdaProxy.Event, context: LambdaProxy.Context, done: (e: Error | null, res?: LambdaProxy.Response) => void) => {
+    return (
+      event: LambdaProxy.Event,
+      context: LambdaProxy.Context,
+      done: (e: Error | null, res?: LambdaProxy.Response) => void
+    ) => {
       context.callbackWaitsForEmptyEventLoop = false;
 
       const requestId = context.awsRequestId;
@@ -101,7 +109,7 @@ export class Router {
       }, (error) => {
         done(null, {
           statusCode: 500,
-          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          headers: { "Content-Type": "application/json; charset=utf-8" },
           body: JSON.stringify({
             error: {
               id: requestId,
@@ -113,14 +121,16 @@ export class Router {
     };
   }
 
-  async resolve(event: LambdaProxy.Event, options: { timeout: number, requestId?: string }): Promise<LambdaProxy.Response> {
-    for (const flattenRoute of this.flattenRoutes) {
-      const endRoute = (flattenRoute[flattenRoute.length - 1] as Route);
+  public async resolve(
+    event: LambdaProxy.Event, options: { timeout: number, requestId?: string }
+  ): Promise<LambdaProxy.Response> {
+    for (const routesList of this.flattenRoutes) {
+      const endRoute = (routesList[routesList.length - 1] as Route);
       const method = endRoute.method;
 
       // Matching Route
-      if (method == event.httpMethod) {
-        const joinedPath = flattenRoute.map(r => r.path).join('');
+      if (method === event.httpMethod) {
+        const joinedPath = routesList.map(r => r.path).join("");
         const keys: pathToRegexp.Key[] = [];
         const regexp = pathToRegexp(joinedPath, keys);
 
@@ -134,8 +144,8 @@ export class Router {
 
           const routingContext = new RoutingContext(this, event, options.requestId, pathParams);
 
-          const prevRoutes: Array<Namespace> = [];
-          for (const currentRoute of flattenRoute) {
+          const prevRoutes: Namespace[] = [];
+          for (const currentRoute of routesList) {
             if (currentRoute instanceof Namespace) {
               prevRoutes.splice(0, 0, currentRoute);
             } else {
@@ -143,9 +153,9 @@ export class Router {
               const before = await (async () => {
                 for (const middleware of this.middlewares) {
                   const metadata = currentRoute.getMetadata(middleware.constructor as any);
-                  const response = await middleware.before({ routingContext, currentRoute, metadata });
-                  if (response) {
-                    return response;
+                  const middlewareResponse = await middleware.before({ routingContext, currentRoute, metadata });
+                  if (middlewareResponse) {
+                    return middlewareResponse;
                   }
                 }
                 return undefined;
@@ -164,7 +174,9 @@ export class Router {
                 // Run after middlewares
                 for (const middleware of this.middlewares.slice().reverse()) {
                   const metadata = currentRoute.getMetadata(middleware.constructor as any);
-                  currentRouteResponse = await middleware.after({ routingContext, currentRoute, metadata, response: currentRouteResponse });
+                  currentRouteResponse = await middleware.after({
+                    routingContext, currentRoute, metadata, response: currentRouteResponse
+                  });
                 }
                 return currentRouteResponse;
               })(response);
@@ -178,9 +190,9 @@ export class Router {
     return {
       statusCode: 404,
       headers: {
-        'Content-Type': "application/json"
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({ error: 'Not Found' }),
+      body: JSON.stringify({ error: "Not Found" }),
     };
   }
 
@@ -197,9 +209,9 @@ export class Router {
         // Parameter Validation
         const params = _.mapValues(namespace.params, (schema, name) => {
           return {
-            in: 'path' as ParameterInputType,
+            in: "path" as ParameterInputType,
             def: schema,
-          }
+          };
         });
         routingContext.validateAndUpdateParams(params);
 
@@ -232,7 +244,7 @@ export class Router {
       }, (error) => {
         cleanTimeout();
         return Promise.reject(error);
-      })
+      });
     } catch (e) {
       // This is exception handler, so Bottom -> Top.
       for (const namespace of namespaces) {

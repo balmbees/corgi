@@ -1,27 +1,29 @@
-import { Route, JSONSchema, HttpMethod} from '../route';
-import { Routes, Namespace } from '../namespace';
-import * as LambdaProxy from '../lambda-proxy';
-import { flattenRoutes } from '../router';
+import * as LambdaProxy from "../lambda-proxy";
+import { Namespace, Routes } from "../namespace";
+import { HttpMethod, JSONSchema, Route} from "../route";
+import { flattenRoutes } from "../router";
 
-import * as Joi from 'joi';
-import * as _ from 'lodash';
-import * as _string from 'underscore.string';
-import * as Swagger from 'swagger-schema-official';
+import * as Joi from "joi";
+import * as _ from "lodash";
+import * as Swagger from "swagger-schema-official";
+import * as _string from "underscore.string";
 
 import JoiToJSONSchema = require("@vingle/joi-to-json-schema");
 
 function deepOmit(obj: any, keysToOmit: string[]) {
-  var keysToOmitIndex = _.keyBy(keysToOmit); // create an index object of the keys that should be omitted
+  const keysToOmitIndex = _.keyBy(keysToOmit); // create an index object of the keys that should be omitted
 
-  function omitFromObject(obj: any) { // the inner function which will be called recursivley
-    return _.transform(obj, function(result, value, key) { // transform to a new object
+  const omitFromObject = (objectToOmit: any) => {
+    // the inner function which will be called recursively
+    return _.transform(objectToOmit, function(result, value, key) { // transform to a new object
       if (key in keysToOmitIndex) { // if the key is in the index skip it
         return;
       }
 
-      result[key] = _.isObject(value) ? omitFromObject(value) : value; // if the key is an object run it through the inner function - omitFromObject
-    })
-  }
+      // if the key is an object run it through the inner function - omitFromObject
+      result[key] = _.isObject(value) ? omitFromObject(value) : value;
+    });
+  };
 
   return omitFromObject(obj); // return the inner function result
 }
@@ -34,7 +36,7 @@ function asJoiSchema(object: any): Joi.Schema | undefined {
   if ((object as Joi.Schema).isJoi) {
     return object;
   } else {
-    undefined;
+    return undefined;
   }
 }
 
@@ -52,24 +54,24 @@ export class SwaggerRoute extends Namespace {
 
     const CorsHeaders = function(origin: string) {
       return {
-        'Access-Control-Allow-Origin': origin || '',
-        'Access-Control-Allow-Headers': [
-          'Content-Type',
-        ].join(', '),
-        'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].join(', '),
-        'Access-Control-Max-Age': `${60 * 60 * 24 * 30}`,
+        "Access-Control-Allow-Origin": origin || "",
+        "Access-Control-Allow-Headers": [
+          "Content-Type",
+        ].join(", "),
+        "Access-Control-Allow-Methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"].join(", "),
+        "Access-Control-Max-Age": `${60 * 60 * 24 * 30}`,
       };
     };
 
     super(path, {
       children: [
         Route.OPTIONS(
-          '/', { desc: 'CORS Preflight Endpoint for Swagger Documentation API', operationId: 'optionSwagger' }, {},
+          "/", { desc: "CORS Preflight Endpoint for Swagger Documentation API", operationId: "optionSwagger" }, {},
           async function() {
-            return this.json('', 204, CorsHeaders(this.headers.origin));
+            return this.json("", 204, CorsHeaders(this.headers.origin));
           }),
 
-        Route.GET('/', { desc: 'Swagger Documentation API', operationId: 'getSwagger' }, {},
+        Route.GET("/", { desc: "Swagger Documentation API", operationId: "getSwagger" }, {},
           async function() {
             const docGenerator = new SwaggerGenerator();
             const json = docGenerator.generateJSON(info, this.request, routes);
@@ -81,19 +83,22 @@ export class SwaggerRoute extends Namespace {
 }
 
 export class SwaggerGenerator {
-  constructor() {}
+  constructor() {
+    //
+  }
 
-  generateJSON(info: SwaggerRouteOptions, request: LambdaProxy.Event, routes: Routes): Swagger.Spec {
+  public generateJSON(info: SwaggerRouteOptions, request: LambdaProxy.Event, cascadedRoutes: Routes): Swagger.Spec {
     const paths: { [pathName: string]: Swagger.Path } = {};
 
     // Try to convert to reference, and if it fails return original scchema
     const convertToReference = (schema: Joi.Schema | JSONSchema) => {
       if (info.definitions) {
+        // tslint:disable-next-line:forin
         for (const name in info.definitions) {
           const def = info.definitions[name];
           // Same "ADDRESS"
           if (def === schema) {
-            return { "$ref": `#/definitions/${name}` };
+            return { $ref: `#/definitions/${name}` };
           }
         }
       }
@@ -101,9 +106,9 @@ export class SwaggerGenerator {
       return undefined;
     };
 
-    flattenRoutes(routes).forEach((routes) => {
+    flattenRoutes(cascadedRoutes).forEach((routes) => {
       const endRoute = (routes[routes.length - 1] as Route);
-      const corgiPath = routes.map(r => r.path).join('');
+      const corgiPath = routes.map(r => r.path).join("");
       const swaggerPath = this.toSwaggerPath(corgiPath);
 
       if (!paths[swaggerPath]) {
@@ -120,9 +125,9 @@ export class SwaggerGenerator {
             return _.map(route.params, (schema, name) => {
               const joiSchema = JoiToSwaggerSchema(schema);
               const param: Swagger.PathParameter = {
-                in: 'path',
-                name: name,
-                description: '',
+                in: "path",
+                name,
+                description: "",
                 type: joiSchema.type,
                 required: true
               };
@@ -136,8 +141,8 @@ export class SwaggerGenerator {
                 const joiSchema = JoiToSwaggerSchema(paramDef.def);
                 const param: Swagger.Parameter = {
                   in: paramDef.in,
-                  name: name,
-                  description: '',
+                  name,
+                  description: "",
                   schema: joiSchema,
                   // current joi typing doesn't have type definition for flags
                   // @see https://github.com/hapijs/joi/blob/v12/lib/types/any/index.js#L48-L64
@@ -148,14 +153,14 @@ export class SwaggerGenerator {
                 const joiSchema = JoiToSwaggerSchema(paramDef.def);
                 const param: Swagger.Parameter = Object.assign({
                   in: paramDef.in,
-                  name: name,
-                  description: '',
+                  name,
+                  description: "",
                 }, joiSchema);
 
-                if (paramDef.in === 'path') {
+                if (paramDef.in === "path") {
                   param.required = true;
                 } else { // query param
-                  param.required = ((joiSchemaMetadata.flags || {}) as any).presence !== "optional"
+                  param.required = ((joiSchemaMetadata.flags || {}) as any).presence !== "optional";
                 }
 
                 return param;
@@ -167,7 +172,7 @@ export class SwaggerGenerator {
           if (endRoute.responses) {
             return Array.from(endRoute.responses)
               .reduce((obj, [statusCode, response]) => {
-                let schema: Swagger.Schema | undefined = undefined;
+                let schema: Swagger.Schema | undefined;
                 if (response.schema) {
                   const reference = convertToReference(response.schema);
                   if (reference) {
@@ -185,41 +190,31 @@ export class SwaggerGenerator {
 
                 obj[statusCode] = {
                   description: response.desc || "",
-                  schema: schema,
+                  schema,
                 };
                 return obj;
               }, {} as { [key: string]: Swagger.Response });
           } else {
             return {
-              "200": {
+              200: {
                 description: "Success"
               }
-            }
+            };
           }
         })(),
         operationId: endRoute.operationId || this.routesToOperationId(corgiPath, endRoute.method),
       };
-
-      switch (endRoute.method) {
-        case 'GET': {
-          paths[swaggerPath].get = operation;
-        } break;
-        case 'PUT': {
-          paths[swaggerPath].put = operation;
-        } break;
-        case 'POST': {
-          paths[swaggerPath].post = operation;
-        } break;
-        case 'DELETE': {
-          paths[swaggerPath].delete = operation;
-        } break;
-        case 'OPTIONS': {
-          paths[swaggerPath].options = operation;
-        } break;
-        case 'HEAD': {
-          paths[swaggerPath].head = operation;
-        } break;
-      }
+      paths[swaggerPath][(() => {
+        switch (endRoute.method) {
+          case "GET": return "get";
+          case "PUT": return "put";
+          case "POST": return "post";
+          case "PATCH": return "patch";
+          case "DELETE": return "delete";
+          case "OPTIONS": return "options";
+          case "HEAD": return "head";
+        }
+      })()] = operation;
     });
 
     const swagger: Swagger.Spec = {
@@ -232,7 +227,7 @@ export class SwaggerGenerator {
         contact: info.contact,
         license: info.license,
       },
-      host: request.headers["Host"],
+      host: request.headers.Host,
       basePath: `/${request.requestContext!.stage}/`,
       schemes: [
         request.headers["X-Forwarded-Proto"]
@@ -254,19 +249,19 @@ export class SwaggerGenerator {
     return swagger;
   }
 
-  toSwaggerPath(path: string) {
-    return path.replace(/\:(\w+)/g, '{$1}');
+  public toSwaggerPath(path: string) {
+    return path.replace(/\:(\w+)/g, "{$1}");
   }
 
-  routesToOperationId(path: string, method: HttpMethod) {
+  public routesToOperationId(path: string, method: HttpMethod) {
     const operation =
-      path.split('/').map((c) => {
-        if (c.startsWith(':')) {
+      path.split("/").map((c) => {
+        if (c.startsWith(":")) {
           return _string.capitalize(c.slice(1));
         } else {
           return _string.capitalize(c);
         }
-      }).join('');
+      }).join("");
 
     return `${_string.capitalize(method.toLowerCase())}${operation}`;
   }
