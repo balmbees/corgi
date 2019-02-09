@@ -18,6 +18,9 @@
     "ci:publish": "publish",
     "test": "mocha dst/**/__test__/**/*_spec.js"
   },
+  "files": [
+    "dst"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/balmbees/corgi.git"
