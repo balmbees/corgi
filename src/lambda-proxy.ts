@@ -49,7 +49,6 @@ export interface EventStageVariables {
   [key: string]: string;
 }
 
-
 // Response
 export interface Response {
   statusCode: number;

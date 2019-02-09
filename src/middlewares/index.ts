@@ -1,1 +1,1 @@
-export * from './xray-middleware';
+export * from "./xray-middleware";

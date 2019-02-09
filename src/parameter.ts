@@ -1,24 +1,24 @@
-import * as Joi from 'joi';
+import * as Joi from "joi";
 
-export type ParameterInputType = 'query' | 'header' | 'path' | 'formData' | 'body';
+export type ParameterInputType = "query" | "header" | "path" | "formData" | "body";
 export interface ParameterDefinition {
   in: ParameterInputType;
   def: Joi.Schema;
-};
-export type ParameterDefinitionMap = {
+}
+export interface ParameterDefinitionMap {
   [key: string]: ParameterDefinition;
-};
+}
 
 export class Parameter {
-  static Query(schema: Joi.Schema): ParameterDefinition {
-    return { in: 'query', def: schema }
+  public static Query(schema: Joi.Schema): ParameterDefinition {
+    return { in: "query", def: schema };
   }
 
-  static Path(schema: Joi.Schema): ParameterDefinition {
-    return { in: 'path', def: schema }
+  public static Path(schema: Joi.Schema): ParameterDefinition {
+    return { in: "path", def: schema };
   }
 
-  static Body(schema: Joi.Schema): ParameterDefinition {
-    return { in: 'body', def: schema }
+  public static Body(schema: Joi.Schema): ParameterDefinition {
+    return { in: "body", def: schema };
   }
 }

@@ -1,8 +1,8 @@
-import { Namespace, Routes } from './namespace';
 import {
-  StandardError, StandardErrorResponseBody,
-  ErrorResponseFormatter,
+  ErrorResponseFormatter, StandardError,
+  StandardErrorResponseBody,
 } from "./error_response";
+import { Namespace, Routes } from "./namespace";
 
 export class RootNamespace extends Namespace {
   public readonly errorFormatter: ErrorResponseFormatter;
@@ -10,7 +10,7 @@ export class RootNamespace extends Namespace {
   constructor(children: Routes) {
     const errorFormatter = new ErrorResponseFormatter(process.env.CORGI_ERROR_PASSSWORD);
 
-    super('', {
+    super("", {
       async exceptionHandler(error: Error) {
         if (error instanceof StandardError) {
           return this.json({

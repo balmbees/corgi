@@ -1,28 +1,28 @@
 import { expect } from "chai";
 
-import { Route } from '../route';
-import { RoutingContext } from '../routing-context';
+import { Route } from "../route";
+import { RoutingContext } from "../routing-context";
 
 describe("Route", () => {
   describe("#constructor", () => {
     it("should construct object with given options", () => {
       const route =
         new Route({
-          path: '/followers',
-          method: 'GET',
-          operationId: 'getFollowers',
-          desc: 'List of users that following me',
-          handler: async function(this: RoutingContext) {
+          path: "/followers",
+          method: "GET",
+          operationId: "getFollowers",
+          desc: "List of users that following me",
+          async handler(this: RoutingContext) {
             return this.json({
               data: {}
-            })
+            });
           }
         });
 
       expect(route.operationId).to.eq("getFollowers");
-      expect(route.path).to.deep.eq('/followers');
-      expect(route.method).to.deep.eq('GET');
-      expect(route.description).to.deep.eq('List of users that following me');
+      expect(route.path).to.deep.eq("/followers");
+      expect(route.method).to.deep.eq("GET");
+      expect(route.description).to.deep.eq("List of users that following me");
     });
   });
 
@@ -32,17 +32,17 @@ describe("Route", () => {
 
       const route =
         new Route({
-          path: '/followers',
-          method: 'GET',
-          operationId: 'getFollowers',
-          desc: 'List of users that following me',
+          path: "/followers",
+          method: "GET",
+          operationId: "getFollowers",
+          desc: "List of users that following me",
           metadata: new Map([
             [A, { x: 200 }],
           ]),
-          handler: async function(this: RoutingContext) {
+          async handler(this: RoutingContext) {
             return this.json({
               data: {}
-            })
+            });
           }
         });
 
@@ -50,4 +50,3 @@ describe("Route", () => {
     });
   });
 });
-

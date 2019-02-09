@@ -1,24 +1,21 @@
-import { RoutingContext } from './routing-context';
-import { Route } from './route';
-import { Response } from './lambda-proxy';
-import * as Joi from 'joi';
+import * as Joi from "joi";
+import { Response } from "./lambda-proxy";
+import { Route } from "./route";
+import { RoutingContext } from "./routing-context";
 
 // ---- Namespace
 export class Namespace {
-  private _path: string;
   constructor(
-    path: string,
+    public readonly path: string,
     private options: NamespaceOptions
   ) {
-    this._path = path;
-    if (options.children.length == 0) {
-      throw new Error('Namespace must have childrens');
+    if (options.children.length === 0) {
+      throw new Error("Namespace must have childrens");
     }
   }
 
   get before() { return this.options.before; }
   get children() { return this.options.children; }
-  get path() { return this._path; }
   get params() { return this.options.params; }
   get exceptionHandler() { return this.options.exceptionHandler; }
 }

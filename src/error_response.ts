@@ -7,7 +7,7 @@ export class StandardError extends Error {
       metadata?: object,
     }
   ) {
-    super()
+    super();
   }
 }
 
@@ -26,12 +26,14 @@ export interface StandardErrorResponseBody {
      * Human readable Error message, such as "You're not allowed to do this"
      */
     message: string;
-  }
+  };
 }
 
 import * as crypto from "crypto";
 
 export class ErrorResponseFormatter {
+
+  private static readonly CipherAlgorithm = "aes-128-cbc";
   // If Password is provided, it will show detailed information (encrypted)
   constructor(private password: string | undefined) {}
 
@@ -51,8 +53,6 @@ export class ErrorResponseFormatter {
       };
     }
   }
-
-  private static readonly CipherAlgorithm = "aes-128-cbc";
 
   public encryptErrorMetadata(error: Error) {
     if (this.password) {
@@ -78,8 +78,8 @@ export class ErrorResponseFormatter {
     const [decipherText, iv] = message.split("$");
     const decipher = crypto.createDecipheriv(ErrorResponseFormatter.CipherAlgorithm, this.password, iv);
     const payload = JSON.parse([
-      decipher.update(decipherText, 'hex', 'utf8'),
-      decipher.final('utf8'),
+      decipher.update(decipherText, "hex", "utf8"),
+      decipher.final("utf8"),
     ].join(""));
     return payload;
   }
