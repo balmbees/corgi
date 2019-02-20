@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-- '6'
+- '8'
 before_install: npm install npm@$(cat package.json | jq -r '.engines.npm') -g
 script:
 - npm run lint

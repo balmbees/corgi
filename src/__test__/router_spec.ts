@@ -153,29 +153,20 @@ describe("Router", () => {
       ]);
       const handler = router.handler();
 
-      const res = await new Promise((resolve, reject) => {
-        handler(
-          {
-            path: "/",
-            httpMethod: "GET",
-            queryStringParameters: {
-            },
-          } as any,
-          {
-            getRemainingTimeInMillis() {
-              return 100;
-            },
-            awsRequestId: "request-id",
-          } as any,
-          (e, r) => {
-            if (e) {
-              reject(e);
-            } else {
-              resolve(r);
-            }
+      const res = await handler(
+        {
+          path: "/",
+          httpMethod: "GET",
+          queryStringParameters: {
           },
-        );
-      });
+        } as any,
+        {
+          getRemainingTimeInMillis() {
+            return 100;
+          },
+          awsRequestId: "request-id",
+        } as any,
+      );
 
       expect(res).to.deep.eq({
         statusCode: 500,

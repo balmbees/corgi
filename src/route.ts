@@ -62,7 +62,7 @@ export class Route {
   public readonly description: string | undefined;
   public readonly handler: RouteHandler;
   public readonly params: ParameterDefinitionMap | undefined;
-  public readonly operationId: string | undefined;
+  public readonly operationId: string;
   public readonly responses: Map<number, ResponseSchema> | undefined;
   public readonly metadata: RouteMetadata;
 
@@ -87,7 +87,7 @@ export class Route {
 
 export interface RouteSimplifiedOptions {
   desc?: string;
-  operationId?: string;
+  operationId: string;
   responses?: { [statusCode: number]: ResponseSchema };
   metadata?: RouteMetadata;
 }
@@ -96,7 +96,7 @@ export interface RouteOptions {
   path: string;
   method: HttpMethod;
   desc?: string;
-  operationId?: string;
+  operationId: string;
   responses?: { [statusCode: number]: ResponseSchema };
   metadata?: RouteMetadata;
   params?: ParameterDefinitionMap;

@@ -1,17 +1,17 @@
 {
   "name": "vingle-corgi",
-  "version": "1.27.0",
+  "version": "2.0.0",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
   "engines": {
-    "node": ">=6.0.0",
-    "npm": "5.4.2"
+    "node": ">=8.0.0",
+    "npm": "^5.6.0"
   },
   "scripts": {
     "clean": "rm -Rf dst",
     "prebuild": "npm run clean",
-    "build": "tsc -d",
+    "build": "check-engine && tsc -d",
     "lint": "tslint -p ./tsconfig.test.json",
     "prepublish": "npm run build",
     "pretest": "npm run build -- -p ./tsconfig.test.json",
@@ -35,6 +35,7 @@
     "@types/chai": "^4.0.0",
     "@types/mocha": "^2.2.41",
     "chai": "^4.0.1",
+    "check-engine": "^1.7.0",
     "mocha": "^3.4.2",
     "np": "^3.1.0",
     "tslint": "^5.12.1",
@@ -46,7 +47,6 @@
     "@types/node": "^7.0.27",
     "@types/qs": "^6.5.0",
     "@types/swagger-schema-official": "2.0.5",
-    "@types/underscore.string": "0.0.30",
     "@vingle/joi-to-json-schema": "^3.2.0",
     "aws-xray-sdk-core": ">=1.1.6",
     "class-validator": "^0.7.3",
@@ -55,7 +55,6 @@
     "lodash": "^4.17.10",
     "path-to-regexp": "^1.7.0",
     "qs": "^6.5.0",
-    "swagger-schema-official": "2.0.0-bab6bed",
-    "underscore.string": "^3.3.4"
+    "swagger-schema-official": "2.0.0-bab6bed"
   }
 }

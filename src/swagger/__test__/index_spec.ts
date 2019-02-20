@@ -219,16 +219,4 @@ describe(SwaggerGenerator.name, () => {
       ).to.eq("/users/{userId}/interests/{interest}");
     });
   });
-
-  describe("#routesToOperationId", () => {
-    it("should build natural operationId from given path and method", () => {
-      const generator = new SwaggerGenerator();
-      expect(
-      generator.routesToOperationId(
-      "/users/:userId/interests/:interest",
-      "GET",
-      )
-      ).to.eq("GetUsersUserIdInterestsInterest");
-    });
-  });
 });
