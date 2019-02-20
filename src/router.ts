@@ -109,6 +109,7 @@ export class Router {
     };
   }
 
+  // tslint:disable-next-line:member-ordering
   private readonly routeToPathRegexpCaceh = new Map<Route, { regexp: RegExp, keys: pathToRegexp.Key[] }>();
 
   public async resolve(
@@ -120,9 +121,7 @@ export class Router {
 
       // Matching Route
       if (method === event.httpMethod) {
-        const {
-          regexp, keys
-        } = (() => {
+        const pathRegExp = (() => {
           let p = this.routeToPathRegexpCaceh.get(endRoute);
           if (!p) {
             const joinedPath = routesList.map(r => r.path).join("");
@@ -135,11 +134,11 @@ export class Router {
           return p;
         })();
 
-        const match = regexp.exec(event.path);
+        const match = pathRegExp.regexp.exec(event.path);
 
         if (match) {
           const pathParams: { [key: string]: string } = {};
-          keys.forEach((key, index) => {
+          pathRegExp.keys.forEach((key, index) => {
             pathParams[key.name] = match[index + 1];
           });
 
