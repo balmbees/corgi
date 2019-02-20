@@ -1,12 +1,11 @@
 import * as LambdaProxy from "../lambda-proxy";
 import { Namespace, Routes } from "../namespace";
-import { HttpMethod, JSONSchema, Route} from "../route";
+import { JSONSchema, Route} from "../route";
 import { flattenRoutes } from "../router";
 
 import * as Joi from "joi";
 import * as _ from "lodash";
 import * as Swagger from "swagger-schema-official";
-import * as _string from "underscore.string";
 
 import JoiToJSONSchema = require("@vingle/joi-to-json-schema");
 
@@ -202,7 +201,7 @@ export class SwaggerGenerator {
             };
           }
         })(),
-        operationId: endRoute.operationId || this.routesToOperationId(corgiPath, endRoute.method),
+        operationId: endRoute.operationId,
       };
       paths[swaggerPath][(() => {
         switch (endRoute.method) {
@@ -251,18 +250,5 @@ export class SwaggerGenerator {
 
   public toSwaggerPath(path: string) {
     return path.replace(/\:(\w+)/g, "{$1}");
-  }
-
-  public routesToOperationId(path: string, method: HttpMethod) {
-    const operation =
-      path.split("/").map((c) => {
-        if (c.startsWith(":")) {
-          return _string.capitalize(c.slice(1));
-        } else {
-          return _string.capitalize(c);
-        }
-      }).join("");
-
-    return `${_string.capitalize(method.toLowerCase())}${operation}`;
   }
 }

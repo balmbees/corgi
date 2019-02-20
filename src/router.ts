@@ -93,33 +93,24 @@ export class Router {
   }
 
   public handler() {
-    return (
+    return async (
       event: LambdaProxy.Event,
-      context: LambdaProxy.Context,
-      done: (e: Error | null, res?: LambdaProxy.Response) => void
+      context: LambdaProxy.Context
     ) => {
       context.callbackWaitsForEmptyEventLoop = false;
 
       const requestId = context.awsRequestId;
       const timeout = context.getRemainingTimeInMillis() * 0.9;
-      this.resolve(
-        event, { requestId, timeout }
-      ).then((response) => {
-        done(null, response);
-      }, (error) => {
-        done(null, {
-          statusCode: 500,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-          body: JSON.stringify({
-            error: {
-              id: requestId,
-              message: error.toString(),
-            }
-          }),
-        });
-      });
+      try {
+        return await this.resolve(event, { requestId, timeout });
+      } catch (e) {
+        // Now we're not gonna handle this "final" exception. this gonna just will be thrown into "lambda error"
+      }
     };
   }
+
+  // tslint:disable-next-line:member-ordering
+  private readonly routeToPathRegexpCache = new Map<Route, { regexp: RegExp, keys: pathToRegexp.Key[] }>();
 
   public async resolve(
     event: LambdaProxy.Event, options: { timeout: number, requestId?: string }
@@ -130,15 +121,24 @@ export class Router {
 
       // Matching Route
       if (method === event.httpMethod) {
-        const joinedPath = routesList.map(r => r.path).join("");
-        const keys: pathToRegexp.Key[] = [];
-        const regexp = pathToRegexp(joinedPath, keys);
+        const pathRegExp = (() => {
+          let p = this.routeToPathRegexpCache.get(endRoute);
+          if (!p) {
+            const joinedPath = routesList.map(r => r.path).join("");
+            const keys: pathToRegexp.Key[] = [];
+            const regexp = pathToRegexp(joinedPath, keys);
+            p = { keys, regexp };
 
-        const match = regexp.exec(event.path);
+            this.routeToPathRegexpCache.set(endRoute, p);
+          }
+          return p;
+        })();
+
+        const match = pathRegExp.regexp.exec(event.path);
 
         if (match) {
           const pathParams: { [key: string]: string } = {};
-          keys.forEach((key, index) => {
+          pathRegExp.keys.forEach((key, index) => {
             pathParams[key.name] = match[index + 1];
           });
 
