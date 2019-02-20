@@ -16,7 +16,6 @@
     "prepublish": "npm run build",
     "pretest": "npm run build -- -p ./tsconfig.test.json",
     "ci:publish": "publish",
-    "postinstall": "check-engine",
     "test": "mocha dst/**/__test__/**/*_spec.js"
   },
   "files": [
