@@ -110,7 +110,7 @@ export class Router {
   }
 
   // tslint:disable-next-line:member-ordering
-  private readonly routeToPathRegexpCaceh = new Map<Route, { regexp: RegExp, keys: pathToRegexp.Key[] }>();
+  private readonly routeToPathRegexpCache = new Map<Route, { regexp: RegExp, keys: pathToRegexp.Key[] }>();
 
   public async resolve(
     event: LambdaProxy.Event, options: { timeout: number, requestId?: string }
@@ -122,14 +122,14 @@ export class Router {
       // Matching Route
       if (method === event.httpMethod) {
         const pathRegExp = (() => {
-          let p = this.routeToPathRegexpCaceh.get(endRoute);
+          let p = this.routeToPathRegexpCache.get(endRoute);
           if (!p) {
             const joinedPath = routesList.map(r => r.path).join("");
             const keys: pathToRegexp.Key[] = [];
             const regexp = pathToRegexp(joinedPath, keys);
             p = { keys, regexp };
 
-            this.routeToPathRegexpCaceh.set(endRoute, p);
+            this.routeToPathRegexpCache.set(endRoute, p);
           }
           return p;
         })();
