@@ -97,7 +97,7 @@ export class RoutingContext {
       // API Gateway only support string parsing.
       // but with this, now it would support Array<String> / Map<String, String> parsing too
       const queryStringParameters = qs.parse(qs.stringify(this.request.queryStringParameters));
-      validate(this.decodeURI(queryStringParameters), groupByIn.query);
+      validate(queryStringParameters, groupByIn.query);
     }
     if (groupByIn.body) {
       validate(this.bodyJSON, groupByIn.body);

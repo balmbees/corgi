@@ -24,7 +24,7 @@ describe("RoutingContext", () => {
           queryStringParameters: {
             "testId": "12345",
             "not_allowed_param": "xxx",
-            "encodedParam": "%ED%94%BD%EC%8B%9C",
+            "encodedParam": "픽시",
             "arrayParameter[0]": "1",
             "arrayParameter[1]": "2",
             "arrayParameter[2]": "3",
@@ -83,7 +83,7 @@ describe("RoutingContext", () => {
           queryStringParameters: {
             "testId": "12345",
             "not_allowed_param": "xxx",
-            "encodedParam": "%ED%94%BD%EC%8B%9C",
+            "encodedParam": "픽시",
             "arrayParameter[0]": "1",
             "arrayParameter[1]": "2",
             "arrayParameter[2]": "3",
@@ -140,6 +140,7 @@ describe("RoutingContext", () => {
             "testId": "12345",
             "not_allowed_param": "xxx",
             "encodedParam": "100%users",
+            "doubleEncodedParam": "vingle%3A%2F%2Finterests%2F%EB%B9%99%EA%B8%80%EB%9F%AC",
             "arrayParameter[0]": "1",
             "arrayParameter[1]": "2",
             "arrayParameter[2]": "3",
@@ -153,6 +154,7 @@ describe("RoutingContext", () => {
         context.validateAndUpdateParams({
           testId: Parameter.Query(Joi.number()),
           encodedParam: Parameter.Query(Joi.string()),
+          doubleEncodedParam: Parameter.Query(Joi.string()),
           update: Parameter.Body(Joi.object({
             fieldA: Joi.number(),
             fieldC: Joi.object({
@@ -167,6 +169,7 @@ describe("RoutingContext", () => {
         expect(context.params).to.deep.eq({
           testId: 12345,
           encodedParam: "100%users",
+          doubleEncodedParam: "vingle%3A%2F%2Finterests%2F%EB%B9%99%EA%B8%80%EB%9F%AC",
           update: {
             fieldA: 12345,
             fieldC: {
