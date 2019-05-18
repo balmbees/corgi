@@ -62,6 +62,12 @@ export const handler = router.handler();
 Or refer src/__test__/e2e/complex_api.ts
 
 
+## How to start
+1. npm install vingle-corgi
+2. exports.handler = new Router([routes]).handler();
+3. deploy lambda
+
+
 ## Why do I need an extra Framework for Lambda?
 
 So simple lambda handler looks like this
