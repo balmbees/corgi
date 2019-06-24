@@ -38,7 +38,7 @@
     "check-engine": "1.8.0",
     "mocha": "3.5.3",
     "np": "3.1.0",
-    "tslint": "5.12.1",
+    "tslint": "5.18.0",
     "typescript": "2.9.2"
   },
   "dependencies": {
