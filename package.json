@@ -46,7 +46,7 @@
     "@types/lodash": "^4.14.109",
     "@types/node": "^7.0.27",
     "@types/qs": "^6.5.0",
-    "@types/swagger-schema-official": "2.0.5",
+    "@types/swagger-schema-official": "2.0.17",
     "@vingle/joi-to-json-schema": "^3.2.0",
     "aws-xray-sdk-core": ">=1.1.6",
     "class-validator": "^0.7.3",
@@ -55,6 +55,6 @@
     "lodash": "^4.17.10",
     "path-to-regexp": "^1.7.0",
     "qs": "^6.5.0",
-    "swagger-schema-official": "2.0.0-bab6bed"
+    "swagger-schema-official": "2.0.0-d79c205"
   }
 }
