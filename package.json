@@ -32,14 +32,14 @@
   },
   "homepage": "https://github.com/balmbees/corgi#readme",
   "devDependencies": {
-    "@types/chai": "^4.0.0",
-    "@types/mocha": "^2.2.41",
-    "chai": "^4.0.1",
-    "check-engine": "^1.7.0",
-    "mocha": "^3.4.2",
-    "np": "^3.1.0",
-    "tslint": "^5.12.1",
-    "typescript": "^2.9.2"
+    "@types/chai": "4.0.10",
+    "@types/mocha": "2.2.45",
+    "chai": "4.1.2",
+    "check-engine": "1.7.0",
+    "mocha": "3.5.3",
+    "np": "3.1.0",
+    "tslint": "5.12.1",
+    "typescript": "2.9.2"
   },
   "dependencies": {
     "@types/joi": "^13.0.2",
