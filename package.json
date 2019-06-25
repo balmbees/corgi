@@ -5,8 +5,8 @@
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
   "engines": {
-    "node": ">= 8.10.0",
-    "npm": ">= 5.6.0"
+    "node": "^8.10.0",
+    "npm": "^5.6.0"
   },
   "scripts": {
     "clean": "rm -Rf dst",
