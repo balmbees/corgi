@@ -50,7 +50,7 @@
     "@vingle/joi-to-json-schema": "^3.2.0",
     "aws-xray-sdk-core": ">=1.1.6",
     "class-transformer": "^0.2.3",
-    "class-validator": "^0.9.0",
+    "class-validator": "^0.10.0",
     "class-validator-jsonschema": "^1.3.0",
     "joi": "^13.0.2",
     "lodash": "^4.17.10",
