@@ -10,3 +10,4 @@ export * from "./middlewares";
 export * from "./route_factories";
 export * from "./errors";
 export * from "./error_response";
+export * from "./open_api";
