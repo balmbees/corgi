@@ -9,15 +9,15 @@ import {
 } from "../../index";
 
 import {
-  SwaggerGenerator,
-  SwaggerRoute,
+  OpenAPIGenerator,
+  OpenAPIRoute,
 } from "../index";
 
 import * as LambdaProxy from "../../lambda-proxy";
 
 import * as Joi from "joi";
 
-describe("SwaggerRoute", () => {
+describe("OpenAPIRoute", () => {
   const PaginatedUserArraySchema = Joi.object({
     data: Joi.array().items(Joi.object({
       id: Joi.number().integer(),
@@ -146,7 +146,7 @@ describe("SwaggerRoute", () => {
       }),
   ];
   const routes = [
-    new SwaggerRoute(
+    new OpenAPIRoute(
       "/api/doc",
       {
         title: "TEST API",
@@ -210,12 +210,12 @@ describe("SwaggerRoute", () => {
   });
 });
 
-describe(SwaggerGenerator.name, () => {
+describe(OpenAPIGenerator.name, () => {
   describe("#toSwaggerPath", () => {
     it("should convert regexPath to swaggerPath", () => {
-      const generator = new SwaggerGenerator();
+      const generator = new OpenAPIGenerator();
       expect(
-      generator.toSwaggerPath("/users/:userId/interests/:interest")
+      generator.toOpenAPIPath("/users/:userId/interests/:interest")
       ).to.eq("/users/{userId}/interests/{interest}");
     });
   });
