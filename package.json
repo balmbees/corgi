@@ -9,7 +9,7 @@
     "npm": "^6.10.0"
   },
   "bin": {
-    "corgi": "./bin/corgi"
+    "vingle-corgi": "./bin/vingle-corgi.js"
   },
   "scripts": {
     "clean": "rm -Rf dst",
@@ -22,7 +22,8 @@
     "test": "mocha dst/**/__test__/**/*_spec.js"
   },
   "files": [
-    "dst"
+    "dst",
+    "bin"
   ],
   "repository": {
     "type": "git",
