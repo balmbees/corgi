@@ -1,5 +1,4 @@
 import JoiToJSONSchema = require("@vingle/joi-to-json-schema");
-import * as Joi from "joi";
 import * as _ from "lodash";
 import * as OpenApi from "openapi3-ts";
 
@@ -13,7 +12,7 @@ import { flattenRoutes } from "../router";
 export type OpenAPIRouteOptions = (
   // OpenAPI.Info &
   { title: string, version: string } &
-  { definitions?: { [definitionsName: string]: Joi.Schema | JSONSchema } }
+  { definitions?: { [definitionsName: string]: JSONSchema } }
 );
 
 function deepOmit(obj: any, keysToOmit: string[]) {
@@ -32,6 +31,10 @@ function deepOmit(obj: any, keysToOmit: string[]) {
   };
 
   return omitFromObject(obj); // return the inner function result
+}
+
+function convertJoiToJSONSchema(joi: any) {
+  return deepOmit(JoiToJSONSchema(joi), ["additionalProperties", "patterns"]);
 }
 
 export class OpenAPIRoute extends Namespace {
@@ -106,64 +109,86 @@ export class OpenAPIGenerator {
         const operation: OpenApi.OperationObject = {
           description: endRoute.description,
           operationId: endRoute.operationId,
-          produces: ["application/json; charset=utf-8"],
-          parameters: _.flatMap<any, OpenApi.ParameterObject>(routes, (route) => {
-            if (route instanceof Namespace) {
-              // Namespace only supports path
-              return _.map(route.params, (schema, name) => {
-                return {
-                  in: "path",
-                  name,
-                  description: schema.describe().description,
-                  type: JoiToJSONSchema(schema).type,
-                  required: true
-                };
-              });
-            } else {
-              return _.map(route.params, (paramDef, name) => {
-                const joiSchemaMetadata = paramDef.def.describe();
-
-                if (paramDef.in === "body") {
-                  const joiSchema = JoiToJSONSchema(paramDef.def);
+          parameters:
+            _.flatMap(routes, (route): OpenApi.ParameterObject[] => {
+              if (route instanceof Namespace) {
+                // Namespace only supports path
+                return _.map(route.params, (schema, name) => {
                   return {
-                    in: paramDef.in,
+                    in: "path",
                     name,
-                    description: "",
-                    schema: joiSchema,
-                    // current joi typing doesn't have type definition for flags
-                    // @see https://github.com/hapijs/joi/blob/v12/lib/types/any/index.js#L48-L64
-                    required: ((joiSchemaMetadata.flags || {}) as any).presence !== "optional",
+                    description: schema.describe().description,
+                    schema: {
+                      type: convertJoiToJSONSchema(schema).type,
+                    },
+                    required: true
                   };
+                });
+              } else {
+                return _.chain(route.params)
+                  .toPairs()
+                  .filter(r => r[1].in !== "body")
+                  .map(([name, def]) => {
+                    const { description, flags } = def.def.describe();
+
+                    return {
+                      in: def.in as "query",
+                      name,
+                      description,
+                      schema: convertJoiToJSONSchema(def.def),
+                      required: def.in === "path"
+                        || ((flags || {}) as any).presence !== "optional",
+                    };
+                  })
+                  .value();
+              }
+            }),
+          requestBody: (() => {
+            const bodyParams = _.chain(routes)
+              .flatMap((route) => {
+                if (route instanceof Namespace) {
+                  return [];
                 } else {
-                  const joiSchema = JoiToJSONSchema(paramDef.def);
-                  const param: OpenApi.ParameterObject = Object.assign({
-                    in: paramDef.in,
-                    name,
-                    description: "",
-                  }, joiSchema);
-
-                  if (paramDef.in === "path") {
-                    param.required = true;
-                  } else { // query param
-                    param.required = ((joiSchemaMetadata.flags || {}) as any).presence !== "optional";
-                  }
-
-                  return param;
+                  return _.chain(route.params)
+                    .toPairs()
+                    .filter(r => r[1].in === "body")
+                    .value();
                 }
-              });
+              })
+              .map(
+                ([name, paramDef]) =>
+                  ([name, convertJoiToJSONSchema(paramDef.def)])
+              )
+              .value();
+
+            if (bodyParams.length > 0) {
+              return {
+                description: "Body",
+                required: true,
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: _.fromPairs(bodyParams),
+                    }
+                  }
+                }
+              };
+            } else {
+              return undefined;
             }
-          }).map((param) => deepOmit(param, ["additionalProperties", "patterns"])) as any,
+          })(),
           responses: (() => {
             if (endRoute.responses) {
               return Array.from(endRoute.responses)
                 .reduce((obj, [statusCode, response]) => {
                   obj[statusCode] = {
                     description: response.desc || "",
-                    schema: (() => {
-                      if (response.schema) {
-                        return response.schema;
-                      }
-                    })(),
+                    content: {
+                      "application/json": {
+                        schema: response.schema,
+                      },
+                    },
                   };
                   return obj;
                 }, {} as { [key: string]: OpenApi.ResponsesObject });
@@ -192,8 +217,8 @@ export class OpenAPIGenerator {
       tags: [],
       paths,
       components: {
-        schemas: {},
-      }
+        schemas: info.definitions,
+      },
     };
     return spec;
   }
