@@ -1,15 +1,12 @@
 {
   "name": "vingle-corgi",
-  "version": "3.0.0-beta.7",
+  "version": "3.0.0-beta.9",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
   "engines": {
     "node": "^8.10.0",
     "npm": "^6.10.0"
-  },
-  "bin": {
-    "vingle-corgi": "./bin/vingle-corgi.js"
   },
   "scripts": {
     "clean": "rm -Rf dst",
@@ -22,8 +19,7 @@
     "test": "mocha dst/**/__test__/**/*_spec.js"
   },
   "files": [
-    "dst",
-    "bin"
+    "dst"
   ],
   "repository": {
     "type": "git",
@@ -52,8 +48,6 @@
     "@types/qs": "^6.5.0",
     "@vingle/joi-to-json-schema": "^3.2.0",
     "aws-xray-sdk-core": ">=1.1.6",
-    "commander": "^3.0.2",
-    "typescript-to-json-schema": "^0.6.0",
     "joi": "^13.0.2",
     "joi-to-json-schema": "^5.1.0",
     "lodash": "^4.17.10",
