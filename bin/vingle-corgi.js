@@ -1,29 +1,23 @@
 #!/usr/bin/env node
-'use strict';
-const meow = require("meow");
-const exec = require("exec");
+const program = require('commander');
+const { execSync }  = require("child_process");
+const fs = require("fs");
 
-const cli = meow(`
-	Usage
-    $ build-openapi-entities
+program
+  .command('build <entitiesFolder>')
+  .action((entitiesFolder) => {
+    const schemaPath = `${entitiesFolder}definitions.json`;
+    if (fs.existsSync(schemaPath)) {
+      fs.unlinkSync(schemaPath);
+    }
 
-	Options
-    --entitiesFolder, -e , "./src/api/entities/"
+    const json = execSync(`$(npm bin)/ts-json-schema-generator --path '${entitiesFolder}*.ts'`).toString();
+    fs.writeFileSync(schemaPath, JSON.stringify(
+      JSON.parse(json.replace(/#\/definitions\//g, "#/components/schemas/")).definitions,
+      null,
+      2
+    ));
+    console.log(`${schemaPath} written successfully`);
+  });
 
-	Examples
-	  $ foo unicorns --rainbow
-	  🌈 unicorns 🌈
-`, {
-	flags: {
-		entitiesFolder: {
-			type: 'string',
-			alias: 'e'
-		}
-	}
-});
-
-const {
-  entitiesFolder
-} = cli.flags;
-
-exec(`ts-json-schema-generator --path '${entitiesFolder}*.ts' > '${entitiesFolder}schema.json'`)
+program.parse(process.argv);
