@@ -182,7 +182,6 @@ describe("OpenAPIRoute", () => {
   it("should return JSON doc", async () => {
     const router = new Router(routes);
     const res = await router.resolve(mockRequest, { timeout: 10000 });
-    console.log(res.body);
     expect(res.statusCode).to.eq(200);
     expect(res.headers).to.include({
       "Access-Control-Allow-Origin": "https://foo.bar",

@@ -170,6 +170,7 @@ export class OpenAPIGenerator {
                     schema: {
                       type: "object",
                       properties: _.fromPairs(bodyParams),
+                      required: bodyParams.map(pair => pair[0]),
                     }
                   }
                 }
