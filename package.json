@@ -33,7 +33,7 @@
   "homepage": "https://github.com/balmbees/corgi#readme",
   "devDependencies": {
     "@types/chai": "4.1.7",
-    "@types/mocha": "2.2.48",
+    "@types/mocha": "5.2.7",
     "chai": "4.2.0",
     "check-engine": "1.8.1",
     "mocha": "3.5.3",
