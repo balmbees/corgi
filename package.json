@@ -5,7 +5,7 @@
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
   "engines": {
-    "node": "^8.10.0",
+    "node": "^10.16.0",
     "npm": "^6.10.0"
   },
   "scripts": {
