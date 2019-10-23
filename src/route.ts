@@ -1,4 +1,3 @@
-import * as Joi from "joi";
 import * as _ from "lodash";
 
 import * as LambdaProxy from "./lambda-proxy";
@@ -103,14 +102,9 @@ export interface RouteOptions {
   handler: RouteHandler;
 }
 
-export interface ResponseSchemaEntity {
-  name: string;
-  schema: Joi.Schema;
-}
-
 export interface ResponseSchema {
   desc?: string;
-  schema?: Joi.Schema | JSONSchema;
+  schema: JSONSchema;
 }
 
 /**
