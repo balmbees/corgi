@@ -210,6 +210,7 @@ export class Router {
         const params = _.mapValues(namespace.params, (schema, name) => {
           return {
             in: "path" as ParameterInputType,
+            type: "joi" as const,
             def: schema,
           };
         });

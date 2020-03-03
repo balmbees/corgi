@@ -6,12 +6,23 @@ import * as LambdaProxy from "./lambda-proxy";
 import { ParameterDefinitionMap } from "./parameter";
 import { Router } from "./router";
 
+import * as JSONSchema from "jsonschema";
+
 //
 const DefaultJoiValidateOptions: Joi.ValidationOptions = {
   stripUnknown: true,
   presence: "required",
   abortEarly: false,
 };
+
+export class ParameterValidationError extends Error {
+  constructor(
+    public parameterName: string,
+    errorMessage: string
+  ) {
+    super(`${parameterName} ${errorMessage}`);
+  }
+}
 
 // ---- RoutingContext
 export class RoutingContext {
@@ -64,43 +75,77 @@ export class RoutingContext {
   }
 
   public validateAndUpdateParams(parameterDefinitionMap: ParameterDefinitionMap) {
-    const groupByIn: {
-      [key: string]: { [key: string]: Joi.Schema }
-    } = {};
+    const paramsByIn = _.chain(parameterDefinitionMap)
+      .toPairs()
+      .map(([name, def]) => {
+        return { name, def };
+      })
+      .groupBy(({ def }) => {
+        switch (def.type) {
+          case "joi": {
+            return def.in;
+          }
+          case "open-api": {
+            return def.schema.in;
+          }
+        }
+      })
+      .mapValues(group => {
+        return _.fromPairs(group.map(v => [v.name, v.def]));
+      })
+      .value();
 
-    _.forEach(parameterDefinitionMap, (schema, name) => {
-      if (!groupByIn[schema.in]) {
-        groupByIn[schema.in] = {};
-      }
-
-      groupByIn[schema.in][name] = schema.def;
-    });
-
-    const validate = (rawParams: any, schemaMap: { [key: string]: Joi.Schema }) => {
-      const res = Joi.validate(
-        rawParams || {},
-        Joi.object(schemaMap),
-        DefaultJoiValidateOptions,
-      );
-
-      if (res.error) {
-        throw res.error;
+    const validate = (rawParams: any, schemaMap: ParameterDefinitionMap) => {
+      if (_.size(schemaMap) === 0) {
+        return;
       } else {
-        Object.assign(this.validatedParams, res.value);
+        // Validate Joi
+        const joiParams = _.chain(schemaMap)
+          .map((def, name) => {
+            if (def.type === "joi") {
+              return [name, def.def] as const;
+            }
+          })
+          .compact()
+          .fromPairs()
+          .value();
+        const res = Joi.validate(
+          rawParams || {},
+          Joi.object(joiParams),
+          DefaultJoiValidateOptions,
+        );
+        if (res.error) {
+          throw res.error;
+        } else {
+          Object.assign(this.validatedParams, res.value);
+        }
+
+        // Validate OpenAPI
+        _.forEach(schemaMap, (def, name) => {
+          if (def.type === "open-api") {
+            try {
+              const result = JSONSchema.validate(rawParams[name], def.schema.schema, { throwError: true });
+              this.validatedParams[name] = result.instance;
+            } catch (e) {
+              const error = e as JSONSchema.ValidationError;
+              throw new ParameterValidationError(name, error.message);
+            }
+          }
+        });
       }
     };
 
-    if (groupByIn.path) {
-      validate(this.decodeURI(this.pathParams), groupByIn.path);
+    if (paramsByIn.path) {
+      validate(this.decodeURI(this.pathParams), paramsByIn.path);
     }
-    if (groupByIn.query) {
+    if (paramsByIn.query) {
       // API Gateway only support string parsing.
       // but with this, now it would support Array<String> / Map<String, String> parsing too
       const queryStringParameters = qs.parse(qs.stringify(this.request.queryStringParameters));
-      validate(queryStringParameters, groupByIn.query);
+      validate(queryStringParameters, paramsByIn.query);
     }
-    if (groupByIn.body) {
-      validate(this.bodyJSON, groupByIn.body);
+    if (paramsByIn.body) {
+      validate(this.bodyJSON, paramsByIn.body);
     }
   }
 

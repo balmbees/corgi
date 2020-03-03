@@ -2,8 +2,9 @@ import { expect } from "chai";
 
 import * as Joi from "joi";
 import * as qs from "qs";
+
 import { Parameter } from "../parameter";
-import { RoutingContext } from "../routing-context";
+import { ParameterValidationError, RoutingContext } from "../routing-context";
 
 describe("RoutingContext", () => {
   describe("#validateAndUpdateParams", () => {
@@ -206,6 +207,99 @@ describe("RoutingContext", () => {
             complex: null,
           },
         });
+      });
+    });
+
+    context("with OpenApi Parameter", () => {
+      it("should parse and validate OpenAPI params", () => {
+        const context = new RoutingContext({} as any, {
+          path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
+          httpMethod: "POST",
+          body: JSON.stringify({
+            abcd: 100,
+            update: {
+              fieldA: 12345,
+              fieldC: {
+                c: 100,
+              }
+            }
+          }),
+        } as any, "request-id", {
+          userId: "33",
+          interest: "%ED%94%BD%EC%8B%9C",
+        });
+
+        context.validateAndUpdateParams({
+          abcd: Parameter.openAPI({
+            in: "body",
+            schema: {
+              type: "number",
+            },
+          }),
+          update: Parameter.openAPI({
+            in: "body",
+            schema: {
+              type: "object",
+              properties: {
+                fieldA: {
+                  type: "number"
+                },
+                fieldC: {
+                  type: "object",
+                  properties: {
+                    c: {
+                      type: "number",
+                    },
+                  },
+                  required: ["c"],
+                }
+              },
+              required: [
+                "fieldA",
+                "fieldC",
+              ]
+            }
+          }),
+        });
+
+        expect(context.params).to.deep.eq({
+          abcd: 100,
+          update: {
+            fieldA: 12345,
+            fieldC: {
+              c: 100,
+            }
+          },
+        });
+      });
+
+      it("should raise error", () => {
+        const context = new RoutingContext({} as any, {
+          path: "/api/33/followings/%ED%94%BD%EC%8B%9C",
+          httpMethod: "POST",
+          body: JSON.stringify({
+            abcd: "aaabbb",
+          }),
+        } as any, "request-id", {
+          userId: "33",
+          interest: "%ED%94%BD%EC%8B%9C",
+        });
+
+        try {
+          context.validateAndUpdateParams({
+            abcd: Parameter.openAPI({
+              in: "body",
+              schema: {
+                type: "number",
+              },
+            }),
+          });
+        } catch (e) {
+          expect(e).to.be.instanceOf(ParameterValidationError);
+          const error = e as ParameterValidationError;
+          expect(error.parameterName).to.be.eq("abcd");
+          expect(error.message).to.be.eq("abcd is not of a type(s) number");
+        }
       });
     });
   });

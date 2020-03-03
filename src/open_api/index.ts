@@ -127,19 +127,38 @@ export class OpenAPIGenerator {
               } else {
                 return _.chain(route.params)
                   .toPairs()
-                  .filter(r => r[1].in !== "body")
                   .map(([name, def]) => {
-                    const { description, flags } = def.def.describe();
+                    switch (def.type) {
+                      case "joi": {
+                        if (def.in === "body") {
+                          return null;
+                        } else {
+                          const { description, flags } = def.def.describe();
 
-                    return {
-                      in: def.in as "query",
-                      name,
-                      description,
-                      schema: convertJoiToJSONSchema(def.def),
-                      required: def.in === "path"
-                        || ((flags || {}) as any).presence !== "optional",
-                    };
+                          return {
+                            in: def.in as "query",
+                            name,
+                            description,
+                            schema: convertJoiToJSONSchema(def.def),
+                            required: def.in === "path"
+                              || ((flags || {}) as any).presence !== "optional",
+                          };
+                        }
+                      }
+                      case "open-api": {
+                        if (def.schema.in === "body") {
+                          return null;
+                        } else {
+                          return {
+                            ...def.schema,
+                            in: def.schema.in!,
+                            name,
+                          };
+                        }
+                      }
+                    }
                   })
+                  .compact()
                   .value();
               }
             }),
@@ -151,14 +170,28 @@ export class OpenAPIGenerator {
                 } else {
                   return _.chain(route.params)
                     .toPairs()
-                    .filter(r => r[1].in === "body")
+                    .map(([name, def]) => {
+                      switch (def.type) {
+                        case "joi": {
+                          if (def.in !== "body") {
+                            return null;
+                          } else {
+                            return [name, convertJoiToJSONSchema(def.def)];
+                          }
+                        }
+                        case "open-api": {
+                          if (def.schema.in !== "body") {
+                            return null;
+                          } else {
+                            return [name, def];
+                          }
+                        }
+                      }
+                    })
+                    .compact()
                     .value();
                 }
               })
-              .map(
-                ([name, paramDef]) =>
-                  ([name, convertJoiToJSONSchema(paramDef.def)])
-              )
               .value();
 
             if (bodyParams.length > 0) {
