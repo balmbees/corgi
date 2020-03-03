@@ -124,7 +124,27 @@ export class RoutingContext {
         _.forEach(schemaMap, (def, name) => {
           if (def.type === "open-api") {
             try {
-              const result = JSONSchema.validate(rawParams[name], def.schema.schema, { throwError: true });
+              // one fucking exception, sending "number" as string on query string, since querystring is always string.
+              let rawValue = rawParams[name];
+              if (def.schema.in === "query") {
+                if (def.schema.schema!.type === "number") {
+                  rawValue = Number(rawValue); // string -> number
+                } else if (
+                  def.schema.schema!.type === "object"
+                  || def.schema.schema!.type === "array"
+                ) {
+                  if (rawValue) {
+                    try {
+                      rawValue = JSON.parse(rawValue);
+                    } catch (e) {
+                      // if it's just wrongly typed JSON -
+                      rawValue = undefined;
+                    }
+                  }
+                }
+              }
+
+              const result = JSONSchema.validate(rawValue, def.schema.schema, { throwError: true });
               this.validatedParams[name] = result.instance;
             } catch (e) {
               const error = e as JSONSchema.ValidationError;

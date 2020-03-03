@@ -183,7 +183,7 @@ export class OpenAPIGenerator {
                           if (def.schema.in !== "body") {
                             return null;
                           } else {
-                            return [name, def];
+                            return [name, def.schema.schema];
                           }
                         }
                       }
