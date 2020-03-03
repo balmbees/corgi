@@ -10,7 +10,7 @@ import { RoutingContext } from "../../routing-context";
 
 import { Presenter } from "./presenter";
 
-export type PresenterRouteHandler<Input> = (this: RoutingContext) => Promise<Input>;
+export type PresenterRouteHandler<Input> = (this: RoutingContext, ...args: any[]) => Promise<Input>;
 export class PresenterRouteFactory {
   public static create<Entity, Output>(
     path: string,
