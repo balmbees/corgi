@@ -129,6 +129,8 @@ export class RoutingContext {
               if (def.schema.in === "query") {
                 if (def.schema.schema!.type === "number") {
                   rawValue = Number(rawValue); // string -> number
+                } else if (def.schema.schema!.type === "boolean") {
+                  rawValue = rawValue === "true" || rawValue === "1";
                 } else if (
                   def.schema.schema!.type === "object"
                   || def.schema.schema!.type === "array"
