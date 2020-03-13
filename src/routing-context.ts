@@ -128,9 +128,9 @@ export class RoutingContext {
               let rawValue = rawParams[name];
               if (def.schema.in === "query") {
                 if (def.schema.schema!.type === "number") {
-                  rawValue = Number(rawValue); // string -> number
+                  rawValue = rawValue !== undefined ? Number(rawValue) : undefined; // string -> number
                 } else if (def.schema.schema!.type === "boolean") {
-                  rawValue = rawValue === "true" || rawValue === "1";
+                  rawValue = rawValue !== undefined ? (rawValue === "true" || rawValue === "1") : undefined;
                 } else if (
                   def.schema.schema!.type === "object"
                   || def.schema.schema!.type === "array"
