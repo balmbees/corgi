@@ -46,7 +46,7 @@
     "@types/lodash": "^4.14.109",
     "@types/node": "^7.0.27",
     "@types/qs": "^6.5.0",
-    "@vingle/joi-to-json-schema": "^3.2.0",
+    "vingle-corgi-joi-to-json-schema": "^3.2.0",
     "aws-xray-sdk-core": ">=1.1.6",
     "joi": "^13.0.2",
     "joi-to-json-schema": "^5.1.0",

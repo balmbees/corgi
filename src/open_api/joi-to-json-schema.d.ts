@@ -1,4 +1,4 @@
-declare module "@vingle/joi-to-json-schema" {
+declare module "vingle-corgi-joi-to-json-schema" {
   import { Schema } from 'joi';
   type JSONSchema = any;
   function convert(joi: Schema, transformer?: (object: JSONSchema) => JSONSchema): JSONSchema;

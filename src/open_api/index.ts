@@ -1,6 +1,6 @@
-import JoiToJSONSchema = require("@vingle/joi-to-json-schema");
 import * as _ from "lodash";
 import * as OpenApi from "openapi3-ts";
+import JoiToJSONSchema = require("vingle-corgi-joi-to-json-schema");
 
 import * as LambdaProxy from "../lambda-proxy";
 
