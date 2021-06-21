@@ -3,6 +3,7 @@ import { Presenter } from "./presenter";
 export interface PagingEntity {
   before?: string;
   after?: string;
+  total?: number;
 }
 
 export interface PaginatedInput<DataInput> {
