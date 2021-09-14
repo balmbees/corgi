@@ -1,6 +1,6 @@
 {
   "name": "@balmbees/corgi",
-  "version": "2.1.2-beta.0",
+  "version": "2.1.2-beta.1",
   "description": "Restful HTTP Framework for AWS Lambda - AWS API Gateway Proxy Integration",
   "main": "./dst/index.js",
   "typings": "./dst/index.d.ts",
@@ -57,5 +57,8 @@
     "path-to-regexp": "^1.7.0",
     "qs": "^6.5.0",
     "swagger-schema-official": "2.0.0-d79c205"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }
