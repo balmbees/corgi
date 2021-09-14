@@ -50,10 +50,11 @@ export class Router {
   private middlewares: Middleware[];
   private middlewareMap = new Map<MiddlewareConstructor<any>, Middleware>();
   private routeTimeout: number | undefined;
+  private binary: string[] | undefined;
 
   constructor(
     routes: Routes,
-    options: { timeout?: number, middlewares?: Middleware[] } = {}
+    options: { timeout?: number, middlewares?: Middleware[], binary?: string[] } = {}
   ) {
     this.flattenRoutes = flattenRoutes([new RootNamespace(routes)]);
 
@@ -82,6 +83,8 @@ export class Router {
     });
 
     this.routeTimeout = options.timeout;
+
+    this.binary = options.binary;
   }
 
   public findMiddleware<T extends Middleware>(middlewareClass: MiddlewareConstructor<T>): T | undefined {
@@ -168,6 +171,15 @@ export class Router {
               const response = await this.runRoute(
                 routingContext, prevRoutes, currentRoute, options.timeout
               );
+
+              // Is it okay to conduct binary mapping before after middleware?
+              if (this.binary && _.get(response, "headers")) {
+                const contentType = (response as LambdaProxy.Response).headers["Content-Type"];
+                if (contentType && this.binary.includes(contentType)) {
+                  response.body = Buffer.from(response.body).toString("base64");
+                  response.isBase64Encoded = true;
+                }
+              }
 
               // Middlewares After
               return await (async (currentRouteResponse: LambdaProxy.Response) => {

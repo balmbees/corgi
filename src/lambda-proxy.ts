@@ -54,6 +54,7 @@ export interface Response {
   statusCode: number;
   headers: { [key: string]: string };
   body: string;
+  isBase64Encoded?: boolean;
 }
 
 export interface Context {
