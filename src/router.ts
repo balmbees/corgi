@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import * as pathToRegexp from "path-to-regexp";
 
-import { TimeoutError } from ".";
+import { RouteHandlerResponse, TimeoutError } from ".";
 import * as LambdaProxy from "./lambda-proxy";
 import { Middleware, MiddlewareConstructor } from "./middleware";
 import { Namespace, Routes } from "./namespace";
@@ -173,6 +173,7 @@ export class Router {
               );
 
               // Is it okay to conduct binary mapping before after middleware?
+              // Map Router handler resposne to lambdaProxy.Response
               const contentType = _.get(response, "headers.Content-Type");
               const isContentTypeBinary = this.binary && this.binary.includes(contentType);
               if (Buffer.isBuffer(response.body) && isContentTypeBinary) {
@@ -255,7 +256,7 @@ export class Router {
             reject(new TimeoutError(route));
           }, this.routeTimeout || timeout);
         })
-      ]).then((res) => {
+      ]).then((res: RouteHandlerResponse) => {
         cleanTimeout();
         return Promise.resolve(res);
       }, (error) => {

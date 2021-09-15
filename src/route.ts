@@ -1,14 +1,13 @@
 import * as Joi from "joi";
 import * as _ from "lodash";
 
-import * as LambdaProxy from "./lambda-proxy";
 import { ParameterDefinitionMap } from "./parameter";
 import { RoutingContext } from "./routing-context";
 
 import { Middleware, MiddlewareConstructor } from "./middleware";
 
 export type HttpMethod = "GET" | "PUT" | "POST" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD";
-export type RouteHandler = (this: RoutingContext) => Promise<LambdaProxy.Response>;
+export type RouteHandler = (this: RoutingContext) => Promise<RouteHandlerResponse>;
 export type RouteMetadata = Map<Function, any>; // tslint:disable-line
 
 // ---- Route
@@ -75,7 +74,7 @@ export class Route {
     this.operationId = options.operationId;
     this.responses = options.responses ? new Map(
       _.toPairs(options.responses || {})
-       .map(pair => [Number(pair[0]), pair[1]] as [number, ResponseSchema])
+        .map(pair => [Number(pair[0]), pair[1]] as [number, ResponseSchema])
     ) : undefined;
     this.metadata = options.metadata || new Map();
   }
@@ -111,6 +110,12 @@ export interface ResponseSchemaEntity {
 export interface ResponseSchema {
   desc?: string;
   schema?: Joi.Schema | JSONSchema;
+}
+
+export interface RouteHandlerResponse {
+  statusCode: number;
+  headers: { [key: string]: string };
+  body: string | Buffer;
 }
 
 /**
