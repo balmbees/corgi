@@ -173,12 +173,17 @@ export class Router {
               );
 
               // Is it okay to conduct binary mapping before after middleware?
-              if (this.binary && _.get(response, "headers")) {
-                const contentType = (response as LambdaProxy.Response).headers["Content-Type"];
-                if (contentType && this.binary.includes(contentType)) {
-                  response.body = Buffer.from(response.body).toString("base64");
-                  response.isBase64Encoded = true;
-                }
+              const contentType = _.get(response, "headers.Content-Type");
+              const isContentTypeBinary = this.binary && this.binary.includes(contentType);
+              if (Buffer.isBuffer(response.body) && isContentTypeBinary) {
+                response.body = (response.body as Buffer).toString("base64");
+                response.isBase64Encoded = true;
+              } else if (Buffer.isBuffer(response.body) && !isContentTypeBinary) {
+                throw new Error(`Response body is buffer, but Content-Type<${contentType}>
+                  in not registered in binary types<${this.binary}>.`);
+              } else if (!Buffer.isBuffer(response.body) && isContentTypeBinary) {
+                throw new Error(`Response body is string, but Content-Type<${contentType}>
+                  in registered in binary types<${this.binary}>.`);
               }
 
               // Middlewares After

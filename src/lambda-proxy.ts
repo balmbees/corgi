@@ -53,7 +53,7 @@ export interface EventStageVariables {
 export interface Response {
   statusCode: number;
   headers: { [key: string]: string };
-  body: string;
+  body: string | Buffer;
   isBase64Encoded?: boolean;
 }
 
