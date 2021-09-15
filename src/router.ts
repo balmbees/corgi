@@ -181,11 +181,11 @@ export class Router {
                   response.body = (response.body as Buffer).toString("base64");
                   response.isBase64Encoded = true;
                 } else if (Buffer.isBuffer(response.body) && !isContentTypeBinary) {
-                  throw new Error(`Response body is buffer, but Content-Type<${contentType}>
-                    in not registered in binary types<${this.binary}>.`);
+                  // tslint:disable-next-line: max-line-length
+                  throw new Error(`Response body is buffer, but Content-Type<${contentType}> in not registered in binary types<${this.binary}>.`);
                 } else if (!Buffer.isBuffer(response.body) && isContentTypeBinary) {
-                  throw new Error(`Response body is string, but Content-Type<${contentType}>
-                    in registered in binary types<${this.binary}>.`);
+                  // tslint:disable-next-line: max-line-length
+                  throw new Error(`Response body is string, but Content-Type<${contentType}> in registered in binary types<${this.binary}>.`);
                 }
               } catch (e) {
                 return {
