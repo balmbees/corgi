@@ -174,17 +174,27 @@ export class Router {
 
               // Is it okay to conduct binary mapping before after middleware?
               // Map Router handler resposne to lambdaProxy.Response
-              const contentType = _.get(response, "headers.Content-Type");
-              const isContentTypeBinary = this.binary && this.binary.includes(contentType);
-              if (Buffer.isBuffer(response.body) && isContentTypeBinary) {
-                response.body = (response.body as Buffer).toString("base64");
-                response.isBase64Encoded = true;
-              } else if (Buffer.isBuffer(response.body) && !isContentTypeBinary) {
-                throw new Error(`Response body is buffer, but Content-Type<${contentType}>
-                  in not registered in binary types<${this.binary}>.`);
-              } else if (!Buffer.isBuffer(response.body) && isContentTypeBinary) {
-                throw new Error(`Response body is string, but Content-Type<${contentType}>
-                  in registered in binary types<${this.binary}>.`);
+              try {
+                const contentType = _.get(response, "headers.Content-Type");
+                const isContentTypeBinary = this.binary && this.binary.includes(contentType);
+                if (Buffer.isBuffer(response.body) && isContentTypeBinary) {
+                  response.body = (response.body as Buffer).toString("base64");
+                  response.isBase64Encoded = true;
+                } else if (Buffer.isBuffer(response.body) && !isContentTypeBinary) {
+                  throw new Error(`Response body is buffer, but Content-Type<${contentType}>
+                    in not registered in binary types<${this.binary}>.`);
+                } else if (!Buffer.isBuffer(response.body) && isContentTypeBinary) {
+                  throw new Error(`Response body is string, but Content-Type<${contentType}>
+                    in registered in binary types<${this.binary}>.`);
+                }
+              } catch (e) {
+                return {
+                  statusCode: 500,
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({ error: String(e) }),
+                };
               }
 
               // Middlewares After
