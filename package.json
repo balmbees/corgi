@@ -36,7 +36,7 @@
     "@types/mocha": "2.2.48",
     "chai": "4.2.0",
     "check-engine": "1.8.1",
-    "mocha": "3.5.3",
+    "mocha": "10.2.0",
     "np": "3.1.0",
     "tslint": "5.18.0",
     "typescript": "^3.6.2"
